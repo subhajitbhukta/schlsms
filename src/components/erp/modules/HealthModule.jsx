@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   HeartPulse, Users, Activity, Shield, Plus, Download, ArrowUpRight,
@@ -8,7 +8,7 @@ import {
   AlertTriangle, X, Save, RotateCcw, ClipboardList, Syringe,
   Stethoscope, Brain, AlertCircle, PieChart as PieChartIcon,
   Thermometer, Eye, Baby, Heart, Phone, Clock, UserCheck,
-  Beaker, FlaskConical, Bug
+  Beaker, FlaskConical, Bug, QrCode, ScanLine
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +17,7 @@ import {
   PolarRadiusAxis, Radar
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup, { STUDENT_DB } from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Mock Data ────────────────────────────────────────────────────
 const topStats = [
@@ -112,6 +113,9 @@ export default function HealthModule() {
   const [activeForm, setActiveForm] = useState('medicalRecord')
   const [activeReport, setActiveReport] = useState('vaccination')
 
+  // ─── QR Pre-fill State ──────────────────────────────────────
+  const [qrPrefillStudent, setQrPrefillStudent] = useState(null)
+
   // ─── Form States ────────────────────────────────────────
   const [medicalRecordData, setMedicalRecordData] = useState({
     student: '', bspId: '', penNo: '', upparId: '', height: '', weight: '', bloodGroup: '', visionLeft: '', visionRight: '', hearing: '', allergies: '', chronicConditions: '', medications: '', emergencyContact: '', doctorName: '', lastCheckupDate: ''
@@ -170,25 +174,60 @@ export default function HealthModule() {
     alert(`${formName} submitted successfully!\n${JSON.stringify(data, null, 2)}`)
   }
 
-  const renderUdiseFields = (data, setData) => (
-    <>
-      <div className={formGroupClass}>
-        <label className={labelClass}>BSP ID (UDISE+)</label>
-        <input type="text" placeholder="BSP/WB/2023/XXXXX" value={data.bspId}
-          onChange={(e) => setData({ ...data, bspId: e.target.value })} className={inputClass} />
-      </div>
-      <div className={formGroupClass}>
-        <label className={labelClass}>PEN No</label>
-        <input type="text" placeholder="PEN-XXXX-XXXX" value={data.penNo}
-          onChange={(e) => setData({ ...data, penNo: e.target.value })} className={inputClass} />
-      </div>
-      <div className={formGroupClass}>
-        <label className={labelClass}>Uppar ID</label>
-        <input type="text" placeholder="UPPR-WB-XXXXXX" value={data.upparId}
-          onChange={(e) => setData({ ...data, upparId: e.target.value })} className={inputClass} />
-      </div>
-    </>
-  )
+  // ─── QR Scan Entry - prefill all forms ─────────────────────────
+  const handleQrPrefill = useCallback((student) => {
+    setQrPrefillStudent(student)
+    if (student) {
+      setMedicalRecordData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId, bloodGroup: student.bloodGroup || '' }))
+      setVaccinationData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+      setCounsellingData2(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+      setCheckupData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+      setEmergencyData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+    } else {
+      setQrPrefillStudent(null)
+    }
+  }, [])
+
+  // ─── Individual form QR handlers ────────────────────────────────
+  const handleMedicalRecordSelect = useCallback((student) => {
+    if (student) {
+      setMedicalRecordData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId, bloodGroup: student.bloodGroup || '' }))
+    } else {
+      setMedicalRecordData(prev => ({ ...prev, student: '', bspId: '', penNo: '', upparId: '', bloodGroup: '' }))
+    }
+  }, [])
+
+  const handleVaccinationSelect = useCallback((student) => {
+    if (student) {
+      setVaccinationData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+    } else {
+      setVaccinationData(prev => ({ ...prev, student: '', bspId: '', penNo: '', upparId: '' }))
+    }
+  }, [])
+
+  const handleCounsellingSelect = useCallback((student) => {
+    if (student) {
+      setCounsellingData2(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+    } else {
+      setCounsellingData2(prev => ({ ...prev, student: '', bspId: '', penNo: '', upparId: '' }))
+    }
+  }, [])
+
+  const handleCheckupSelect = useCallback((student) => {
+    if (student) {
+      setCheckupData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+    } else {
+      setCheckupData(prev => ({ ...prev, student: '', bspId: '', penNo: '', upparId: '' }))
+    }
+  }, [])
+
+  const handleEmergencySelect = useCallback((student) => {
+    if (student) {
+      setEmergencyData(prev => ({ ...prev, student: student.name, bspId: student.bspId, penNo: student.penNo, upparId: student.upparId }))
+    } else {
+      setEmergencyData(prev => ({ ...prev, student: '', bspId: '', penNo: '', upparId: '' }))
+    }
+  }, [])
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
@@ -419,6 +458,38 @@ export default function HealthModule() {
       {/* ═══════════════ FORMS TAB ═══════════════ */}
       {activeTab === 'forms' && (
         <motion.div variants={itemVariants} className="space-y-6">
+
+          {/* ─── QR Scan Entry Section (Top of Forms) ──────────────── */}
+          <motion.div variants={itemVariants} className="rounded-2xl border-2 border-dashed border-birla-cyan/40 bg-birla-cyan/5 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <QrCode className="w-5 h-5 text-birla-cyan" />
+              <h3 className="text-base font-semibold text-foreground">QR Scan Entry</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-birla-cyan/10 text-birla-cyan font-medium">Pre-fill all forms</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Scan a student ID card QR code or search by name/ID to auto-fill student details across all health forms below.
+            </p>
+            <QRStudentLookup
+              onStudentSelect={handleQrPrefill}
+              placeholder="Scan QR or enter Student ID / Name / BSP ID to pre-fill all forms"
+              showDetails={true}
+              label=""
+            />
+            {qrPrefillStudent && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20"
+              >
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Student pre-filled: {qrPrefillStudent.name} — All health forms now have this student&apos;s details
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Form Selector */}
           <div className="flex flex-wrap gap-2">
             {formOptions.map((f) => {
               const Icon = f.icon
@@ -433,19 +504,48 @@ export default function HealthModule() {
             })}
           </div>
 
-          {/* 1. Medical Record Form */}
+          {/* 1. Medical Record Form - WITH QRStudentLookup */}
           {activeForm === 'medicalRecord' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
                 <Stethoscope className="w-5 h-5 text-emerald-500" />Medical Record Form
               </h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleMedicalRecordSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
-                  <input type="text" placeholder="Enter student name" value={medicalRecordData.student}
+                  <input type="text" placeholder="Auto-filled via QR or enter manually" value={medicalRecordData.student}
                     onChange={(e) => setMedicalRecordData({ ...medicalRecordData, student: e.target.value })} className={inputClass} />
                 </div>
-                {renderUdiseFields(medicalRecordData, setMedicalRecordData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BSP ID (UDISE+)</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={medicalRecordData.bspId}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, bspId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>PEN No</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={medicalRecordData.penNo}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, penNo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Uppar ID</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={medicalRecordData.upparId}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, upparId: e.target.value })} className={inputClass} />
+                </div>
                 <div className={formGroupClass}>
                   <label className={labelClass}>Height (cm)</label>
                   <input type="text" placeholder="e.g. 155" value={medicalRecordData.height}
@@ -524,19 +624,48 @@ export default function HealthModule() {
             </motion.div>
           )}
 
-          {/* 2. Vaccination Record Form */}
+          {/* 2. Vaccination Record Form - WITH QRStudentLookup */}
           {activeForm === 'vaccinationRecord' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
                 <Syringe className="w-5 h-5 text-blue-500" />Vaccination Record Form
               </h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleVaccinationSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
-                  <input type="text" placeholder="Enter student name" value={vaccinationData.student}
+                  <input type="text" placeholder="Auto-filled via QR or enter manually" value={vaccinationData.student}
                     onChange={(e) => setVaccinationData({ ...vaccinationData, student: e.target.value })} className={inputClass} />
                 </div>
-                {renderUdiseFields(vaccinationData, setVaccinationData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BSP ID (UDISE+)</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={vaccinationData.bspId}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, bspId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>PEN No</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={vaccinationData.penNo}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, penNo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Uppar ID</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={vaccinationData.upparId}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, upparId: e.target.value })} className={inputClass} />
+                </div>
                 <div className={formGroupClass}>
                   <label className={labelClass}>Vaccine Name *</label>
                   <select value={vaccinationData.vaccineName} onChange={(e) => setVaccinationData({ ...vaccinationData, vaccineName: e.target.value })} className={inputClass}>
@@ -588,19 +717,48 @@ export default function HealthModule() {
             </motion.div>
           )}
 
-          {/* 3. Counselling Appointment Form */}
+          {/* 3. Counselling Appointment Form - WITH QRStudentLookup */}
           {activeForm === 'counsellingAppt' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
                 <Brain className="w-5 h-5 text-purple-500" />Counselling Appointment Form
               </h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-purple-500/20 bg-purple-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-purple-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleCounsellingSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
-                  <input type="text" placeholder="Enter student name" value={counsellingData2.student}
+                  <input type="text" placeholder="Auto-filled via QR or enter manually" value={counsellingData2.student}
                     onChange={(e) => setCounsellingData2({ ...counsellingData2, student: e.target.value })} className={inputClass} />
                 </div>
-                {renderUdiseFields(counsellingData2, setCounsellingData2)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BSP ID (UDISE+)</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={counsellingData2.bspId}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, bspId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>PEN No</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={counsellingData2.penNo}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, penNo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Uppar ID</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={counsellingData2.upparId}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, upparId: e.target.value })} className={inputClass} />
+                </div>
                 <div className={formGroupClass}>
                   <label className={labelClass}>Counsellor *</label>
                   <select value={counsellingData2.counsellor} onChange={(e) => setCounsellingData2({ ...counsellingData2, counsellor: e.target.value })} className={inputClass}>
@@ -656,19 +814,48 @@ export default function HealthModule() {
             </motion.div>
           )}
 
-          {/* 4. Health Checkup Form */}
+          {/* 4. Health Checkup Form - WITH QRStudentLookup */}
           {activeForm === 'healthCheckup' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
                 <Activity className="w-5 h-5 text-cyan-500" />Health Checkup Form
               </h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-cyan-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleCheckupSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
-                  <input type="text" placeholder="Enter student name" value={checkupData.student}
+                  <input type="text" placeholder="Auto-filled via QR or enter manually" value={checkupData.student}
                     onChange={(e) => setCheckupData({ ...checkupData, student: e.target.value })} className={inputClass} />
                 </div>
-                {renderUdiseFields(checkupData, setCheckupData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BSP ID (UDISE+)</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={checkupData.bspId}
+                    onChange={(e) => setCheckupData({ ...checkupData, bspId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>PEN No</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={checkupData.penNo}
+                    onChange={(e) => setCheckupData({ ...checkupData, penNo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Uppar ID</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={checkupData.upparId}
+                    onChange={(e) => setCheckupData({ ...checkupData, upparId: e.target.value })} className={inputClass} />
+                </div>
                 <div className={formGroupClass}>
                   <label className={labelClass}>Checkup Type *</label>
                   <select value={checkupData.checkupType} onChange={(e) => setCheckupData({ ...checkupData, checkupType: e.target.value })} className={inputClass}>
@@ -741,19 +928,48 @@ export default function HealthModule() {
             </motion.div>
           )}
 
-          {/* 5. Emergency Alert Form */}
+          {/* 5. Emergency Alert Form - WITH QRStudentLookup */}
           {activeForm === 'emergencyAlert' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
                 <AlertTriangle className="w-5 h-5 text-red-500" />Emergency Alert Form
               </h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-medium">Emergency — Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleEmergencySelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID — URGENT"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
-                  <input type="text" placeholder="Enter student name" value={emergencyData.student}
+                  <input type="text" placeholder="Auto-filled via QR or enter manually" value={emergencyData.student}
                     onChange={(e) => setEmergencyData({ ...emergencyData, student: e.target.value })} className={inputClass} />
                 </div>
-                {renderUdiseFields(emergencyData, setEmergencyData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BSP ID (UDISE+)</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={emergencyData.bspId}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, bspId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>PEN No</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={emergencyData.penNo}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, penNo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Uppar ID</label>
+                  <input type="text" placeholder="Auto-filled via QR" value={emergencyData.upparId}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, upparId: e.target.value })} className={inputClass} />
+                </div>
                 <div className={formGroupClass}>
                   <label className={labelClass}>Emergency Type *</label>
                   <select value={emergencyData.emergencyType} onChange={(e) => setEmergencyData({ ...emergencyData, emergencyType: e.target.value })} className={inputClass}>

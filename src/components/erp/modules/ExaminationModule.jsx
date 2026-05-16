@@ -8,7 +8,8 @@ import {
   CheckCircle2, Target, Brain, ClipboardList, Star,
   ArrowUpRight, PieChart as PieChartIcon, Clock, MapPin,
   PenLine, Zap, Trophy, AlertCircle, Hash, Save,
-  FileCheck, UserCheck, ListChecks, FormInput
+  FileCheck, UserCheck, ListChecks, FormInput, Palette,
+  Printer, Stamp, Signature
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +18,7 @@ import {
   PolarAngleAxis, PolarRadiusAxis, AreaChart, Area
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup, { STUDENT_DB } from '@/components/erp/shared/QRStudentLookup'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -110,10 +112,62 @@ const examScheduleData = [
 
 const reportCardTemplates = ['CBSE Standard', 'CBSE Competency-Based', 'NEP 2020 Format', 'Custom School Format']
 
+// CBSE 9-point grading scale helper
+const getCBSEGrade = (marks) => {
+  if (marks >= 91) return 'A1'
+  if (marks >= 81) return 'A2'
+  if (marks >= 71) return 'B1'
+  if (marks >= 61) return 'B2'
+  if (marks >= 51) return 'C1'
+  if (marks >= 41) return 'C2'
+  if (marks >= 33) return 'D'
+  return 'E'
+}
+
+const getGradeColor = (grade) => {
+  const colors = { A1: '#10B981', A2: '#22D3EE', B1: '#C8A45C', B2: '#8B5CF6', C1: '#F59E0B', C2: '#EF4444', D: '#DC2626', E: '#991B1B' }
+  return colors[grade] || '#64748b'
+}
+
+const getCompetencyLevel = (marks) => {
+  if (marks >= 85) return 'Advanced'
+  if (marks >= 70) return 'Proficient'
+  if (marks >= 55) return 'Developing'
+  if (marks >= 33) return 'Beginning'
+  return 'Needs Improvement'
+}
+
+// Sample marksheet data for the selected student
+const marksheetStudent = STUDENT_DB[0] // Aarav Sharma
+
+const marksheetScholastic = [
+  { subject: 'English', theoryMax: 80, theoryObt: 68, iaMax: 20, iaObt: 16, total: 84, grade: getCBSEGrade(84), competency: 'Proficient' },
+  { subject: 'Hindi', theoryMax: 80, theoryObt: 56, iaMax: 20, iaObt: 14, total: 70, grade: getCBSEGrade(70), competency: 'Proficient' },
+  { subject: 'Mathematics', theoryMax: 80, theoryObt: 72, iaMax: 20, iaObt: 12, total: 84, grade: getCBSEGrade(84), competency: 'Proficient' },
+  { subject: 'Science', theoryMax: 80, theoryObt: 64, iaMax: 20, iaObt: 16, total: 80, grade: getCBSEGrade(80), competency: 'Proficient' },
+  { subject: 'Social Science', theoryMax: 80, theoryObt: 60, iaMax: 20, iaObt: 16, total: 76, grade: getCBSEGrade(76), competency: 'Proficient' },
+  { subject: 'Computer Science', theoryMax: 70, theoryObt: 62, iaMax: 30, iaObt: 26, total: 88, grade: getCBSEGrade(88), competency: 'Advanced' },
+]
+
+const marksheetCoScholastic = [
+  { area: 'Art Education', grade: 'A', descriptor: 'Outstanding' },
+  { area: 'Health & Physical Education', grade: 'A+', descriptor: 'Exceptional' },
+  { area: 'Discipline', grade: 'A', descriptor: 'Outstanding' },
+]
+
+const marksheetCompetencies = [
+  { competency: 'Critical Thinking', level: 'Proficient', icon: '🧠' },
+  { competency: 'Problem Solving', level: 'Proficient', icon: '💡' },
+  { competency: 'Communication', level: 'Advanced', icon: '🗣️' },
+  { competency: 'Creativity', level: 'Developing', icon: '🎨' },
+  { competency: 'Collaboration', level: 'Proficient', icon: '🤝' },
+]
+
 export default function ExaminationModule() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
   const [showForm, setShowForm] = useState(null)
+  const [marksheetSelectedStudent, setMarksheetSelectedStudent] = useState(null)
 
   const [examScheduleForm, setExamScheduleForm] = useState({
     examName: '', subject: '', class: '', date: '', startTime: '', duration: '', maxMarks: '', examType: 'Unit Test', roomNo: '', invigilator: ''
@@ -121,6 +175,7 @@ export default function ExaminationModule() {
   const [marksEntryForm, setMarksEntryForm] = useState({
     examName: '', subject: '', class: '', student: '', marksObtained: '', maxMarks: '100', competencyLevel: '', remarks: ''
   })
+  const [marksEntryStudent, setMarksEntryStudent] = useState(null)
   const [reportCardForm, setReportCardForm] = useState({
     class: '', section: '', term: '', examType: '', includeScholastic: true, includeCoScholastic: true, includeCompetency: true, includeAttendance: true, template: 'CBSE Standard'
   })
@@ -154,6 +209,7 @@ export default function ExaminationModule() {
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'report-cards', label: 'Report Cards', icon: FileText },
+    { id: 'marksheet', label: 'Marksheet', icon: FileCheck },
     { id: 'cbse-grading', label: 'CBSE Grading', icon: GraduationCap },
     { id: 'forms', label: 'Forms', icon: FormInput },
     { id: 'reports', label: 'Reports', icon: Activity },
@@ -169,11 +225,23 @@ export default function ExaminationModule() {
     { id: 'competencyMap', label: 'Competency Map', icon: Brain },
   ]
 
-  const handleSubmit = () => setShowForm(null)
+  const handleFormSubmit = (formName, successMsg) => {
+    alert(successMsg)
+    setShowForm(null)
+  }
 
   const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Computer Science']
   const classes = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']
   const sections = ['A','B','C']
+
+  // Get the active marksheet student (either selected via lookup or default)
+  const activeMarksheetStudent = marksheetSelectedStudent || marksheetStudent
+
+  // Recalculate marksheet totals for the active student
+  const marksheetTotalObt = marksheetScholastic.reduce((sum, s) => sum + s.total, 0)
+  const marksheetTotalMax = marksheetScholastic.reduce((sum, s) => sum + s.theoryMax + s.iaMax, 0)
+  const marksheetPercentage = ((marksheetTotalObt / marksheetTotalMax) * 100).toFixed(1)
+  const marksheetOverallResult = marksheetScholastic.every(s => s.total >= 33) ? 'PASS' : 'FAIL'
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
@@ -339,6 +407,257 @@ export default function ExaminationModule() {
         </motion.div>
       )}
 
+      {/* ====== MARKSHEET TAB ====== */}
+      {activeTab === 'marksheet' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          {/* Student Lookup */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><FileCheck className="w-4 h-4 text-birla-cyan" />Student Marksheet Lookup</h4>
+            <p className="text-[10px] text-muted-foreground mb-3">Scan student ID card QR or enter student ID / name to view marksheet</p>
+            <QRStudentLookup
+              onStudentSelect={(student) => setMarksheetSelectedStudent(student)}
+              mode="student"
+              placeholder="Scan QR or enter Student ID / Name for Marksheets"
+              showDetails={true}
+              label="Student Identification (QR / ID / Name)"
+            />
+          </div>
+
+          {/* Marksheet Card */}
+          <div className="rounded-2xl border-2 border-birla-gold/30 bg-card overflow-hidden">
+            {/* Marksheet Header */}
+            <div className="bg-gradient-to-r from-birla-blue to-birla-blue/90 p-5 text-center text-white">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <GraduationCap className="w-6 h-6" />
+                <h3 className="text-lg font-bold tracking-wide">BIRLA OPEN MINDS INTERNATIONAL SCHOOL</h3>
+              </div>
+              <p className="text-[11px] text-white/70">Affiliated to CBSE, New Delhi &bull; UDISE Code: 19010100101</p>
+              <p className="text-[11px] text-white/70">Singur, Hooghly, West Bengal &bull; Session: 2025-26</p>
+              <div className="mt-2 inline-block px-4 py-1 rounded-lg bg-birla-gold/20 border border-birla-gold/40">
+                <p className="text-sm font-bold text-birla-gold">PERFORMANCE MARKSHEET (NEP 2020 & CBSE Aligned)</p>
+              </div>
+            </div>
+
+            {/* Student Info */}
+            <div className="p-5 border-b border-border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Name:</span>
+                    <span className="text-sm font-bold text-foreground">{activeMarksheetStudent.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">BSP ID:</span>
+                    <span className="text-xs font-mono text-birla-cyan">{activeMarksheetStudent.bspId}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">PEN No:</span>
+                    <span className="text-xs font-mono text-birla-cyan">{activeMarksheetStudent.penNo}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Uppar ID:</span>
+                    <span className="text-xs font-mono text-birla-cyan">{activeMarksheetStudent.upparId}</span>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Class:</span>
+                    <span className="text-sm font-bold text-foreground">{activeMarksheetStudent.class}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Section:</span>
+                    <span className="text-sm font-bold text-foreground">{activeMarksheetStudent.section}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Roll No:</span>
+                    <span className="text-sm font-bold text-foreground">{activeMarksheetStudent.rollNo}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground w-20">Attendance:</span>
+                    <span className="text-sm font-bold text-emerald-600">92.5%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Scholastic Area */}
+            <div className="p-5 border-b border-border">
+              <h5 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-birla-gold" />SCHOLASTIC AREA</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full text-center">
+                  <thead>
+                    <tr className="border-b-2 border-birla-blue/20 bg-birla-blue/5">
+                      <th className="text-left px-3 py-2 text-[10px] font-bold text-muted-foreground" rowSpan={2}>Subject</th>
+                      <th className="px-3 py-2 text-[10px] font-bold text-muted-foreground" colSpan={2}>Theory</th>
+                      <th className="px-3 py-2 text-[10px] font-bold text-muted-foreground" colSpan={2}>Internal Assessment</th>
+                      <th className="px-3 py-2 text-[10px] font-bold text-muted-foreground" rowSpan={2}>Total</th>
+                      <th className="px-3 py-2 text-[10px] font-bold text-muted-foreground" rowSpan={2}>Grade</th>
+                      <th className="px-3 py-2 text-[10px] font-bold text-muted-foreground" rowSpan={2}>Competency Level</th>
+                    </tr>
+                    <tr className="border-b border-border bg-birla-blue/5">
+                      <th className="px-3 py-1 text-[9px] text-muted-foreground">Max</th>
+                      <th className="px-3 py-1 text-[9px] text-muted-foreground">Obt</th>
+                      <th className="px-3 py-1 text-[9px] text-muted-foreground">Max</th>
+                      <th className="px-3 py-1 text-[9px] text-muted-foreground">Obt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {marksheetScholastic.map((s, i) => (
+                      <tr key={i} className={`border-b border-border/50 ${i % 2 === 0 ? 'bg-muted/10' : ''}`}>
+                        <td className="text-left px-3 py-2 text-xs font-medium text-foreground">{s.subject}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">{s.theoryMax}</td>
+                        <td className="px-3 py-2 text-xs text-foreground font-medium">{s.theoryObt}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">{s.iaMax}</td>
+                        <td className="px-3 py-2 text-xs text-foreground font-medium">{s.iaObt}</td>
+                        <td className="px-3 py-2 text-xs font-bold text-foreground">{s.total}</td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center justify-center w-8 h-5 rounded text-[10px] font-bold text-white" style={{ background: getGradeColor(s.grade) }}>{s.grade}</span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            s.competency === 'Advanced' ? 'bg-emerald-500/10 text-emerald-600' :
+                            s.competency === 'Proficient' ? 'bg-cyan-500/10 text-cyan-600' :
+                            s.competency === 'Developing' ? 'bg-amber-500/10 text-amber-600' :
+                            'bg-red-500/10 text-red-600'
+                          }`}>{s.competency}</span>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="border-t-2 border-birla-blue/20 bg-birla-blue/5 font-bold">
+                      <td className="text-left px-3 py-2 text-xs text-foreground">GRAND TOTAL</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{marksheetScholastic.reduce((s, x) => s + x.theoryMax, 0)}</td>
+                      <td className="px-3 py-2 text-xs text-foreground">{marksheetScholastic.reduce((s, x) => s + x.theoryObt, 0)}</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{marksheetScholastic.reduce((s, x) => s + x.iaMax, 0)}</td>
+                      <td className="px-3 py-2 text-xs text-foreground">{marksheetScholastic.reduce((s, x) => s + x.iaObt, 0)}</td>
+                      <td className="px-3 py-2 text-sm text-foreground">{marksheetTotalObt}</td>
+                      <td className="px-3 py-2" colSpan={2}></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Co-Scholastic Area */}
+            <div className="p-5 border-b border-border">
+              <h5 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Palette className="w-4 h-4 text-birla-gold" />CO-SCHOLASTIC AREA</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-birla-gold/20 bg-birla-gold/5">
+                      <th className="text-left px-4 py-2 text-[10px] font-bold text-muted-foreground">Area</th>
+                      <th className="text-center px-4 py-2 text-[10px] font-bold text-muted-foreground">Grade</th>
+                      <th className="text-center px-4 py-2 text-[10px] font-bold text-muted-foreground">Descriptor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {marksheetCoScholastic.map((c, i) => (
+                      <tr key={i} className={`border-b border-border/50 ${i % 2 === 0 ? 'bg-muted/10' : ''}`}>
+                        <td className="px-4 py-2 text-xs font-medium text-foreground">{c.area}</td>
+                        <td className="px-4 py-2 text-center">
+                          <span className="inline-flex items-center justify-center px-3 py-0.5 rounded-full text-xs font-bold bg-birla-gold/10 text-birla-gold">{c.grade}</span>
+                        </td>
+                        <td className="px-4 py-2 text-center text-xs text-muted-foreground">{c.descriptor}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* NEP 2020 Competency Mapping */}
+            <div className="p-5 border-b border-border">
+              <h5 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Brain className="w-4 h-4 text-birla-cyan" />NEP 2020 COMPETENCY MAPPING</h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                {marksheetCompetencies.map((comp, i) => (
+                  <div key={i} className="rounded-xl border border-border p-3 text-center bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <div className="text-2xl mb-1">{comp.icon}</div>
+                    <p className="text-[11px] font-semibold text-foreground">{comp.competency}</p>
+                    <span className={`mt-1 inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                      comp.level === 'Advanced' ? 'bg-emerald-500/10 text-emerald-600' :
+                      comp.level === 'Proficient' ? 'bg-cyan-500/10 text-cyan-600' :
+                      comp.level === 'Developing' ? 'bg-amber-500/10 text-amber-600' :
+                      'bg-red-500/10 text-red-600'
+                    }`}>{comp.level}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Result Summary */}
+            <div className="p-5 border-b border-border bg-muted/5">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground mb-1">Total Marks</p>
+                  <p className="text-lg font-bold text-foreground">{marksheetTotalObt}/{marksheetTotalMax}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground mb-1">Percentage</p>
+                  <p className="text-lg font-bold text-birla-cyan">{marksheetPercentage}%</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground mb-1">Overall Result</p>
+                  <span className={`inline-block text-lg font-bold px-3 py-0.5 rounded-lg ${marksheetOverallResult === 'PASS' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'}`}>{marksheetOverallResult}</span>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground mb-1">Rank in Class</p>
+                  <p className="text-lg font-bold text-foreground">3rd</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground mb-1">Attendance</p>
+                  <p className="text-lg font-bold text-emerald-600">92.5%</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Signature Area */}
+            <div className="p-5 border-b border-border">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="border-t-2 border-muted-foreground/30 pt-2 mt-10">
+                    <p className="text-xs font-semibold text-foreground">Class Teacher</p>
+                    <p className="text-[10px] text-muted-foreground">Mrs. Kavita Sharma</p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="border-t-2 border-muted-foreground/30 pt-2 mt-10">
+                    <p className="text-xs font-semibold text-foreground">Exam Controller</p>
+                    <p className="text-[10px] text-muted-foreground">Dr. Suresh Babu</p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="border-t-2 border-muted-foreground/30 pt-2 mt-10 flex flex-col items-center">
+                    <Stamp className="w-5 h-5 text-birla-gold mb-1" />
+                    <p className="text-xs font-semibold text-foreground">Principal</p>
+                    <p className="text-[10px] text-muted-foreground">Birla Open Minds International School</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CBSE Grading Scale Reference */}
+            <div className="p-5 bg-muted/10">
+              <h5 className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5" />CBSE 9-Point Grading Scale Reference</h5>
+              <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                {cbseGradingData.map(g => (
+                  <div key={g.grade} className="p-2 rounded-lg border border-border text-center" style={{ borderColor: g.color + '40' }}>
+                    <div className="w-7 h-7 rounded-full mx-auto mb-0.5 flex items-center justify-center text-white text-[10px] font-bold" style={{ background: g.color }}>{g.grade}</div>
+                    <p className="text-[9px] text-muted-foreground">{g.range}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-2">As per CBSE norms: A1=Outstanding, A2=Excellent, B1=Very Good, B2=Good, C1=Above Average, C2=Average, D=Below Average, E=Needs Improvement</p>
+            </div>
+
+            {/* Print Button */}
+            <div className="p-4 flex justify-end">
+              <button onClick={() => alert('Marksheet sent to printer!')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">
+                <Printer className="w-4 h-4" />Print Marksheet
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* ====== CBSE GRADING TAB ====== */}
       {activeTab === 'cbse-grading' && (
         <motion.div variants={itemVariants} className="space-y-4">
@@ -410,7 +729,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Create Schedule</button>
+                <button onClick={() => handleFormSubmit('examSchedule', 'Exam schedule created successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Create Schedule</button>
               </div>
             </motion.div>
           )}
@@ -422,18 +741,33 @@ export default function ExaminationModule() {
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><PenLine className="w-4 h-4 text-birla-gold" />Marks Entry Form</h4>
                 <button onClick={() => setShowForm(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
               </div>
-              <div className="flex flex-wrap gap-2 mb-4 p-2 rounded-xl bg-muted/20">
-                <span className="px-2 py-0.5 rounded-lg bg-birla-blue/10 text-birla-blue dark:text-birla-cyan text-[10px] font-mono">BSP ID &amp; PEN No &amp; Uppar ID shown with student</span>
+              {/* QR Student Lookup */}
+              <div className="mb-4">
+                <QRStudentLookup
+                  onStudentSelect={(student) => {
+                    setMarksEntryStudent(student)
+                    setMarksEntryForm({...marksEntryForm, student: student ? student.name : ''})
+                  }}
+                  mode="student"
+                  placeholder="Scan QR or enter Student ID / Name for Marks Entry"
+                  showDetails={true}
+                  label="Student Identification (QR / ID / Name)"
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div><label className={labelClass}>Exam Name *</label><select className={inputClass} value={marksEntryForm.examName} onChange={e => setMarksEntryForm({...marksEntryForm, examName: e.target.value})}><option value="">Select</option><option>Unit Test 1</option><option>Periodic 1</option><option>Half Yearly</option><option>Annual</option></select></div>
                 <div><label className={labelClass}>Subject *</label><select className={inputClass} value={marksEntryForm.subject} onChange={e => setMarksEntryForm({...marksEntryForm, subject: e.target.value})}><option value="">Select</option>{subjects.map(s => <option key={s}>{s}</option>)}</select></div>
                 <div><label className={labelClass}>Class *</label><select className={inputClass} value={marksEntryForm.class} onChange={e => setMarksEntryForm({...marksEntryForm, class: e.target.value})}><option value="">Select</option>{classes.map(c => <option key={c}>{c}</option>)}</select></div>
                 <div>
-                  <label className={labelClass}>Student * (UDISE+ IDs shown)</label>
-                  <select className={inputClass} value={marksEntryForm.student} onChange={e => setMarksEntryForm({...marksEntryForm, student: e.target.value})}>
+                  <label className={labelClass}>Student * (or use QR lookup above)</label>
+                  <select className={inputClass} value={marksEntryForm.student} onChange={e => {
+                    const sel = e.target.value
+                    const found = STUDENT_DB.find(s => s.name === sel)
+                    setMarksEntryStudent(found || null)
+                    setMarksEntryForm({...marksEntryForm, student: sel})
+                  }}>
                     <option value="">Select Student</option>
-                    {studentPerformanceData.map(s => <option key={s.bspId} value={s.name}>{s.name} (BSP:{s.bspId} | PEN:{s.penNo} | UPPR:{s.upparId})</option>)}
+                    {STUDENT_DB.map(s => <option key={s.id} value={s.name}>{s.name} (BSP:{s.bspId} | PEN:{s.penNo} | UPPR:{s.upparId})</option>)}
                   </select>
                 </div>
                 <div><label className={labelClass}>Marks Obtained *</label><input type="number" className={inputClass} placeholder="0-100" value={marksEntryForm.marksObtained} onChange={e => setMarksEntryForm({...marksEntryForm, marksObtained: e.target.value})} /></div>
@@ -443,7 +777,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Marks</button>
+                <button onClick={() => handleFormSubmit('marksEntry', `Marks saved successfully for ${marksEntryForm.student || 'student'}!`)} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Marks</button>
               </div>
             </motion.div>
           )}
@@ -470,7 +804,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Generate Report Cards</button>
+                <button onClick={() => handleFormSubmit('reportCard', 'Report cards generated successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Generate Report Cards</button>
               </div>
             </motion.div>
           )}
@@ -483,7 +817,7 @@ export default function ExaminationModule() {
                 <button onClick={() => setShowForm(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className={labelClass}>Student *</label><select className={inputClass} value={skillAssessForm.student} onChange={e => setSkillAssessForm({...skillAssessForm, student: e.target.value})}><option value="">Select</option>{studentPerformanceData.map(s => <option key={s.bspId}>{s.name}</option>)}</select></div>
+                <div><label className={labelClass}>Student *</label><select className={inputClass} value={skillAssessForm.student} onChange={e => setSkillAssessForm({...skillAssessForm, student: e.target.value})}><option value="">Select</option>{STUDENT_DB.map(s => <option key={s.id}>{s.name}</option>)}</select></div>
                 <div><label className={labelClass}>Skill *</label><select className={inputClass} value={skillAssessForm.skill} onChange={e => setSkillAssessForm({...skillAssessForm, skill: e.target.value})}><option>Public Speaking</option><option>Problem Solving</option><option>Coding</option><option>Lab Work</option><option>Map Reading</option><option>Creative Writing</option></select></div>
               </div>
               <div className="mt-4">
@@ -504,7 +838,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Assessment</button>
+                <button onClick={() => handleFormSubmit('skillAssess', 'Skill assessment saved successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Assessment</button>
               </div>
             </motion.div>
           )}
@@ -517,7 +851,7 @@ export default function ExaminationModule() {
                 <button onClick={() => setShowForm(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className={labelClass}>Student *</label><select className={inputClass} value={coScholasticForm.student} onChange={e => setCoScholasticForm({...coScholasticForm, student: e.target.value})}><option value="">Select</option>{studentPerformanceData.map(s => <option key={s.bspId}>{s.name}</option>)}</select></div>
+                <div><label className={labelClass}>Student *</label><select className={inputClass} value={coScholasticForm.student} onChange={e => setCoScholasticForm({...coScholasticForm, student: e.target.value})}><option value="">Select</option>{STUDENT_DB.map(s => <option key={s.id}>{s.name}</option>)}</select></div>
                 <div><label className={labelClass}>Area *</label><select className={inputClass} value={coScholasticForm.area} onChange={e => setCoScholasticForm({...coScholasticForm, area: e.target.value})}><option>Arts</option><option>Sports</option><option>Music</option><option>Dance</option><option>Yoga</option></select></div>
                 <div><label className={labelClass}>Grade *</label><select className={inputClass} value={coScholasticForm.grade} onChange={e => setCoScholasticForm({...coScholasticForm, grade: e.target.value})}><option>A+</option><option>A</option><option>B+</option><option>B</option><option>C</option></select></div>
                 <div><label className={labelClass}>Teacher Remarks</label><input className={inputClass} placeholder="Remarks" value={coScholasticForm.teacherRemarks} onChange={e => setCoScholasticForm({...coScholasticForm, teacherRemarks: e.target.value})} /></div>
@@ -525,7 +859,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Assessment</button>
+                <button onClick={() => handleFormSubmit('coScholastic', 'Co-scholastic assessment saved successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Assessment</button>
               </div>
             </motion.div>
           )}
@@ -545,7 +879,7 @@ export default function ExaminationModule() {
                   <label className={labelClass}>Student * (UDISE+ IDs)</label>
                   <select className={inputClass} value={boardExamForm.student} onChange={e => setBoardExamForm({...boardExamForm, student: e.target.value})}>
                     <option value="">Select Student</option>
-                    {studentPerformanceData.map(s => <option key={s.bspId} value={s.name}>{s.name} (BSP:{s.bspId} | PEN:{s.penNo} | UPPR:{s.upparId})</option>)}
+                    {STUDENT_DB.map(s => <option key={s.id} value={s.name}>{s.name} (BSP:{s.bspId} | PEN:{s.penNo} | UPPR:{s.upparId})</option>)}
                   </select>
                 </div>
                 <div><label className={labelClass}>Subjects (Multi-Select)</label><input className={inputClass} placeholder="e.g., Mathematics, Science, English" value={boardExamForm.subjects.join(', ')} onChange={e => setBoardExamForm({...boardExamForm, subjects: e.target.value.split(',').map(s => s.trim())})} /></div>
@@ -558,7 +892,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Register for Board Exam</button>
+                <button onClick={() => handleFormSubmit('boardExam', 'Board exam registration submitted successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Register for Board Exam</button>
               </div>
             </motion.div>
           )}
@@ -583,7 +917,7 @@ export default function ExaminationModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Mapping</button>
+                <button onClick={() => handleFormSubmit('competencyMap', 'Competency mapping saved successfully!')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Mapping</button>
               </div>
             </motion.div>
           )}

@@ -17,6 +17,7 @@ import {
   Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -165,6 +166,7 @@ export default function TeacherPortal() {
   }
 
   const handleSubmit = (formType) => {
+    alert(`${formType} saved successfully!`)
     setShowForm(null)
   }
 
@@ -336,6 +338,16 @@ export default function TeacherPortal() {
               <UserCheck className="w-4 h-4 text-emerald-500" />Smart Attendance
             </h3>
             <p className="text-xs text-muted-foreground mb-4">Mark attendance with BSP ID / PEN No / Uppar ID</p>
+            <div className="mb-4">
+              <QRStudentLookup
+                onStudentSelect={(student) => {
+                  if (student) setAttendanceForm({...attendanceForm, className: student.class || attendanceForm.className})
+                }}
+                mode="student"
+                label="Quick Student Lookup (QR / ID)"
+                placeholder="Scan QR or search student for attendance"
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div><label className={labelCls}>Class</label><select value={attendanceForm.className} onChange={(e) => setAttendanceForm({...attendanceForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
               <div><label className={labelCls}>Date</label><input type="date" value={attendanceForm.date} onChange={(e) => setAttendanceForm({...attendanceForm, date: e.target.value})} className={inputCls} /></div>
@@ -579,6 +591,16 @@ export default function TeacherPortal() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><UserCheck className="w-5 h-5 text-emerald-500" />Smart Attendance Form</h3>
                 <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="mb-4">
+                <QRStudentLookup
+                  onStudentSelect={(student) => {
+                    if (student) setAttendanceForm({...attendanceForm, className: student.class || attendanceForm.className})
+                  }}
+                  mode="student"
+                  label="Quick Student Lookup (QR / ID)"
+                  placeholder="Scan QR or search student"
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div><label className={labelCls}>Class *</label><select value={attendanceForm.className} onChange={(e) => setAttendanceForm({...attendanceForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>

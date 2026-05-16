@@ -9,13 +9,17 @@ import {
   UserCheck, UserX, Building2, Phone, Mail, MapPin, Star, Target,
   GraduationCap, Banknote, Heart, Shield, ClipboardList, FileBarChart,
   DollarSign, AlertTriangle, CheckCircle2, XCircle, Settings, Globe,
-  BookOpen, Megaphone, Smile, Frown, Meh, Handshake, FileSpreadsheet
+  BookOpen, Megaphone, Smile, Frown, Meh, Handshake, FileSpreadsheet,
+  CreditCard, QrCode, ScanLine, Printer, RefreshCw, Droplets,
+  AlertCircle, Eye, Loader2, Hash
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
+import { TEACHER_DB } from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -67,6 +71,81 @@ const jobPostings = [
   { id: 4, position: 'Admin Coordinator', department: 'Admin', campus: 'Singur', type: 'Full-Time', applications: 22, status: 'Closed' },
   { id: 5, position: 'Music Teacher', department: 'Arts', campus: 'Singur', type: 'Part-Time', applications: 6, status: 'Open' },
 ]
+
+// ─── Teacher ID Card Data ────────────────────────────────────────
+const teacherIdCards = TEACHER_DB.map((t, idx) => ({
+  ...t,
+  cardStatus: idx === 0 ? 'Expired' : idx === 3 ? 'Not Issued' : 'Issued',
+  issueDate: idx === 3 ? null : (idx === 0 ? '2024-03-15' : '2025-06-01'),
+  expiryDate: idx === 0 ? '2025-03-15' : (idx === 3 ? null : '2026-06-01'),
+  cardNumber: idx === 3 ? null : `BOMIS/TCH/${String(idx + 1).padStart(4, '0')}`,
+  emergencyContact: '+91 98765 ' + String(10000 + idx).slice(1),
+}))
+
+// ─── Teacher Attendance Data ─────────────────────────────────────
+const todayAttendance = TEACHER_DB.map((t, idx) => ({
+  ...t,
+  status: idx < 4 ? 'Present' : idx === 4 ? 'On Leave' : 'Absent',
+  checkIn: idx < 4 ? `0${7 + idx}:${idx % 2 === 0 ? '00' : '30'} AM` : null,
+  checkOut: null,
+}))
+
+const monthlyAttendanceChart = [
+  { week: 'W1', Present: 128, Absent: 8, Leave: 6 },
+  { week: 'W2', Present: 132, Absent: 5, Leave: 5 },
+  { week: 'W3', Present: 126, Absent: 10, Leave: 6 },
+  { week: 'W4', Present: 130, Absent: 7, Leave: 5 },
+]
+
+const deptAttendance = [
+  { department: 'Science', present: 18, total: 20, pct: 90 },
+  { department: 'Mathematics', present: 22, total: 24, pct: 92 },
+  { department: 'English', present: 16, total: 18, pct: 89 },
+  { department: 'Hindi', present: 12, total: 12, pct: 100 },
+  { department: 'Social Science', present: 8, total: 10, pct: 80 },
+  { department: 'Admin', present: 22, total: 24, pct: 92 },
+]
+
+const leaveCalendarEvents = [
+  { date: 3, name: 'Dr. Priya Menon', type: 'CL' },
+  { date: 4, name: 'Mr. Rajesh Kumar', type: 'SL' },
+  { date: 7, name: 'Mr. Arvind Kumar', type: 'Casual' },
+  { date: 10, name: 'Ms. Sunita Rao', type: 'EL' },
+  { date: 12, name: 'Mrs. Kavitha Nair', type: 'CL' },
+  { date: 15, name: 'Mr. Vikram Singh', type: 'CL' },
+  { date: 18, name: 'Ms. Deepa Nair', type: 'SL' },
+  { date: 22, name: 'Dr. Suresh Babu', type: 'EL' },
+]
+
+// ─── Payroll Enhanced Data ────────────────────────────────────────
+const payslipHistory = [
+  { id: 1, empId: 'EMP-001', name: 'Dr. Priya Menon', month: 'February', year: '2026', netSalary: 68500, status: 'Paid', paidOn: 'Mar 1, 2026' },
+  { id: 2, empId: 'EMP-002', name: 'Mr. Rajesh Kumar', month: 'February', year: '2026', netSalary: 54200, status: 'Paid', paidOn: 'Mar 1, 2026' },
+  { id: 3, empId: 'EMP-003', name: 'Ms. Ananya Iyer', month: 'February', year: '2026', netSalary: 62300, status: 'Paid', paidOn: 'Mar 1, 2026' },
+  { id: 4, empId: 'EMP-004', name: 'Mr. Vikram Singh', month: 'February', year: '2026', netSalary: 48900, status: 'Paid', paidOn: 'Mar 1, 2026' },
+  { id: 5, empId: 'EMP-005', name: 'Ms. Deepa Nair', month: 'February', year: '2026', netSalary: 51600, status: 'Pending', paidOn: null },
+  { id: 6, empId: 'EMP-006', name: 'Dr. Suresh Babu', month: 'February', year: '2026', netSalary: 72400, status: 'Pending', paidOn: null },
+]
+
+const samplePayslip = {
+  empId: 'EMP-001',
+  name: 'Dr. Priya Menon',
+  designation: 'PGT Physics',
+  department: 'Science',
+  month: 'March',
+  year: '2026',
+  basicSalary: 45000,
+  hra: 18000,
+  da: 5400,
+  specialAllowance: 5000,
+  grossEarnings: 73400,
+  pfDeduction: 5400,
+  esi: 788,
+  professionalTax: 200,
+  tds: 3500,
+  totalDeductions: 9888,
+  netSalary: 63512,
+}
 
 // ─── Report Data ──────────────────────────────────────────────────
 const payrollSummaryData = [
@@ -173,6 +252,144 @@ function SelectField({ value, onChange, options }) {
   )
 }
 
+// ─── Simulated QR Code Component ─────────────────────────────────
+function SimulatedQR({ data, size = 64 }) {
+  const cells = []
+  for (let i = 0; i < 49; i++) {
+    cells.push(Math.random() > 0.45)
+  }
+  // Fixed corners for QR look
+  const setCorner = (start) => { cells[start] = true; cells[start+1] = true; cells[start+2] = true; cells[start+7] = true; cells[start+9] = true; cells[start+14] = true; cells[start+15] = true; cells[start+16] = true }
+  setCorner(0); setCorner(28); setCorner(33)
+  const cellSize = size / 7
+  return (
+    <div className="inline-block bg-white p-1 rounded" style={{ width: size + 8, height: size + 8 }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {cells.map((filled, i) => filled ? (
+          <rect key={i} x={(i % 7) * cellSize} y={Math.floor(i / 7) * cellSize} width={cellSize - 0.5} height={cellSize - 0.5} fill="#0A1628" rx={0.5} />
+        ) : null)}
+      </svg>
+    </div>
+  )
+}
+
+// ─── Teacher ID Card Preview ─────────────────────────────────────
+function TeacherIDCardPreview({ teacher, cardData }) {
+  return (
+    <div className="w-72 bg-gradient-to-br from-[#0A1628] via-[#0f2340] to-[#0A1628] rounded-2xl overflow-hidden shadow-2xl border border-[#C8A45C]/30">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#C8A45C] to-[#d4b76a] px-4 py-2 text-center">
+        <p className="text-[10px] font-bold text-[#0A1628] tracking-wider uppercase">Birla Open Minds International School</p>
+        <p className="text-[8px] text-[#0A1628]/80">Singur, West Bengal</p>
+      </div>
+      {/* Body */}
+      <div className="p-4 text-white">
+        <div className="flex gap-3">
+          {/* Photo Placeholder */}
+          <div className="w-16 h-20 rounded-lg bg-white/10 border border-[#C8A45C]/40 flex flex-col items-center justify-center shrink-0">
+            <Users className="w-6 h-6 text-[#C8A45C]/60" />
+            <span className="text-[7px] text-white/40 mt-0.5">PHOTO</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white truncate">{teacher.name}</p>
+            <p className="text-[10px] text-[#C8A45C] font-medium">{teacher.designation}</p>
+            <p className="text-[9px] text-white/60 mt-0.5">{teacher.department} Department</p>
+          </div>
+        </div>
+        <div className="mt-3 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Hash className="w-3 h-3 text-[#22D3EE]" />
+            <span className="text-[10px] text-white/80">Emp ID: <span className="text-white font-medium">{teacher.empId}</span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-3 h-3 text-[#22D3EE]" />
+            <span className="text-[10px] text-white/80">Card: <span className="text-white font-medium">{cardData?.cardNumber || 'N/A'}</span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Droplets className="w-3 h-3 text-[#22D3EE]" />
+            <span className="text-[10px] text-white/80">Blood: <span className="text-white font-medium">{teacher.bloodGroup}</span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="w-3 h-3 text-[#22D3EE]" />
+            <span className="text-[10px] text-white/80">Emergency: <span className="text-white font-medium">{cardData?.emergencyContact}</span></span>
+          </div>
+        </div>
+      </div>
+      {/* Footer with QR */}
+      <div className="bg-[#0A1628]/80 px-4 py-2 flex items-center justify-between border-t border-[#C8A45C]/20">
+        <div>
+          <p className="text-[8px] text-white/40">Valid: {cardData?.issueDate || 'N/A'} - {cardData?.expiryDate || 'N/A'}</p>
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+            cardData?.cardStatus === 'Issued' ? 'bg-emerald-500/20 text-emerald-400' :
+            cardData?.cardStatus === 'Expired' ? 'bg-red-500/20 text-red-400' :
+            'bg-amber-500/20 text-amber-400'
+          }`}>{cardData?.cardStatus || 'Not Issued'}</span>
+        </div>
+        <SimulatedQR data={teacher.empId} size={48} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Payslip Preview Card ────────────────────────────────────────
+function PayslipPreviewCard({ payslip }) {
+  if (!payslip) return null
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-[#C8A45C]/30 bg-gradient-to-br from-[#0A1628] to-[#0f2340] p-5 text-white">
+      <div className="text-center border-b border-[#C8A45C]/20 pb-3 mb-3">
+        <p className="text-xs font-bold text-[#C8A45C] tracking-wider uppercase">Birla Open Minds International School</p>
+        <p className="text-[10px] text-white/60">Pay Slip - {payslip.month} {payslip.year}</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-[11px] mb-3">
+        <div><span className="text-white/50">Name:</span> <span className="font-medium">{payslip.name}</span></div>
+        <div><span className="text-white/50">Emp ID:</span> <span className="font-medium">{payslip.empId}</span></div>
+        <div><span className="text-white/50">Designation:</span> <span className="font-medium">{payslip.designation}</span></div>
+        <div><span className="text-white/50">Department:</span> <span className="font-medium">{payslip.department}</span></div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-[10px] font-bold text-emerald-400 mb-1 uppercase tracking-wider">Earnings</p>
+          {[
+            ['Basic Salary', payslip.basicSalary],
+            ['HRA', payslip.hra],
+            ['DA', payslip.da],
+            ['Special Allow.', payslip.specialAllowance],
+          ].map(([label, val]) => (
+            <div key={label} className="flex justify-between text-[10px] py-0.5">
+              <span className="text-white/70">{label}</span>
+              <span className="font-medium">₹{val.toLocaleString()}</span>
+            </div>
+          ))}
+          <div className="flex justify-between text-[10px] py-1 border-t border-white/10 mt-1 font-bold text-emerald-400">
+            <span>Gross</span><span>₹{payslip.grossEarnings.toLocaleString()}</span>
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-red-400 mb-1 uppercase tracking-wider">Deductions</p>
+          {[
+            ['PF', payslip.pfDeduction],
+            ['ESI', payslip.esi],
+            ['Prof. Tax', payslip.professionalTax],
+            ['TDS', payslip.tds],
+          ].map(([label, val]) => (
+            <div key={label} className="flex justify-between text-[10px] py-0.5">
+              <span className="text-white/70">{label}</span>
+              <span className="font-medium">₹{val.toLocaleString()}</span>
+            </div>
+          ))}
+          <div className="flex justify-between text-[10px] py-1 border-t border-white/10 mt-1 font-bold text-red-400">
+            <span>Total Ded.</span><span>₹{payslip.totalDeductions.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-[#C8A45C]/30 text-center">
+        <p className="text-[10px] text-white/50">Net Salary</p>
+        <p className="text-2xl font-bold text-[#C8A45C]">₹{payslip.netSalary.toLocaleString()}</p>
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────
 export default function HRModule() {
   const { darkMode } = useAppStore()
@@ -189,8 +406,27 @@ export default function HRModule() {
   const [interviewForm, setInterviewForm] = useState({ candidateName: '', position: '', interviewDate: '', interviewTime: '', interviewer: '', mode: 'In-Person', location: '', notes: '' })
   const [exitForm, setExitForm] = useState({ employeeId: '', lastWorkingDay: '', reason: '', noticePeriodServed: false, handoverComplete: false, duesCleared: false, exitInterviewDate: '', remarks: '' })
 
+  // Teacher ID Card States
+  const [selectedTeacherId, setSelectedTeacherId] = useState(null)
+  const [idCardIssueForm, setIdCardIssueForm] = useState({ empId: '', action: 'Issue', department: 'All' })
+  const [bulkDept, setBulkDept] = useState('Science')
+
+  // Teacher Attendance States
+  const [attendanceTeacher, setAttendanceTeacher] = useState(null)
+  const [attendanceMonth, setAttendanceMonth] = useState('March')
+  const [calendarMonth, setCalendarMonth] = useState('March 2026')
+
+  // Enhanced Payroll States
+  const [selectedPayslipEmp, setSelectedPayslipEmp] = useState(null)
+  const [generatedPayslip, setGeneratedPayslip] = useState(null)
+  const [bulkProgress, setBulkProgress] = useState(0)
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false)
+  const [payrollSubTab, setPayrollSubTab] = useState('overview')
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'teacher-id', label: 'Teacher ID', icon: CreditCard },
+    { id: 'teacher-attendance', label: 'Attendance', icon: UserCheck },
     { id: 'payroll', label: 'Payroll', icon: DollarSign },
     { id: 'leave', label: 'Leave', icon: Clock },
     { id: 'recruitment', label: 'Recruitment', icon: UserPlus },
@@ -225,6 +461,83 @@ export default function HRModule() {
     borderRadius: '12px',
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
+  }
+
+  // ─── Form Submit Handlers ─────────────────────────────────────
+  const handleOnboardingSubmit = () => {
+    alert(`✅ Staff Onboarding Successful!\n\nName: ${onboardingForm.name}\nEmployee ID: ${onboardingForm.employeeId}\nDepartment: ${onboardingForm.department}\nDesignation: ${onboardingForm.designation}`)
+    setOnboardingForm({ name: '', employeeId: '', department: 'Teaching', designation: '', campus: 'Singur', phone: '', email: '', joinDate: '', salary: '', qualification: '', experience: '', bankAccount: '', panNumber: '', aadhaarNumber: '', emergencyContact: '', reportingManager: '' })
+  }
+
+  const handleLeaveSubmit = () => {
+    alert(`✅ Leave Application Submitted!\n\nEmployee ID: ${leaveForm.employeeId}\nLeave Type: ${leaveForm.leaveType}\nFrom: ${leaveForm.fromDate} To: ${leaveForm.toDate}\nDays: ${leaveForm.totalDays}`)
+    setLeaveForm({ employeeId: '', leaveType: 'CL', fromDate: '', toDate: '', totalDays: '', reason: '', contactDuringLeave: '', arrangementMade: '' })
+  }
+
+  const handlePayrollSubmit = () => {
+    const slip = { ...samplePayslip, month: payrollForm.month, year: payrollForm.year }
+    if (payrollForm.includeBonus) {
+      slip.specialAllowance += 5000
+      slip.grossEarnings += 5000
+      slip.netSalary += 5000
+    }
+    if (!payrollForm.includeDeductions) {
+      slip.pfDeduction = 0; slip.esi = 0; slip.professionalTax = 0; slip.tds = 0
+      slip.totalDeductions = 0
+      slip.netSalary = slip.grossEarnings
+    }
+    setGeneratedPayslip(slip)
+    alert(`✅ Payroll Processed for ${payrollForm.month} ${payrollForm.year}!\n\nDepartment: ${payrollForm.department}\nNet Payroll: ₹70,88,000\nBonus: ${payrollForm.includeBonus ? 'Included' : 'Excluded'}\nDeductions: ${payrollForm.includeDeductions ? 'Included' : 'Excluded'}`)
+  }
+
+  const handlePerformanceSubmit = () => {
+    alert(`✅ Performance Review Submitted!\n\nEmployee ID: ${performanceForm.employeeId}\nRating: ${performanceForm.rating}/5\nKPI Score: ${performanceForm.kpiScore}%\nReviewer: ${performanceForm.reviewerName}`)
+    setPerformanceForm({ employeeId: '', reviewPeriod: '2025-26', rating: '3', kpiScore: '', communication: '', punctuality: '', teamwork: '', leadership: '', initiative: '', overallComments: '', reviewerName: '', reviewDate: '' })
+  }
+
+  const handleJobSubmit = () => {
+    alert(`✅ Job Posting Created!\n\nPosition: ${jobForm.position}\nDepartment: ${jobForm.department}\nType: ${jobForm.employmentType}\nLast Date: ${jobForm.lastDate}`)
+    setJobForm({ position: '', department: '', campus: 'Singur', qualification: '', experience: '', salaryRange: '', jobDescription: '', lastDate: '', positionCount: '1', employmentType: 'Full-Time' })
+  }
+
+  const handleInterviewSubmit = () => {
+    alert(`✅ Interview Scheduled!\n\nCandidate: ${interviewForm.candidateName}\nPosition: ${interviewForm.position}\nDate: ${interviewForm.interviewDate}\nTime: ${interviewForm.interviewTime}\nMode: ${interviewForm.mode}`)
+    setInterviewForm({ candidateName: '', position: '', interviewDate: '', interviewTime: '', interviewer: '', mode: 'In-Person', location: '', notes: '' })
+  }
+
+  const handleExitSubmit = () => {
+    alert(`✅ Staff Exit Processed!\n\nEmployee ID: ${exitForm.employeeId}\nLast Working Day: ${exitForm.lastWorkingDay}\nNotice Served: ${exitForm.noticePeriodServed ? 'Yes' : 'No'}\nHandover: ${exitForm.handoverComplete ? 'Complete' : 'Pending'}\nDues: ${exitForm.duesCleared ? 'Cleared' : 'Pending'}`)
+    setExitForm({ employeeId: '', lastWorkingDay: '', reason: '', noticePeriodServed: false, handoverComplete: false, duesCleared: false, exitInterviewDate: '', remarks: '' })
+  }
+
+  const handleBulkPayroll = () => {
+    setIsBulkProcessing(true)
+    setBulkProgress(0)
+    const interval = setInterval(() => {
+      setBulkProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setIsBulkProcessing(false)
+          alert('✅ Bulk Payroll Processing Complete!\n\n142 payslips generated for March 2026.\nAll net salary amounts transferred to respective bank accounts.')
+          return 100
+        }
+        return prev + 5
+      })
+    }, 150)
+  }
+
+  const handleIDCardIssue = () => {
+    const teacher = TEACHER_DB.find(t => t.empId === idCardIssueForm.empId)
+    alert(`✅ Teacher ID Card ${idCardIssueForm.action}d!\n\nTeacher: ${teacher?.name || idCardIssueForm.empId}\nCard Number: BOMIS/TCH/${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}\nStatus: Issued`)
+    setIdCardIssueForm({ empId: '', action: 'Issue', department: 'All' })
+  }
+
+  const handleBulkIDGeneration = () => {
+    alert(`✅ Bulk ID Card Generation Initiated!\n\nDepartment: ${bulkDept}\nCards to generate: ${teacherIdCards.filter(t => t.department === bulkDept && t.cardStatus !== 'Issued').length}\nProcessing in background...`)
+  }
+
+  const handleAttendanceMark = (teacher, status) => {
+    alert(`✅ Attendance Marked!\n\n${teacher.name} (${teacher.empId})\nStatus: ${status}\nTime: ${new Date().toLocaleTimeString()}`)
   }
 
   return (
@@ -332,46 +645,433 @@ export default function HRModule() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          PAYROLL TAB
+          TEACHER ID CARD TAB
       ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'payroll' && (
+      {activeTab === 'teacher-id' && (
         <motion.div variants={itemVariants} className="space-y-6">
+          {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: 'Gross Payroll', value: '₹83,40,000', icon: DollarSign, color: 'emerald' },
-              { label: 'Total Deductions', value: '₹12,52,000', icon: TrendingDown, color: 'rose' },
-              { label: 'Net Payroll', value: '₹70,88,000', icon: Banknote, color: 'blue' },
+              { label: 'Cards Issued', value: String(teacherIdCards.filter(t => t.cardStatus === 'Issued').length), icon: CheckCircle2, color: 'emerald' },
+              { label: 'Cards Expired', value: String(teacherIdCards.filter(t => t.cardStatus === 'Expired').length), icon: AlertTriangle, color: 'amber' },
+              { label: 'Not Issued', value: String(teacherIdCards.filter(t => t.cardStatus === 'Not Issued').length), icon: XCircle, color: 'rose' },
             ].map((item) => {
               const Icon = item.icon
               return (
                 <motion.div key={item.label} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-                  <div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div><div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div></div>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div>
+                    <div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div>
+                  </div>
                 </motion.div>
               )
             })}
           </div>
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <table className="w-full">
-              <thead><tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Headcount</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Gross (₹)</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Deductions (₹)</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net (₹)</th>
-              </tr></thead>
-              <tbody>
-                {payrollData.map((row) => (
-                  <tr key={row.department} className="border-b border-border/50 hover:bg-muted/20">
-                    <td className="px-4 py-3 text-sm font-medium text-foreground">{row.department}</td>
-                    <td className="px-4 py-3 text-sm text-right text-foreground">{row.headcount}</td>
-                    <td className="px-4 py-3 text-sm text-right text-foreground">₹{(row.grossSalary / 100000).toFixed(1)}L</td>
-                    <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">₹{(row.deductions / 100000).toFixed(1)}L</td>
-                    <td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{(row.netSalary / 100000).toFixed(1)}L</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Teacher List */}
+            <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><CreditCard className="w-4 h-4 text-birla-gold" />Teacher ID Card Status</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground">Teacher</th>
+                    <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground">Emp ID</th>
+                    <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground">Department</th>
+                    <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground">Card No.</th>
+                    <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground">Status</th>
+                    <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground">Action</th>
+                  </tr></thead>
+                  <tbody>
+                    {teacherIdCards.map((teacher) => (
+                      <tr key={teacher.id} className={`border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors ${selectedTeacherId === teacher.id ? 'bg-birla-cyan/5' : ''}`} onClick={() => setSelectedTeacherId(teacher.id)}>
+                        <td className="px-3 py-2.5 text-sm font-medium text-foreground">{teacher.name}</td>
+                        <td className="px-3 py-2.5 text-sm text-muted-foreground">{teacher.empId}</td>
+                        <td className="px-3 py-2.5 text-sm text-muted-foreground">{teacher.department}</td>
+                        <td className="px-3 py-2.5 text-sm text-muted-foreground font-mono text-[11px]">{teacher.cardNumber || '—'}</td>
+                        <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${teacher.cardStatus === 'Issued' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : teacher.cardStatus === 'Expired' ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{teacher.cardStatus}</span></td>
+                        <td className="px-3 py-2.5 text-center">
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedTeacherId(teacher.id) }} className="p-1.5 rounded-lg hover:bg-muted transition-colors"><Eye className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ID Card Preview + Issue Form */}
+            <div className="space-y-4">
+              {/* Preview */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><Eye className="w-4 h-4 text-birla-cyan" />Card Preview</h3>
+                {selectedTeacherId ? (() => {
+                  const teacher = TEACHER_DB.find(t => t.id === selectedTeacherId)
+                  const card = teacherIdCards.find(t => t.id === selectedTeacherId)
+                  return teacher ? <TeacherIDCardPreview teacher={teacher} cardData={card} /> : <p className="text-sm text-muted-foreground">Select a teacher</p>
+                })() : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Select a teacher to preview ID card</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Issue/Reissue Form */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><RefreshCw className="w-4 h-4 text-birla-gold" />Issue / Reissue Card</h3>
+                <div className="space-y-3">
+                  <FormField label="Employee ID"><InputField value={idCardIssueForm.empId} onChange={(e) => setIdCardIssueForm({ ...idCardIssueForm, empId: e.target.value })} placeholder="EMP-001" /></FormField>
+                  <FormField label="Action"><SelectField value={idCardIssueForm.action} onChange={(e) => setIdCardIssueForm({ ...idCardIssueForm, action: e.target.value })} options={['Issue', 'Reissue']} /></FormField>
+                  <button onClick={handleIDCardIssue} className="w-full px-4 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><CreditCard className="w-4 h-4" />{idCardIssueForm.action} Card</button>
+                </div>
+              </div>
+
+              {/* Bulk Generation */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><Printer className="w-4 h-4 text-purple-500" />Bulk Generation</h3>
+                <div className="space-y-3">
+                  <FormField label="Department"><SelectField value={bulkDept} onChange={(e) => setBulkDept(e.target.value)} options={['Science', 'Mathematics', 'English', 'Hindi', 'Social Science', 'Computer Science']} /></FormField>
+                  <p className="text-[11px] text-muted-foreground">Cards to generate: <span className="font-bold text-foreground">{teacherIdCards.filter(t => t.department === bulkDept && t.cardStatus !== 'Issued').length}</span></p>
+                  <button onClick={handleBulkIDGeneration} className="w-full px-4 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><Printer className="w-4 h-4" />Generate All</button>
+                </div>
+              </div>
+            </div>
           </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          TEACHER ATTENDANCE TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'teacher-attendance' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* Today's Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: 'Present Today', value: String(todayAttendance.filter(t => t.status === 'Present').length), icon: UserCheck, color: 'emerald' },
+              { label: 'Absent Today', value: String(todayAttendance.filter(t => t.status === 'Absent').length), icon: UserX, color: 'rose' },
+              { label: 'On Leave', value: String(todayAttendance.filter(t => t.status === 'On Leave').length), icon: Clock, color: 'amber' },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <motion.div key={item.label} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div>
+                    <div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          {/* QR Scan / Manual Entry */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><QrCode className="w-4 h-4 text-birla-cyan" />Mark Attendance - QR Scan / Manual</h3>
+            <QRStudentLookup
+              mode="teacher"
+              onStudentSelect={(teacher) => setAttendanceTeacher(teacher)}
+              placeholder="Scan QR or enter Teacher ID / Name"
+              label="Teacher Identification"
+              showDetails={true}
+            />
+            {attendanceTeacher && (
+              <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="mt-4 flex flex-wrap gap-2">
+                <button onClick={() => handleAttendanceMark(attendanceTeacher, 'Present')} className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors flex items-center gap-2"><UserCheck className="w-4 h-4" />Present</button>
+                <button onClick={() => handleAttendanceMark(attendanceTeacher, 'Absent')} className="px-4 py-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors flex items-center gap-2"><UserX className="w-4 h-4" />Absent</button>
+                <button onClick={() => handleAttendanceMark(attendanceTeacher, 'On Leave')} className="px-4 py-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-colors flex items-center gap-2"><Clock className="w-4 h-4" />On Leave</button>
+              </motion.div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Monthly Attendance Chart */}
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><BarChart3 className="w-4 h-4 text-birla-gold" />Monthly Attendance - {attendanceMonth}</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyAttendanceChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="week" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="Present" fill="#10B981" name="Present" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Absent" fill="#EF4444" name="Absent" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Leave" fill="#F59E0B" name="Leave" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+
+            {/* Attendance by Department */}
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Building2 className="w-4 h-4 text-birla-cyan" />Attendance by Department</h3>
+              <div className="space-y-3">
+                {deptAttendance.map((dept) => (
+                  <div key={dept.department} className="p-3 rounded-xl border border-border gradient-card-blue">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-foreground">{dept.department}</span>
+                      <span className="text-sm font-bold text-foreground">{dept.pct}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${dept.pct}%`, backgroundColor: dept.pct >= 95 ? '#10B981' : dept.pct >= 85 ? '#C8A45C' : '#EF4444' }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">{dept.present} / {dept.total} present</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Leave Calendar */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Calendar className="w-4 h-4 text-purple-500" />Leave Calendar - {calendarMonth}</h3>
+            <div className="grid grid-cols-7 gap-1">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center text-[10px] font-semibold text-muted-foreground py-1">{day}</div>
+              ))}
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
+                const leaveEvent = leaveCalendarEvents.find(e => e.date === day)
+                const isSunday = (day - 1) % 7 === 0
+                return (
+                  <div key={day} className={`rounded-lg p-1 min-h-[48px] text-[10px] border transition-colors ${leaveEvent ? 'border-amber-500/30 bg-amber-500/5' : isSunday ? 'bg-muted/30' : 'border-transparent hover:bg-muted/20'}`}>
+                    <span className={`font-medium ${isSunday ? 'text-red-500' : 'text-foreground'}`}>{day}</span>
+                    {leaveEvent && <p className="text-amber-600 dark:text-amber-400 truncate leading-tight">{leaveEvent.name.split(' ').pop()}</p>}
+                    {leaveEvent && <span className={`px-1 py-0 rounded text-[8px] font-bold ${leaveEvent.type === 'CL' ? 'text-blue-500' : leaveEvent.type === 'SL' ? 'text-red-500' : leaveEvent.type === 'EL' ? 'text-purple-500' : 'text-amber-500'}`}>{leaveEvent.type}</span>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PAYROLL TAB (ENHANCED)
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'payroll' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* Sub-tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {[
+              { id: 'overview', label: 'Overview', icon: BarChart3 },
+              { id: 'generate', label: 'Generate', icon: DollarSign },
+              { id: 'payslip', label: 'Individual Payslip', icon: FileText },
+              { id: 'bulk', label: 'Bulk Processing', icon: Users },
+              { id: 'history', label: 'Payslip History', icon: Clock },
+            ].map((sub) => {
+              const Icon = sub.icon
+              return (
+                <button key={sub.id} onClick={() => setPayrollSubTab(sub.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${payrollSubTab === sub.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
+                  <Icon className="w-3.5 h-3.5" /> {sub.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Overview Sub-tab */}
+          {payrollSubTab === 'overview' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Gross Payroll', value: '₹83,40,000', icon: DollarSign, color: 'emerald' },
+                  { label: 'Total Deductions', value: '₹12,52,000', icon: TrendingDown, color: 'rose' },
+                  { label: 'Net Payroll', value: '₹70,88,000', icon: Banknote, color: 'blue' },
+                ].map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <motion.div key={item.label} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+                      <div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div><div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div></div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Headcount</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Gross (₹)</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Deductions (₹)</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net (₹)</th>
+                  </tr></thead>
+                  <tbody>
+                    {payrollData.map((row) => (
+                      <tr key={row.department} className="border-b border-border/50 hover:bg-muted/20">
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">{row.department}</td>
+                        <td className="px-4 py-3 text-sm text-right text-foreground">{row.headcount}</td>
+                        <td className="px-4 py-3 text-sm text-right text-foreground">₹{(row.grossSalary / 100000).toFixed(1)}L</td>
+                        <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">₹{(row.deductions / 100000).toFixed(1)}L</td>
+                        <td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{(row.netSalary / 100000).toFixed(1)}L</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Generate Sub-tab */}
+          {payrollSubTab === 'generate' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><DollarSign className="w-5 h-5 text-emerald-500" />Payroll Generation Form</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField label="Month"><SelectField value={payrollForm.month} onChange={(e) => setPayrollForm({ ...payrollForm, month: e.target.value })} options={['January','February','March','April','May','June','July','August','September','October','November','December']} /></FormField>
+                  <FormField label="Year"><SelectField value={payrollForm.year} onChange={(e) => setPayrollForm({ ...payrollForm, year: e.target.value })} options={['2026','2025','2024']} /></FormField>
+                  <FormField label="Department"><SelectField value={payrollForm.department} onChange={(e) => setPayrollForm({ ...payrollForm, department: e.target.value })} options={['All','Teaching','Admin','Support','Transport','Maintenance']} /></FormField>
+                  <div className="flex items-center gap-3 mt-5">
+                    <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeBonus} onChange={(e) => setPayrollForm({ ...payrollForm, includeBonus: e.target.checked })} className="rounded border-input" /> Include Bonus</label>
+                  </div>
+                  <div className="flex items-center gap-3 mt-5">
+                    <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeDeductions} onChange={(e) => setPayrollForm({ ...payrollForm, includeDeductions: e.target.checked })} className="rounded border-input" /> Include Deductions</label>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end"><button onClick={handlePayrollSubmit} className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Banknote className="w-4 h-4" />Process Payroll</button></div>
+              </div>
+
+              {/* Payslip Preview */}
+              <div>
+                {generatedPayslip ? (
+                  <PayslipPreviewCard payslip={generatedPayslip} />
+                ) : (
+                  <div className="rounded-2xl border border-border bg-card p-8 text-center">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Process payroll to generate payslip preview</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Individual Payslip Sub-tab */}
+          {payrollSubTab === 'payslip' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Search className="w-4 h-4 text-birla-cyan" />Select Employee</h3>
+                  <QRStudentLookup
+                    mode="teacher"
+                    onStudentSelect={(teacher) => {
+                      setSelectedPayslipEmp(teacher)
+                      if (teacher) {
+                        const salary = 35000 + Math.floor(Math.random() * 40000)
+                        const hra = Math.round(salary * 0.4)
+                        const da = Math.round(salary * 0.12)
+                        const special = 3000 + Math.floor(Math.random() * 5000)
+                        const gross = salary + hra + da + special
+                        const pf = Math.round(salary * 0.12)
+                        const esi = Math.round(gross * 0.0075)
+                        const pt = 200
+                        const tds = Math.round(gross * 0.05)
+                        const totalDed = pf + esi + pt + tds
+                        setGeneratedPayslip({
+                          empId: teacher.empId,
+                          name: teacher.name,
+                          designation: teacher.designation,
+                          department: teacher.department,
+                          month: 'March',
+                          year: '2026',
+                          basicSalary: salary,
+                          hra: hra,
+                          da: da,
+                          specialAllowance: special,
+                          grossEarnings: gross,
+                          pfDeduction: pf,
+                          esi: esi,
+                          professionalTax: pt,
+                          tds: tds,
+                          totalDeductions: totalDed,
+                          netSalary: gross - totalDed,
+                        })
+                      } else {
+                        setGeneratedPayslip(null)
+                      }
+                    }}
+                    placeholder="Search employee for payslip"
+                    label="Employee Lookup"
+                    showDetails={true}
+                  />
+                </div>
+              </div>
+              <div>
+                {generatedPayslip && selectedPayslipEmp ? (
+                  <div className="space-y-4">
+                    <PayslipPreviewCard payslip={generatedPayslip} />
+                    <button onClick={() => alert(`✅ Payslip downloaded for ${generatedPayslip.name}!`)} className="w-full px-4 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><Download className="w-4 h-4" />Download Payslip</button>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border bg-card p-8 text-center">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Select an employee to generate individual payslip</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Processing Sub-tab */}
+          {payrollSubTab === 'bulk' && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Users className="w-5 h-5 text-purple-500" />Bulk Payroll Processing</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <FormField label="Month"><SelectField value={payrollForm.month} onChange={(e) => setPayrollForm({ ...payrollForm, month: e.target.value })} options={['January','February','March','April','May','June','July','August','September','October','November','December']} /></FormField>
+                  <FormField label="Year"><SelectField value={payrollForm.year} onChange={(e) => setPayrollForm({ ...payrollForm, year: e.target.value })} options={['2026','2025','2024']} /></FormField>
+                  <FormField label="Department"><SelectField value={payrollForm.department} onChange={(e) => setPayrollForm({ ...payrollForm, department: e.target.value })} options={['All','Teaching','Admin','Support','Transport','Maintenance']} /></FormField>
+                </div>
+                {isBulkProcessing && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">Processing payroll...</span>
+                      <span className="text-sm font-bold text-foreground">{bulkProgress}%</span>
+                    </div>
+                    <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                      <motion.div className="h-full rounded-full gradient-birla" initial={{ width: 0 }} animate={{ width: `${bulkProgress}%` }} transition={{ duration: 0.3 }} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">{Math.round(142 * bulkProgress / 100)} of 142 employees processed</p>
+                  </div>
+                )}
+                <div className="flex justify-end">
+                  <button onClick={handleBulkPayroll} disabled={isBulkProcessing} className={`px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-opacity ${isBulkProcessing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'gradient-birla text-white hover:opacity-90'}`}>
+                    {isBulkProcessing ? <><Loader2 className="w-4 h-4 animate-spin" />Processing...</> : <><Banknote className="w-4 h-4" />Process Bulk Payroll</>}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* History Sub-tab */}
+          {payrollSubTab === 'history' && (
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Clock className="w-4 h-4 text-birla-gold" />Payslip History</h3>
+              </div>
+              <table className="w-full">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Emp ID</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Name</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Period</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net Salary</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Paid On</th>
+                </tr></thead>
+                <tbody>
+                  {payslipHistory.map((row) => (
+                    <tr key={row.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="px-4 py-3 text-sm font-mono text-muted-foreground">{row.empId}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{row.name}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{row.month} {row.year}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{row.netSalary.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${row.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{row.status}</span></td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{row.paidOn || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -544,7 +1244,10 @@ export default function HRModule() {
                 <FormField label="Emergency Contact"><InputField value={onboardingForm.emergencyContact} onChange={(e) => setOnboardingForm({ ...onboardingForm, emergencyContact: e.target.value })} placeholder="+91 98765 43210" /></FormField>
                 <FormField label="Reporting Manager"><InputField value={onboardingForm.reportingManager} onChange={(e) => setOnboardingForm({ ...onboardingForm, reportingManager: e.target.value })} placeholder="Manager name" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Onboard Staff</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setOnboardingForm({ name: '', employeeId: '', department: 'Teaching', designation: '', campus: 'Singur', phone: '', email: '', joinDate: '', salary: '', qualification: '', experience: '', bankAccount: '', panNumber: '', aadhaarNumber: '', emergencyContact: '', reportingManager: '' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handleOnboardingSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Onboard Staff</button>
+              </div>
             </motion.div>
           )}
 
@@ -562,26 +1265,36 @@ export default function HRModule() {
                 <FormField label="Contact During Leave"><InputField value={leaveForm.contactDuringLeave} onChange={(e) => setLeaveForm({ ...leaveForm, contactDuringLeave: e.target.value })} placeholder="+91 98765 43210" /></FormField>
                 <FormField label="Arrangement Made"><InputField value={leaveForm.arrangementMade} onChange={(e) => setLeaveForm({ ...leaveForm, arrangementMade: e.target.value })} placeholder="Substitute teacher/arrangement" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Leave</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setLeaveForm({ employeeId: '', leaveType: 'CL', fromDate: '', toDate: '', totalDays: '', reason: '', contactDuringLeave: '', arrangementMade: '' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handleLeaveSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Leave</button>
+              </div>
             </motion.div>
           )}
 
           {/* Form 3: Payroll Processing */}
           {activeForm === 2 && (
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
-              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><DollarSign className="w-5 h-5 text-emerald-500" />Payroll Processing Form</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FormField label="Month"><SelectField value={payrollForm.month} onChange={(e) => setPayrollForm({ ...payrollForm, month: e.target.value })} options={['January','February','March','April','May','June','July','August','September','October','November','December']} /></FormField>
-                <FormField label="Year"><SelectField value={payrollForm.year} onChange={(e) => setPayrollForm({ ...payrollForm, year: e.target.value })} options={['2026','2025','2024']} /></FormField>
-                <FormField label="Department"><SelectField value={payrollForm.department} onChange={(e) => setPayrollForm({ ...payrollForm, department: e.target.value })} options={['All','Teaching','Admin','Support','Transport','Maintenance']} /></FormField>
-                <div className="flex items-center gap-3 mt-5">
-                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeBonus} onChange={(e) => setPayrollForm({ ...payrollForm, includeBonus: e.target.checked })} className="rounded border-input" /> Include Bonus</label>
+            <motion.div variants={itemVariants} className="space-y-6">
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><DollarSign className="w-5 h-5 text-emerald-500" />Payroll Processing Form</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <FormField label="Month"><SelectField value={payrollForm.month} onChange={(e) => setPayrollForm({ ...payrollForm, month: e.target.value })} options={['January','February','March','April','May','June','July','August','September','October','November','December']} /></FormField>
+                  <FormField label="Year"><SelectField value={payrollForm.year} onChange={(e) => setPayrollForm({ ...payrollForm, year: e.target.value })} options={['2026','2025','2024']} /></FormField>
+                  <FormField label="Department"><SelectField value={payrollForm.department} onChange={(e) => setPayrollForm({ ...payrollForm, department: e.target.value })} options={['All','Teaching','Admin','Support','Transport','Maintenance']} /></FormField>
+                  <div className="flex items-center gap-3 mt-5">
+                    <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeBonus} onChange={(e) => setPayrollForm({ ...payrollForm, includeBonus: e.target.checked })} className="rounded border-input" /> Include Bonus</label>
+                  </div>
+                  <div className="flex items-center gap-3 mt-5">
+                    <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeDeductions} onChange={(e) => setPayrollForm({ ...payrollForm, includeDeductions: e.target.checked })} className="rounded border-input" /> Include Deductions</label>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 mt-5">
-                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeDeductions} onChange={(e) => setPayrollForm({ ...payrollForm, includeDeductions: e.target.checked })} className="rounded border-input" /> Include Deductions</label>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button onClick={() => { setPayrollForm({ month: 'March', year: '2026', department: 'All', includeBonus: false, includeDeductions: true }); setGeneratedPayslip(null) }} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                  <button onClick={handlePayrollSubmit} className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Banknote className="w-4 h-4" />Process Payroll</button>
                 </div>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Banknote className="w-4 h-4" />Process Payroll</button></div>
+              {/* Payslip Preview */}
+              {generatedPayslip && <PayslipPreviewCard payslip={generatedPayslip} />}
             </motion.div>
           )}
 
@@ -603,7 +1316,10 @@ export default function HRModule() {
                 <FormField label="Reviewer Name"><InputField value={performanceForm.reviewerName} onChange={(e) => setPerformanceForm({ ...performanceForm, reviewerName: e.target.value })} placeholder="Reviewer name" /></FormField>
                 <FormField label="Review Date"><InputField value={performanceForm.reviewDate} onChange={(e) => setPerformanceForm({ ...performanceForm, reviewDate: e.target.value })} type="date" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Review</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setPerformanceForm({ employeeId: '', reviewPeriod: '2025-26', rating: '3', kpiScore: '', communication: '', punctuality: '', teamwork: '', leadership: '', initiative: '', overallComments: '', reviewerName: '', reviewDate: '' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handlePerformanceSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Review</button>
+              </div>
             </motion.div>
           )}
 
@@ -625,7 +1341,10 @@ export default function HRModule() {
                 <FormField label="Position Count"><InputField value={jobForm.positionCount} onChange={(e) => setJobForm({ ...jobForm, positionCount: e.target.value })} placeholder="1" type="number" /></FormField>
                 <FormField label="Employment Type"><SelectField value={jobForm.employmentType} onChange={(e) => setJobForm({ ...jobForm, employmentType: e.target.value })} options={['Full-Time', 'Part-Time', 'Contract']} /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Post Job</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setJobForm({ position: '', department: '', campus: 'Singur', qualification: '', experience: '', salaryRange: '', jobDescription: '', lastDate: '', positionCount: '1', employmentType: 'Full-Time' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handleJobSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Post Job</button>
+              </div>
             </motion.div>
           )}
 
@@ -643,7 +1362,10 @@ export default function HRModule() {
                 <FormField label="Location / Link"><InputField value={interviewForm.location} onChange={(e) => setInterviewForm({ ...interviewForm, location: e.target.value })} placeholder="Room no. or Meeting link" /></FormField>
                 <FormField label="Notes"><InputField value={interviewForm.notes} onChange={(e) => setInterviewForm({ ...interviewForm, notes: e.target.value })} placeholder="Any special notes" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Schedule Interview</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setInterviewForm({ candidateName: '', position: '', interviewDate: '', interviewTime: '', interviewer: '', mode: 'In-Person', location: '', notes: '' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handleInterviewSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Schedule Interview</button>
+              </div>
             </motion.div>
           )}
 
@@ -667,7 +1389,10 @@ export default function HRModule() {
                 <FormField label="Exit Interview Date"><InputField value={exitForm.exitInterviewDate} onChange={(e) => setExitForm({ ...exitForm, exitInterviewDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Remarks"><InputField value={exitForm.remarks} onChange={(e) => setExitForm({ ...exitForm, remarks: e.target.value })} placeholder="Any remarks" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Process Exit</button></div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setExitForm({ employeeId: '', lastWorkingDay: '', reason: '', noticePeriodServed: false, handoverComplete: false, duesCleared: false, exitInterviewDate: '', remarks: '' })} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><RefreshCw className="w-4 h-4 inline mr-1.5" />Reset</button>
+                <button onClick={handleExitSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Process Exit</button>
+              </div>
             </motion.div>
           )}
         </motion.div>

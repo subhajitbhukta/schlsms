@@ -17,6 +17,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Student Data ────────────────────────────────────────────────
 const students = [
@@ -486,7 +487,7 @@ export default function SISModule() {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Submit Admission</button>
+                <button onClick={() => { alert('Student Admission submitted successfully!'); setShowAdmissionForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Submit Admission</button>
                 <button onClick={() => setShowAdmissionForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -515,7 +516,7 @@ export default function SISModule() {
                 <div><label className={labelClass}>Social Science</label><input type="text" value={tcFormData.socialScience} onChange={(e) => setTcFormData({...tcFormData, socialScience: e.target.value})} className={inputClass} placeholder="Marks" /></div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium flex items-center gap-1.5"><Printer className="w-4 h-4" /> Generate TC</button>
+                <button onClick={() => { alert('Transfer Certificate generated successfully!'); setShowTCForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium flex items-center gap-1.5"><Printer className="w-4 h-4" /> Generate TC</button>
                 <button onClick={() => setShowTCForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -546,7 +547,7 @@ export default function SISModule() {
                 <div><label className={labelClass}>Next Due Date</label><input type="date" value={healthFormData.vaccinationNext} onChange={(e) => setHealthFormData({...healthFormData, vaccinationNext: e.target.value})} className={inputClass} /></div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Health Record</button>
+                <button onClick={() => { alert('Health Record saved successfully!'); setShowHealthForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Save Health Record</button>
                 <button onClick={() => setShowHealthForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -567,7 +568,7 @@ export default function SISModule() {
                 <div><label className={labelClass}>Parent Notified</label><select value={disciplineFormData.parentNotified} onChange={(e) => setDisciplineFormData({...disciplineFormData, parentNotified: e.target.value})} className={inputClass}><option value="">Select</option><option>Yes - Phone Call</option><option>Yes - SMS</option><option>Yes - Email</option><option>Yes - In Person</option><option>No</option></select></div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Submit Record</button>
+                <button onClick={() => { alert('Discipline Record submitted successfully!'); setShowDisciplineForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Submit Record</button>
                 <button onClick={() => setShowDisciplineForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -586,7 +587,7 @@ export default function SISModule() {
                 <div><label className={labelClass}>Remarks</label><input type="text" value={docVerifyFormData.remarks} onChange={(e) => setDocVerifyFormData({...docVerifyFormData, remarks: e.target.value})} className={inputClass} placeholder="Verification remarks..." /></div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Update Verification</button>
+                <button onClick={() => { alert('Document Verification updated successfully!'); setShowDocVerifyForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Update Verification</button>
                 <button onClick={() => setShowDocVerifyForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -614,7 +615,7 @@ export default function SISModule() {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Allocate House</button>
+                <button onClick={() => { alert('House Allocation saved successfully!'); setShowHouseForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium">Allocate House</button>
                 <button onClick={() => setShowHouseForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>
@@ -635,7 +636,7 @@ export default function SISModule() {
                 <div><label className={labelClass}>Follow-up Date</label><input type="date" value={parentCommFormData.followUpDate} onChange={(e) => setParentCommFormData({...parentCommFormData, followUpDate: e.target.value})} className={inputClass} /></div>
               </div>
               <div className="flex items-center gap-3 mt-4">
-                <button className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium flex items-center gap-1.5"><Send className="w-4 h-4" /> Log Communication</button>
+                <button onClick={() => { alert('Communication logged successfully!'); setShowParentCommForm(false) }} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium flex items-center gap-1.5"><Send className="w-4 h-4" /> Log Communication</button>
                 <button onClick={() => setShowParentCommForm(false)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground">Cancel</button>
               </div>
             </motion.div>

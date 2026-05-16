@@ -17,6 +17,7 @@ import {
   AreaChart, Area
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup, { STUDENT_DB } from '@/components/erp/shared/QRStudentLookup'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -184,7 +185,12 @@ export default function AdmissionModule() {
     { id: 'confirm', label: 'Admission Confirm', icon: CheckCircle2 },
   ]
 
-  const handleSubmit = () => setShowForm(null)
+  const [selectedQRStudent, setSelectedQRStudent] = useState(null)
+
+  const handleSubmit = (formType) => {
+    alert(`${formType} submitted successfully!`)
+    setShowForm(null)
+  }
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
@@ -440,7 +446,7 @@ export default function AdmissionModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Application</button>
+                <button onClick={() => handleSubmit('Admission Application')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Application</button>
               </div>
             </motion.div>
           )}
@@ -466,7 +472,7 @@ export default function AdmissionModule() {
               <div className="mt-4"><label className={labelClass}>Instructions</label><textarea className={inputClass + ' resize-none'} rows={3} placeholder="Exam instructions for students..." value={entranceExamForm.instructions} onChange={e => setEntranceExamForm({...entranceExamForm, instructions: e.target.value})} /></div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Create Exam</button>
+                <button onClick={() => handleSubmit('Entrance Exam Created')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Create Exam</button>
               </div>
             </motion.div>
           )}
@@ -480,12 +486,17 @@ export default function AdmissionModule() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label className={labelClass}>Exam Name *</label><select className={inputClass} value={scoreEntryForm.examName} onChange={e => setScoreEntryForm({...scoreEntryForm, examName: e.target.value})}><option value="">Select Exam</option><option>Entrance Exam 2026 - VI</option><option>Entrance Exam 2026 - IX</option><option>Entrance Exam 2026 - XI</option></select></div>
-                <div>
-                  <label className={labelClass}>Student Name *</label>
-                  <select className={inputClass} value={scoreEntryForm.studentName} onChange={e => setScoreEntryForm({...scoreEntryForm, studentName: e.target.value})}>
-                    <option value="">Select Student</option>
-                    {recentApplications.map(a => <option key={a.id} value={a.name}>{a.name} (BSP: {a.bspId})</option>)}
-                  </select>
+                <div className="md:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setSelectedQRStudent(student)
+                      if (student) {
+                        setScoreEntryForm({...scoreEntryForm, studentName: student.name})
+                      }
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for score entry"
+                  />
                 </div>
                 <div><label className={labelClass}>Written Marks *</label><input type="number" className={inputClass} placeholder="0-80" value={scoreEntryForm.writtenMarks} onChange={e => setScoreEntryForm({...scoreEntryForm, writtenMarks: e.target.value})} /></div>
                 <div><label className={labelClass}>Oral Marks</label><input type="number" className={inputClass} placeholder="0-20" value={scoreEntryForm.oralMarks} onChange={e => setScoreEntryForm({...scoreEntryForm, oralMarks: e.target.value})} /></div>
@@ -494,7 +505,7 @@ export default function AdmissionModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Score</button>
+                <button onClick={() => handleSubmit('Exam Score Entry')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Score</button>
               </div>
             </motion.div>
           )}
@@ -508,7 +519,17 @@ export default function AdmissionModule() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div><label className={labelClass}>Parent Name *</label><input className={inputClass} placeholder="Parent's full name" value={counsellingForm.parentName} onChange={e => setCounsellingForm({...counsellingForm, parentName: e.target.value})} /></div>
-                <div><label className={labelClass}>Child Name *</label><input className={inputClass} placeholder="Student's name" value={counsellingForm.childName} onChange={e => setCounsellingForm({...counsellingForm, childName: e.target.value})} /></div>
+                <div className="md:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      if (student) {
+                        setCounsellingForm({...counsellingForm, childName: student.name})
+                      }
+                    }}
+                    label="Child Name (QR / ID Lookup)"
+                    placeholder="Scan QR or search student"
+                  />
+                </div>
                 <div><label className={labelClass}>Phone *</label><input className={inputClass} placeholder="+91 XXXXX XXXXX" value={counsellingForm.phone} onChange={e => setCounsellingForm({...counsellingForm, phone: e.target.value})} /></div>
                 <div><label className={labelClass}>Counsellor *</label><select className={inputClass} value={counsellingForm.counsellor} onChange={e => setCounsellingForm({...counsellingForm, counsellor: e.target.value})}><option value="">Select</option><option>Dr. Sunita Rao</option><option>Mr. Rakesh Pandey</option><option>Mrs. Kavitha Sharma</option><option>Dr. Vikram Gupta</option></select></div>
                 <div><label className={labelClass}>Date *</label><input type="date" className={inputClass} value={counsellingForm.date} onChange={e => setCounsellingForm({...counsellingForm, date: e.target.value})} /></div>
@@ -519,7 +540,7 @@ export default function AdmissionModule() {
               <div className="mt-4"><label className={labelClass}>Notes</label><textarea className={inputClass + ' resize-none'} rows={3} placeholder="Session notes..." value={counsellingForm.notes} onChange={e => setCounsellingForm({...counsellingForm, notes: e.target.value})} /></div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Session</button>
+                <button onClick={() => handleSubmit('Counselling Session')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Session</button>
               </div>
             </motion.div>
           )}
@@ -532,7 +553,15 @@ export default function AdmissionModule() {
                 <button onClick={() => setShowForm(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><label className={labelClass}>Student Name *</label><select className={inputClass} value={docVerifyForm.studentName} onChange={e => setDocVerifyForm({...docVerifyForm, studentName: e.target.value})}><option value="">Select Student</option>{recentApplications.map(a => <option key={a.id}>{a.name} (BSP: {a.bspId})</option>)}</select></div>
+                <div className="md:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      if (student) setDocVerifyForm({...docVerifyForm, studentName: student.name})
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for document verification"
+                  />
+                </div>
                 <div><label className={labelClass}>Document Type *</label><select className={inputClass} value={docVerifyForm.documentType} onChange={e => setDocVerifyForm({...docVerifyForm, documentType: e.target.value})}><option value="">Select</option><option>Birth Certificate</option><option>Aadhaar Card</option><option>Transfer Certificate</option><option>Mark Sheet</option><option>Passport Photo</option></select></div>
                 <div><label className={labelClass}>Verified By *</label><input className={inputClass} placeholder="Verifier name" value={docVerifyForm.verifiedBy} onChange={e => setDocVerifyForm({...docVerifyForm, verifiedBy: e.target.value})} /></div>
                 <div><label className={labelClass}>Verification Date *</label><input type="date" className={inputClass} value={docVerifyForm.verificationDate} onChange={e => setDocVerifyForm({...docVerifyForm, verificationDate: e.target.value})} /></div>
@@ -541,7 +570,7 @@ export default function AdmissionModule() {
               <div className="mt-4"><label className={labelClass}>Remarks</label><textarea className={inputClass + ' resize-none'} rows={2} placeholder="Verification remarks..." value={docVerifyForm.remarks} onChange={e => setDocVerifyForm({...docVerifyForm, remarks: e.target.value})} /></div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Verification</button>
+                <button onClick={() => handleSubmit('Document Verification')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Verification</button>
               </div>
             </motion.div>
           )}
@@ -554,7 +583,15 @@ export default function AdmissionModule() {
                 <button onClick={() => setShowForm(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><label className={labelClass}>Student Name *</label><select className={inputClass} value={confirmForm.studentName} onChange={e => setConfirmForm({...confirmForm, studentName: e.target.value})}><option value="">Select Student</option>{recentApplications.filter(a => a.status === 'Exam Cleared' || a.status === 'Admitted').map(a => <option key={a.id}>{a.name} (BSP: {a.bspId})</option>)}</select></div>
+                <div className="md:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      if (student) setConfirmForm({...confirmForm, studentName: student.name, bspId: student.bspId || confirmForm.bspId, penNo: student.penNo || confirmForm.penNo, upparId: student.upparId || confirmForm.upparId})
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for admission confirmation"
+                  />
+                </div>
                 <div><label className={labelClass}>Class *</label><select className={inputClass} value={confirmForm.class} onChange={e => setConfirmForm({...confirmForm, class: e.target.value})}><option value="">Select</option>{['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'].map(c => <option key={c}>{c}</option>)}</select></div>
                 <div><label className={labelClass}>Section *</label><select className={inputClass} value={confirmForm.section} onChange={e => setConfirmForm({...confirmForm, section: e.target.value})}><option value="">Select</option><option>A</option><option>B</option><option>C</option></select></div>
                 <div><label className={labelClass}>Admission Number *</label><input className={inputClass} placeholder="e.g., ADM-2026-001" value={confirmForm.admissionNumber} onChange={e => setConfirmForm({...confirmForm, admissionNumber: e.target.value})} /></div>
@@ -574,7 +611,7 @@ export default function AdmissionModule() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Confirm Admission</button>
+                <button onClick={() => handleSubmit('Admission Confirmation')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Confirm Admission</button>
               </div>
             </motion.div>
           )}

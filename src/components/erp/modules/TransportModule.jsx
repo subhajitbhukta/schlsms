@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bus, MapPin, Users, Clock, Navigation, Phone, AlertTriangle,
   TrendingUp, TrendingDown, ArrowUpRight, Download, Printer,
@@ -9,13 +9,15 @@ import {
   ChevronRight, Save, Eye, Star, Car, Truck as TruckIcon,
   MapPinned, PhoneCall, Calendar, Bell, CheckCircle2, XCircle,
   FileText, BarChart3, PieChart as PieChartIcon, ClipboardList,
-  FileBarChart, Fuel, Wrench, Gauge, Activity, User, IndianRupee
+  FileBarChart, Fuel, Wrench, Gauge, Activity, User, IndianRupee,
+  QrCode, ScanLine, LogIn, LogOut, Send, Wifi
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup, { STUDENT_DB } from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -129,7 +131,7 @@ const studentTransportData = [
 
 // ─── Reusable Components ─────────────────────────────────────────
 function FormField({ label, children }) {
-  return (<div><label className="text-xs text-muted-foreground mb-1 block">{label}</label>{children}</div>)
+  return (<div className="space-y-1"><label className="text-xs text-muted-foreground mb-1 block">{label}</label>{children}</div>)
 }
 
 function InputField({ value, onChange, placeholder, type = 'text' }) {
@@ -138,16 +140,6 @@ function InputField({ value, onChange, placeholder, type = 'text' }) {
 
 function SelectField({ value, onChange, options }) {
   return (<select value={value} onChange={onChange} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">{options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>)
-}
-
-function StudentUDISE({ bspId, penNo, upparId }) {
-  return (
-    <div className="flex flex-wrap gap-2 mt-1">
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium">BSP: {bspId}</span>
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">PEN: {penNo}</span>
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">Uppar: {upparId}</span>
-    </div>
-  )
 }
 
 // ─── Main Component ───────────────────────────────────────────────
@@ -160,14 +152,21 @@ export default function TransportModule() {
   // Form States
   const [routeForm, setRouteForm] = useState({ routeName: '', routeNumber: '', stops: '', totalDistance: '', estimatedTime: '', vehicleAssigned: '', driverAssigned: '', capacity: '', fee: '' })
   const [driverForm, setDriverForm] = useState({ name: '', licenseNumber: '', licenseExpiry: '', phone: '', emergencyContact: '', address: '', routeAssigned: '', vehicleNumber: '', experience: '', bloodGroup: 'A+', photo: false })
-  const [studentTransportForm, setStudentTransportForm] = useState({ studentName: '', class: '', route: '', stop: '', pickupTime: '', dropTime: '', fee: '', parentPhone: '' })
+  const [studentTransportForm, setStudentTransportForm] = useState({ studentName: '', bspId: '', penNo: '', upparId: '', class: '', section: '', route: '', stop: '', pickupTime: '', dropTime: '', fee: '', parentPhone: '' })
   const [vehicleForm, setVehicleForm] = useState({ vehicleNumber: '', type: 'Bus', capacity: '', registrationExpiry: '', insuranceExpiry: '', pollutionCertExpiry: '', lastService: '', nextService: '' })
-  const [pickupAlertForm, setPickupAlertForm] = useState({ studentName: '', route: '', stop: '', alertType: 'Picked Up', time: '', parentNotified: false, notes: '' })
-  const [transportFeeForm, setTransportFeeForm] = useState({ studentName: '', route: '', amount: '', paymentMode: 'Cash', month: 'April', receiptNo: '' })
+  const [pickupAlertForm, setPickupAlertForm] = useState({ studentName: '', bspId: '', penNo: '', upparId: '', route: '', stop: '', alertType: 'Picked Up', time: '', parentNotified: false, notes: '' })
+  const [transportFeeForm, setTransportFeeForm] = useState({ studentName: '', bspId: '', penNo: '', upparId: '', route: '', amount: '', paymentMode: 'Cash', month: 'April', receiptNo: '' })
+
+  // Boarding Scan State
+  const [boardingScans, setBoardingScans] = useState([])
+  const [boardingScanType, setBoardingScanType] = useState('boarding')
+  const [boardingVehicle, setBoardingVehicle] = useState('')
+  const [isScanningBoarding, setIsScanningBoarding] = useState(false)
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'gps', label: 'GPS Tracking', icon: Navigation },
+    { id: 'boarding', label: 'Boarding Scan', icon: QrCode },
     { id: 'routes', label: 'Routes', icon: Route },
     { id: 'drivers', label: 'Drivers', icon: Users },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
@@ -199,6 +198,76 @@ export default function TransportModule() {
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
+
+  // ─── QR Student Selection Handlers ───────────────────────────────
+  const handleStudentTransportSelect = useCallback((student) => {
+    if (student) {
+      setStudentTransportForm(prev => ({
+        ...prev,
+        studentName: student.name,
+        bspId: student.bspId,
+        penNo: student.penNo,
+        upparId: student.upparId,
+        class: student.class || '',
+        section: student.section || '',
+        route: student.route || '',
+        parentPhone: student.parentPhone || '',
+      }))
+    } else {
+      setStudentTransportForm(prev => ({ ...prev, studentName: '', bspId: '', penNo: '', upparId: '', class: '', section: '', route: '', parentPhone: '' }))
+    }
+  }, [])
+
+  const handlePickupAlertSelect = useCallback((student) => {
+    if (student) {
+      setPickupAlertForm(prev => ({
+        ...prev,
+        studentName: student.name,
+        bspId: student.bspId,
+        penNo: student.penNo,
+        upparId: student.upparId,
+        route: student.route || '',
+      }))
+    } else {
+      setPickupAlertForm(prev => ({ ...prev, studentName: '', bspId: '', penNo: '', upparId: '', route: '' }))
+    }
+  }, [])
+
+  const handleTransportFeeSelect = useCallback((student) => {
+    if (student) {
+      setTransportFeeForm(prev => ({
+        ...prev,
+        studentName: student.name,
+        bspId: student.bspId,
+        penNo: student.penNo,
+        upparId: student.upparId,
+        route: student.route || '',
+      }))
+    } else {
+      setTransportFeeForm(prev => ({ ...prev, studentName: '', bspId: '', penNo: '', upparId: '', route: '' }))
+    }
+  }, [])
+
+  // ─── Boarding Scan Handler ───────────────────────────────────────
+  const handleBoardingScan = useCallback(() => {
+    setIsScanningBoarding(true)
+    setTimeout(() => {
+      const randomStudent = STUDENT_DB[Math.floor(Math.random() * STUDENT_DB.length)]
+      const now = new Date()
+      const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      const scan = {
+        id: Date.now(),
+        student: randomStudent,
+        type: boardingScanType,
+        vehicle: boardingVehicle || 'WB-12-AB-1234',
+        time: timeStr,
+        parentNotified: true,
+      }
+      setBoardingScans(prev => [scan, ...prev])
+      setIsScanningBoarding(false)
+      alert(`${boardingScanType === 'boarding' ? '🚌 Boarding' : '🏠 Drop-off'} recorded for ${randomStudent.name}!\n\nStudent: ${randomStudent.name}\nBSP ID: ${randomStudent.bspId}\nPEN No: ${randomStudent.penNo}\nUppar ID: ${randomStudent.upparId}\nClass: ${randomStudent.class}-${randomStudent.section}\nVehicle: ${boardingVehicle || 'WB-12-AB-1234'}\nTime: ${timeStr}\n\n✅ Parent SMS notification sent to ${randomStudent.parentPhone}`)
+    }, 1500)
+  }, [boardingScanType, boardingVehicle])
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
@@ -300,6 +369,165 @@ export default function TransportModule() {
               </motion.div>
             ))}
           </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          BOARDING SCAN TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'boarding' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* Scan Interface */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6">
+              <QrCode className="w-5 h-5 text-birla-cyan" />
+              Student Boarding / Drop-off Scanner
+            </h3>
+
+            {/* Scan Type Toggle */}
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setBoardingScanType('boarding')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
+                  boardingScanType === 'boarding'
+                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                    : 'border border-border text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <LogIn className="w-4 h-4" /> Boarding
+              </button>
+              <button
+                onClick={() => setBoardingScanType('dropoff')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
+                  boardingScanType === 'dropoff'
+                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30'
+                    : 'border border-border text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <LogOut className="w-4 h-4" /> Drop-off
+              </button>
+            </div>
+
+            {/* Vehicle Select */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <FormField label="Select Vehicle">
+                <SelectField value={boardingVehicle} onChange={(e) => setBoardingVehicle(e.target.value)} options={['WB-12-AB-1234', 'WB-12-CD-5678', 'WB-12-EF-9012', 'WB-12-GH-3456', 'WB-12-IJ-7890', 'WB-12-KL-1234', 'WB-12-MN-5678', 'WB-12-OP-9012']} />
+              </FormField>
+              <div className="flex items-end">
+                <button
+                  onClick={handleBoardingScan}
+                  disabled={isScanningBoarding}
+                  className={`w-full flex items-center justify-center gap-3 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    isScanningBoarding
+                      ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30'
+                      : boardingScanType === 'boarding'
+                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:opacity-90 shadow-lg shadow-emerald-500/20'
+                        : 'bg-gradient-to-r from-red-600 to-red-500 text-white hover:opacity-90 shadow-lg shadow-red-500/20'
+                  }`}
+                >
+                  {isScanningBoarding ? (
+                    <>
+                      <ScanLine className="w-5 h-5 animate-pulse" />
+                      <span>Scanning QR Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="w-5 h-5" />
+                      <span>Scan Student QR Card</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Live Scan Animation */}
+            {isScanningBoarding && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="rounded-xl border-2 border-dashed border-birla-cyan/50 bg-birla-cyan/5 p-8 mb-6 text-center"
+              >
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <div className="absolute inset-0 rounded-2xl border-2 border-birla-cyan/40 animate-ping" />
+                  <div className="absolute inset-2 rounded-xl border-2 border-birla-cyan/60 animate-pulse" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <ScanLine className="w-12 h-12 text-birla-cyan animate-bounce" />
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-foreground">Scanning student ID card...</p>
+                <p className="text-xs text-muted-foreground mt-1">Hold the QR code in front of the scanner</p>
+              </motion.div>
+            )}
+
+            {/* Scan Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{boardingScans.filter(s => s.type === 'boarding').length}</p>
+                <p className="text-[10px] text-emerald-600/70">Boarded Today</p>
+              </div>
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
+                <p className="text-lg font-bold text-red-600 dark:text-red-400">{boardingScans.filter(s => s.type === 'dropoff').length}</p>
+                <p className="text-[10px] text-red-600/70">Dropped Today</p>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
+                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{boardingScans.length}</p>
+                <p className="text-[10px] text-blue-600/70">Total Scans</p>
+              </div>
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
+                <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                  {boardingScans.filter(s => s.parentNotified).length}
+                </p>
+                <p className="text-[10px] text-amber-600/70">Parents Notified</p>
+              </div>
+            </div>
+
+            {/* Recent Scans */}
+            <div className="rounded-xl border border-border overflow-hidden">
+              <div className="p-3 border-b border-border bg-muted/30">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Wifi className="w-3.5 h-3.5 text-birla-cyan" />Recent Scan Activity
+                </h4>
+              </div>
+              {boardingScans.length === 0 ? (
+                <div className="p-8 text-center">
+                  <QrCode className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">No scans yet. Click &quot;Scan Student QR Card&quot; to begin.</p>
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto">
+                  {boardingScans.map((scan) => (
+                    <div key={scan.id} className="flex items-center gap-3 px-4 py-3 border-b border-border/50 hover:bg-muted/20 transition-colors">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        scan.type === 'boarding' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                      }`}>
+                        {scan.type === 'boarding' ? <LogIn className="w-4 h-4" /> : <LogOut className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{scan.student.name}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-0.5">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">BSP: {scan.student.bspId}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">PEN: {scan.student.penNo}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">Class {scan.student.class}-{scan.student.section}</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          scan.type === 'boarding' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                        }`}>
+                          {scan.type === 'boarding' ? 'Boarded' : 'Dropped'}
+                        </span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{scan.time}</p>
+                        <p className="text-[10px] text-muted-foreground">{scan.vehicle}</p>
+                      </div>
+                      {scan.parentNotified && (
+                        <Send className="w-3.5 h-3.5 text-birla-cyan shrink-0" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
         </motion.div>
       )}
 
@@ -408,7 +636,9 @@ export default function TransportModule() {
                 <FormField label="Capacity"><InputField value={routeForm.capacity} onChange={(e) => setRouteForm({ ...routeForm, capacity: e.target.value })} placeholder="0" type="number" /></FormField>
                 <FormField label="Fee (₹)"><InputField value={routeForm.fee} onChange={(e) => setRouteForm({ ...routeForm, fee: e.target.value })} placeholder="0" type="number" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Create Route</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Route Creation submitted successfully!\n' + JSON.stringify(routeForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Create Route</button>
+              </div>
             </motion.div>
           )}
 
@@ -431,18 +661,43 @@ export default function TransportModule() {
                   <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={driverForm.photo} onChange={(e) => setDriverForm({ ...driverForm, photo: e.target.checked })} className="rounded border-input" /> Photo Uploaded</label>
                 </div>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Driver</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Driver Registration submitted successfully!\n' + JSON.stringify(driverForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Driver</button>
+              </div>
             </motion.div>
           )}
 
-          {/* Form 3: Student Transport Assignment */}
+          {/* Form 3: Student Transport Assignment - WITH QRStudentLookup */}
           {activeForm === 2 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><UserCheck className="w-5 h-5 text-emerald-500" />Student Transport Assignment Form</h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-birla-cyan/20 bg-birla-cyan/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-birla-cyan" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-birla-cyan/10 text-birla-cyan font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleStudentTransportSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
-                  <InputField value={studentTransportForm.studentName} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {studentTransportForm.studentName && <StudentUDISE bspId="BSP-2025-001" penNo="PEN-XA-001" upparId="UPP-001" />}
+                  <InputField value={studentTransportForm.studentName} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, studentName: e.target.value })} placeholder="Auto-filled via QR or enter manually" />
+                </FormField>
+                <FormField label="BSP ID (UDISE+)">
+                  <InputField value={studentTransportForm.bspId} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, bspId: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="PEN No">
+                  <InputField value={studentTransportForm.penNo} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, penNo: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="Uppar ID">
+                  <InputField value={studentTransportForm.upparId} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, upparId: e.target.value })} placeholder="Auto-filled via QR" />
                 </FormField>
                 <FormField label="Class"><SelectField value={studentTransportForm.class} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, class: e.target.value })} options={['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} /></FormField>
                 <FormField label="Route"><SelectField value={studentTransportForm.route} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
@@ -452,7 +707,9 @@ export default function TransportModule() {
                 <FormField label="Fee (₹)"><InputField value={studentTransportForm.fee} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, fee: e.target.value })} placeholder="0" type="number" /></FormField>
                 <FormField label="Parent Phone"><InputField value={studentTransportForm.parentPhone} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, parentPhone: e.target.value })} placeholder="+91 98765 43210" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Assign Transport</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Student Transport Assignment submitted successfully!\n' + JSON.stringify(studentTransportForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Assign Transport</button>
+              </div>
             </motion.div>
           )}
 
@@ -470,18 +727,43 @@ export default function TransportModule() {
                 <FormField label="Last Service Date"><InputField value={vehicleForm.lastService} onChange={(e) => setVehicleForm({ ...vehicleForm, lastService: e.target.value })} type="date" /></FormField>
                 <FormField label="Next Service Date"><InputField value={vehicleForm.nextService} onChange={(e) => setVehicleForm({ ...vehicleForm, nextService: e.target.value })} type="date" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Vehicle</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Vehicle Registration submitted successfully!\n' + JSON.stringify(vehicleForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Vehicle</button>
+              </div>
             </motion.div>
           )}
 
-          {/* Form 5: Pickup Alert */}
+          {/* Form 5: Pickup Alert - WITH QRStudentLookup */}
           {activeForm === 4 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Bell className="w-5 h-5 text-amber-500" />Pickup/Drop Alert Form</h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handlePickupAlertSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
-                  <InputField value={pickupAlertForm.studentName} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {pickupAlertForm.studentName && <StudentUDISE bspId="BSP-2025-045" penNo="PEN-IXB-045" upparId="UPP-045" />}
+                  <InputField value={pickupAlertForm.studentName} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, studentName: e.target.value })} placeholder="Auto-filled via QR or enter manually" />
+                </FormField>
+                <FormField label="BSP ID (UDISE+)">
+                  <InputField value={pickupAlertForm.bspId} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, bspId: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="PEN No">
+                  <InputField value={pickupAlertForm.penNo} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, penNo: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="Uppar ID">
+                  <InputField value={pickupAlertForm.upparId} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, upparId: e.target.value })} placeholder="Auto-filled via QR" />
                 </FormField>
                 <FormField label="Route"><SelectField value={pickupAlertForm.route} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
                 <FormField label="Stop"><InputField value={pickupAlertForm.stop} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, stop: e.target.value })} placeholder="Bus stop name" /></FormField>
@@ -492,18 +774,43 @@ export default function TransportModule() {
                 </div>
                 <FormField label="Notes"><InputField value={pickupAlertForm.notes} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, notes: e.target.value })} placeholder="Any notes" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Alert</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Pickup/Drop Alert submitted successfully!\n' + JSON.stringify(pickupAlertForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Alert</button>
+              </div>
             </motion.div>
           )}
 
-          {/* Form 6: Transport Fee Collection */}
+          {/* Form 6: Transport Fee Collection - WITH QRStudentLookup */}
           {activeForm === 5 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><IndianRupee className="w-5 h-5 text-emerald-500" />Transport Fee Collection Form</h3>
+
+              {/* QR Student Lookup */}
+              <div className="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <QrCode className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm font-semibold text-foreground">Student Identification</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">Scan QR from Student ID Card</span>
+                </div>
+                <QRStudentLookup
+                  onStudentSelect={handleTransportFeeSelect}
+                  label=""
+                  placeholder="Scan QR or enter Student ID / Name / BSP ID"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
-                  <InputField value={transportFeeForm.studentName} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {transportFeeForm.studentName && <StudentUDISE bspId="BSP-2025-031" penNo="PEN-VIIA-031" upparId="UPP-031" />}
+                  <InputField value={transportFeeForm.studentName} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, studentName: e.target.value })} placeholder="Auto-filled via QR or enter manually" />
+                </FormField>
+                <FormField label="BSP ID (UDISE+)">
+                  <InputField value={transportFeeForm.bspId} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, bspId: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="PEN No">
+                  <InputField value={transportFeeForm.penNo} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, penNo: e.target.value })} placeholder="Auto-filled via QR" />
+                </FormField>
+                <FormField label="Uppar ID">
+                  <InputField value={transportFeeForm.upparId} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, upparId: e.target.value })} placeholder="Auto-filled via QR" />
                 </FormField>
                 <FormField label="Route"><SelectField value={transportFeeForm.route} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
                 <FormField label="Amount (₹)"><InputField value={transportFeeForm.amount} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, amount: e.target.value })} placeholder="0" type="number" /></FormField>
@@ -511,7 +818,9 @@ export default function TransportModule() {
                 <FormField label="Month"><SelectField value={transportFeeForm.month} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, month: e.target.value })} options={['April','May','June','July','August','September','October','November','December','January','February','March']} /></FormField>
                 <FormField label="Receipt No"><InputField value={transportFeeForm.receiptNo} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, receiptNo: e.target.value })} placeholder="REC-001" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Fee</button></div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => { alert('Transport Fee Collection submitted successfully!\n' + JSON.stringify(transportFeeForm, null, 2)) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Fee</button>
+              </div>
             </motion.div>
           )}
         </motion.div>

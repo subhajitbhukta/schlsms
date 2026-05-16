@@ -146,7 +146,10 @@ export default function ParentPortal() {
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
   ]
 
-  const handleSubmit = () => setShowForm(null)
+  const handleSubmit = (formType) => {
+    alert(`${formType} submitted successfully!`)
+    setShowForm(null)
+  }
 
   const inputClass = `w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-birla-cyan/30`
   const labelClass = 'block text-xs font-medium text-muted-foreground mb-1'
@@ -515,7 +518,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Pay Now</button>
+                <button onClick={() => handleSubmit('Fee Payment')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Pay Now</button>
               </div>
             </motion.div>
           )}
@@ -559,7 +562,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Book PTM</button>
+                <button onClick={() => handleSubmit('PTM Booking')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Book PTM</button>
               </div>
             </motion.div>
           )}
@@ -608,7 +611,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Request</button>
+                <button onClick={() => handleSubmit('Leave Request')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Request</button>
               </div>
             </motion.div>
           )}
@@ -645,7 +648,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Request</button>
+                <button onClick={() => handleSubmit('Transport Change Request')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Request</button>
               </div>
             </motion.div>
           )}
@@ -687,7 +690,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Update Medical Info</button>
+                <button onClick={() => handleSubmit('Medical Update')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Update Medical Info</button>
               </div>
             </motion.div>
           )}
@@ -731,7 +734,7 @@ export default function ParentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Feedback</button>
+                <button onClick={() => handleSubmit('Feedback')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Feedback</button>
               </div>
             </motion.div>
           )}

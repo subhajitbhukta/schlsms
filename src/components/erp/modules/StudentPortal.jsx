@@ -239,7 +239,10 @@ export default function StudentPortal() {
     { id: 'digitalNote', label: 'Digital Note', icon: StickyNote },
   ]
 
-  const handleSubmit = () => setShowForm(null)
+  const handleSubmit = (formType) => {
+    alert(`${formType} submitted successfully!`)
+    setShowForm(null)
+  }
 
   const inputClass = `w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-birla-cyan/30`
   const labelClass = 'block text-xs font-medium text-muted-foreground mb-1'
@@ -660,7 +663,7 @@ export default function StudentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Homework</button>
+                <button onClick={() => handleSubmit('Homework Submission')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Homework</button>
               </div>
             </motion.div>
           )}
@@ -710,7 +713,7 @@ export default function StudentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Leave Application</button>
+                <button onClick={() => handleSubmit('Leave Application')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Leave Application</button>
               </div>
             </motion.div>
           )}
@@ -754,7 +757,7 @@ export default function StudentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Grievance</button>
+                <button onClick={() => handleSubmit('Grievance')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Grievance</button>
               </div>
             </motion.div>
           )}
@@ -801,7 +804,7 @@ export default function StudentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Register</button>
+                <button onClick={() => handleSubmit('Activity Registration')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Register</button>
               </div>
             </motion.div>
           )}
@@ -844,7 +847,7 @@ export default function StudentPortal() {
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
-                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Note</button>
+                <button onClick={() => handleSubmit('Digital Note')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Note</button>
               </div>
             </motion.div>
           )}

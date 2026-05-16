@@ -16,6 +16,7 @@ import {
   Area, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Mock Data ────────────────────────────────────────────────────
 const topStats = [
@@ -429,6 +430,15 @@ export default function HostelModule() {
                   <Bed className="w-5 h-5 text-blue-500" />Room Allocation Form
                 </h3>
               </div>
+              <div className="mb-4">
+                <QRStudentLookup
+                  onStudentSelect={(student) => {
+                    if (student) setRoomAllocData({...roomAllocData, student: student.name, bspId: student.bspId || roomAllocData.bspId, penNo: student.penNo || roomAllocData.penNo, upparId: student.upparId || roomAllocData.upparId})
+                  }}
+                  label="Student Identification (QR / ID)"
+                  placeholder="Scan QR or search student for room allocation"
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
@@ -623,6 +633,15 @@ export default function HostelModule() {
                   <MessageSquare className="w-5 h-5 text-red-500" />Hostel Complaint Form
                 </h3>
               </div>
+              <div className="mb-4">
+                <QRStudentLookup
+                  onStudentSelect={(student) => {
+                    if (student) setComplaintData2({...complaintData2, student: student.name, bspId: student.bspId || complaintData2.bspId, penNo: student.penNo || complaintData2.penNo, upparId: student.upparId || complaintData2.upparId})
+                  }}
+                  label="Student Identification (QR / ID)"
+                  placeholder="Scan QR or search student for complaint"
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>
                   <label className={labelClass}>Student Name *</label>
@@ -675,6 +694,15 @@ export default function HostelModule() {
                 <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                   <MoveRight className="w-5 h-5 text-purple-500" />Room Transfer Form
                 </h3>
+              </div>
+              <div className="mb-4">
+                <QRStudentLookup
+                  onStudentSelect={(student) => {
+                    if (student) setRoomTransferData({...roomTransferData, student: student.name, bspId: student.bspId || roomTransferData.bspId, penNo: student.penNo || roomTransferData.penNo, upparId: student.upparId || roomTransferData.upparId})
+                  }}
+                  label="Student Identification (QR / ID)"
+                  placeholder="Scan QR or search student for room transfer"
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={formGroupClass}>

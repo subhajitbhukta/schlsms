@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Library as LibraryIcon, Users, Clock, Search, Download,
   Plus, Filter, Eye, Save, ChevronRight, Calendar, Bell, Star,
@@ -9,13 +9,15 @@ import {
   FileBarChart, BookMarked, BookCopy, BookCheck, BookX, BookPlus,
   Upload, Monitor, Smartphone, Tag, Shield, IndianRupee,
   TrendingUp, TrendingDown, ArrowUpRight, CheckCircle2, XCircle,
-  AlertTriangle, BookOpenCheck, GraduationCap, Hash, Layers, Globe
+  AlertTriangle, BookOpenCheck, GraduationCap, Hash, Layers, Globe,
+  QrCode, ScanLine, Printer, ZoomIn
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup, { STUDENT_DB } from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -47,11 +49,11 @@ const catalogData = [
 ]
 
 const issuedBooksData = [
-  { id: 'ISS-001', student: 'Aarav Sharma', bspId: 'BSP-2025-001', penNo: 'PEN-XA-001', upparId: 'UPP-001', class: 'X-A', book: 'Concepts of Physics', issueDate: 'Feb 15, 2026', dueDate: 'Mar 15, 2026', status: 'Issued' },
-  { id: 'ISS-002', student: 'Priya Gupta', bspId: 'BSP-2025-002', penNo: 'PEN-XA-002', upparId: 'UPP-002', class: 'X-A', book: 'Wings of Fire', issueDate: 'Feb 10, 2026', dueDate: 'Mar 10, 2026', status: 'Issued' },
-  { id: 'ISS-003', student: 'Ananya Iyer', bspId: 'BSP-2025-012', penNo: 'PEN-VIIIA-012', upparId: 'UPP-012', class: 'VIII-A', book: 'Mathematics for Class X', issueDate: 'Jan 20, 2026', dueDate: 'Feb 20, 2026', status: 'Overdue' },
-  { id: 'ISS-004', student: 'Rohan Patel', bspId: 'BSP-2025-031', penNo: 'PEN-VIIA-031', upparId: 'UPP-031', class: 'VII-A', book: 'NCERT Biology XII', issueDate: 'Feb 28, 2026', dueDate: 'Mar 28, 2026', status: 'Issued' },
-  { id: 'ISS-005', student: 'Kavya Joshi', bspId: 'BSP-2025-023', penNo: 'PEN-IIA-023', upparId: 'UPP-023', class: 'II-A', book: 'Hindi Vyakaran', issueDate: 'Jan 5, 2026', dueDate: 'Feb 5, 2026', status: 'Overdue' },
+  { id: 'ISS-001', student: 'Aarav Sharma', bspId: 'BSP/WB/2023/00001', penNo: 'PEN-2301-0001', upparId: 'UPPR-WB-000001', class: 'X-A', book: 'Concepts of Physics', issueDate: 'Feb 15, 2026', dueDate: 'Mar 15, 2026', status: 'Issued' },
+  { id: 'ISS-002', student: 'Diya Patel', bspId: 'BSP/WB/2023/00002', penNo: 'PEN-2301-0002', upparId: 'UPPR-WB-000002', class: 'X-A', book: 'Wings of Fire', issueDate: 'Feb 10, 2026', dueDate: 'Mar 10, 2026', status: 'Issued' },
+  { id: 'ISS-003', student: 'Saanvi Rao', bspId: 'BSP/WB/2023/00008', penNo: 'PEN-2301-0008', upparId: 'UPPR-WB-000008', class: 'VIII-A', book: 'Mathematics for Class X', issueDate: 'Jan 20, 2026', dueDate: 'Feb 20, 2026', status: 'Overdue' },
+  { id: 'ISS-004', student: 'Rohan Singh', bspId: 'BSP/WB/2023/00009', penNo: 'PEN-2301-0009', upparId: 'UPPR-WB-000009', class: 'VII-A', book: 'NCERT Biology XII', issueDate: 'Feb 28, 2026', dueDate: 'Mar 28, 2026', status: 'Issued' },
+  { id: 'ISS-005', student: 'Kavya Iyer', bspId: 'BSP/WB/2023/00011', penNo: 'PEN-2301-0011', upparId: 'UPPR-WB-000011', class: 'X-A', book: 'Hindi Vyakaran', issueDate: 'Jan 5, 2026', dueDate: 'Feb 5, 2026', status: 'Overdue' },
 ]
 
 const ebooksData = [
@@ -131,9 +133,60 @@ const categoryInventoryData = [
   { category: 'Periodical', books: 60, color: '#64748B' },
 ]
 
+// ─── Simulated QR Code Component ─────────────────────────────────
+function SimulatedQRCode({ data, size = 100 }) {
+  // Generate a deterministic pattern from the data string
+  const cells = []
+  const gridSize = 11
+  const cellSize = size / gridSize
+
+  // Simple hash from string to seed
+  let seed = 0
+  for (let i = 0; i < data.length; i++) {
+    seed = ((seed << 5) - seed + data.charCodeAt(i)) | 0
+  }
+  const pseudoRandom = (i) => {
+    const x = Math.sin(seed + i * 127.1) * 43758.5453
+    return x - Math.floor(x)
+  }
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const isCornerFinder =
+        (row < 3 && col < 3) ||
+        (row < 3 && col >= gridSize - 3) ||
+        (row >= gridSize - 3 && col < 3)
+      const isCornerBorder =
+        (row === 3 && col < 4) || (row < 4 && col === 3) ||
+        (row === 3 && col >= gridSize - 4) || (row < 4 && col === gridSize - 4) ||
+        (row === gridSize - 4 && col < 4) || (row >= gridSize - 4 && col === 3)
+      const isFilled = isCornerFinder || isCornerBorder || pseudoRandom(row * gridSize + col) > 0.45
+
+      cells.push(
+        <rect
+          key={`${row}-${col}`}
+          x={col * cellSize}
+          y={row * cellSize}
+          width={cellSize}
+          height={cellSize}
+          fill={isFilled ? '#0A1628' : 'none'}
+          rx={0.5}
+        />
+      )
+    }
+  }
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rounded-lg">
+      <rect width={size} height={size} fill="white" rx={4} />
+      {cells}
+    </svg>
+  )
+}
+
 // ─── Reusable Components ─────────────────────────────────────────
 function FormField({ label, children }) {
-  return (<div><label className="text-xs text-muted-foreground mb-1 block">{label}</label>{children}</div>)
+  return (<div className="space-y-1"><label className="text-xs text-muted-foreground font-medium block">{label}</label>{children}</div>)
 }
 
 function InputField({ value, onChange, placeholder, type = 'text' }) {
@@ -154,6 +207,38 @@ function StudentUDISE({ bspId, penNo, upparId }) {
   )
 }
 
+// ─── Student Details Card (shown after QR/lookup selection) ──────
+function StudentDetailsCard({ student }) {
+  if (!student) return null
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="rounded-xl border border-birla-cyan/20 bg-gradient-to-r from-[#0A1628]/5 to-[#22D3EE]/5 dark:from-[#0A1628]/20 dark:to-[#22D3EE]/10 backdrop-blur-sm p-4 mt-3"
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0A1628] to-[#22D3EE] flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-lg">
+          {student.name.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">{student.name}</p>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          </div>
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium">BSP: {student.bspId}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">PEN: {student.penNo}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">Uppar: {student.upparId}</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1.5">
+            Class {student.class}-{student.section} | Roll No: {student.rollNo} | Blood: {student.bloodGroup}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────
 export default function LibraryModule() {
   const { darkMode } = useAppStore()
@@ -161,18 +246,33 @@ export default function LibraryModule() {
   const [activeForm, setActiveForm] = useState(0)
   const [activeReport, setActiveReport] = useState(0)
 
+  // QR Scanner states
+  const [qrScanMode, setQrScanMode] = useState('scan') // 'scan' or 'generate'
+  const [isScanningBook, setIsScanningBook] = useState(false)
+  const [scannedBook, setScannedBook] = useState(null)
+  const [qrSearchValue, setQrSearchValue] = useState('')
+
+  // Selected students for QR lookup
+  const [issueStudent, setIssueStudent] = useState(null)
+  const [returnStudent, setReturnStudent] = useState(null)
+
   // Form States
   const [bookEntryForm, setBookEntryForm] = useState({ title: '', author: '', ISBN: '', publisher: '', category: 'Fiction', language: 'English', pages: '', price: '', shelfLocation: '', copies: '', accessionNumber: '' })
-  const [bookIssueForm, setBookIssueForm] = useState({ studentName: '', class: '', bookSelect: '', issueDate: '', dueDate: '', issuedBy: '' })
-  const [bookReturnForm, setBookReturnForm] = useState({ issueId: '', studentName: '', bookTitle: '', returnDate: '', condition: 'Good', fine: '', remarks: '' })
+  const [bookIssueForm, setBookIssueForm] = useState({ bookSelect: '', issueDate: '', dueDate: '', issuedBy: '' })
+  const [bookReturnForm, setBookReturnForm] = useState({ issueId: '', bookTitle: '', returnDate: '', condition: 'Good', fine: '', remarks: '' })
   const [ebookForm, setEbookForm] = useState({ title: '', author: '', subject: '', class: '', description: '', format: 'PDF', accessLevel: 'All', tags: '', fileSize: '' })
   const [membershipForm, setMembershipForm] = useState({ studentName: '', class: '', membershipType: 'Standard', issueDate: '', validTill: '', securityDeposit: '' })
   const [reservationForm, setReservationForm] = useState({ studentName: '', bookTitle: '', reservationDate: '', priority: 'Normal', notificationPreference: 'SMS' })
+
+  // Membership & Reservation student states
+  const [membershipStudent, setMembershipStudent] = useState(null)
+  const [reservationStudent, setReservationStudent] = useState(null)
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'catalog', label: 'Catalog', icon: BookOpen },
     { id: 'issue-return', label: 'Issue-Return', icon: BookCheck },
+    { id: 'qr-scanner', label: 'QR Scanner', icon: QrCode },
     { id: 'ebooks', label: 'E-Books', icon: Monitor },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: FileBarChart },
@@ -202,6 +302,64 @@ export default function LibraryModule() {
     borderRadius: '12px',
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
+  }
+
+  // ─── Form submission handlers ────────────────────────────────
+  const handleBookEntrySubmit = () => {
+    alert(`Book "${bookEntryForm.title}" by ${bookEntryForm.author} added successfully!`)
+    setBookEntryForm({ title: '', author: '', ISBN: '', publisher: '', category: 'Fiction', language: 'English', pages: '', price: '', shelfLocation: '', copies: '', accessionNumber: '' })
+  }
+
+  const handleBookIssueSubmit = () => {
+    if (!issueStudent) { alert('Please select a student first via QR scan or ID lookup.'); return }
+    alert(`Book "${bookIssueForm.bookSelect}" issued to ${issueStudent.name} (${issueStudent.bspId}) successfully!`)
+    setBookIssueForm({ bookSelect: '', issueDate: '', dueDate: '', issuedBy: '' })
+    setIssueStudent(null)
+  }
+
+  const handleBookReturnSubmit = () => {
+    if (!returnStudent) { alert('Please select a student first via QR scan or ID lookup.'); return }
+    alert(`Book "${bookReturnForm.bookTitle}" returned by ${returnStudent.name} successfully!`)
+    setBookReturnForm({ issueId: '', bookTitle: '', returnDate: '', condition: 'Good', fine: '', remarks: '' })
+    setReturnStudent(null)
+  }
+
+  const handleEbookUploadSubmit = () => {
+    alert(`E-Book "${ebookForm.title}" uploaded successfully!`)
+    setEbookForm({ title: '', author: '', subject: '', class: '', description: '', format: 'PDF', accessLevel: 'All', tags: '', fileSize: '' })
+  }
+
+  const handleMembershipSubmit = () => {
+    alert(`Library membership created for ${membershipStudent ? membershipStudent.name : membershipForm.studentName} successfully!`)
+    setMembershipForm({ studentName: '', class: '', membershipType: 'Standard', issueDate: '', validTill: '', securityDeposit: '' })
+    setMembershipStudent(null)
+  }
+
+  const handleReservationSubmit = () => {
+    alert(`Book "${reservationForm.bookTitle}" reserved for ${reservationStudent ? reservationStudent.name : reservationForm.studentName} successfully!`)
+    setReservationForm({ studentName: '', bookTitle: '', reservationDate: '', priority: 'Normal', notificationPreference: 'SMS' })
+    setReservationStudent(null)
+  }
+
+  // ─── QR Book Scanner handlers ────────────────────────────────
+  const handleScanBookQR = () => {
+    setIsScanningBook(true)
+    setScannedBook(null)
+    setTimeout(() => {
+      const randomBook = catalogData[Math.floor(Math.random() * catalogData.length)]
+      setScannedBook(randomBook)
+      setIsScanningBook(false)
+    }, 1800)
+  }
+
+  const handleSearchBookByISBN = () => {
+    if (!qrSearchValue.trim()) return
+    const found = catalogData.find(b =>
+      b.ISBN.toLowerCase().includes(qrSearchValue.toLowerCase()) ||
+      b.title.toLowerCase().includes(qrSearchValue.toLowerCase())
+    )
+    setScannedBook(found || null)
+    if (!found) alert('No book found matching that ISBN or title.')
   }
 
   return (
@@ -347,6 +505,180 @@ export default function LibraryModule() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
+          QR SCANNER TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'qr-scanner' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* Mode Toggle */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { setQrScanMode('scan'); setScannedBook(null) }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${qrScanMode === 'scan' ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}
+            >
+              <ScanLine className="w-4 h-4" /> Scan Book QR
+            </button>
+            <button
+              onClick={() => { setQrScanMode('generate'); setScannedBook(null) }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${qrScanMode === 'generate' ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}
+            >
+              <QrCode className="w-4 h-4" /> Generate Book QR Codes
+            </button>
+          </div>
+
+          {/* Scan Mode */}
+          {qrScanMode === 'scan' && (
+            <div className="space-y-5">
+              {/* Scan Card */}
+              <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-5"><ScanLine className="w-5 h-5 text-birla-cyan" />Scan Book QR Code</h3>
+                <p className="text-sm text-muted-foreground mb-4">Scan a book&apos;s QR code to instantly view its details, availability, and shelf location. You can also search by ISBN or title below.</p>
+
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <button
+                    onClick={handleScanBookQR}
+                    disabled={isScanningBook}
+                    className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all ${
+                      isScanningBook
+                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                        : 'gradient-birla text-white hover:opacity-90'
+                    }`}
+                  >
+                    {isScanningBook ? (
+                      <>
+                        <ScanLine className="w-5 h-5 animate-pulse" />
+                        <span>Scanning QR Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="w-5 h-5" />
+                        <span>Scan Book QR</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={qrSearchValue}
+                      onChange={(e) => setQrSearchValue(e.target.value)}
+                      placeholder="Search by ISBN or title..."
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearchBookByISBN()}
+                    />
+                  </div>
+                  <button
+                    onClick={handleSearchBookByISBN}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-birla-gold text-[#0A1628] text-xs font-bold hover:opacity-90 transition-opacity"
+                  >
+                    <Search className="w-3.5 h-3.5" /> Search
+                  </button>
+                </div>
+
+                {/* Scanned Book Details */}
+                <AnimatePresence>
+                  {scannedBook && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="mt-5 rounded-xl border border-birla-cyan/20 bg-gradient-to-r from-[#0A1628]/5 to-[#22D3EE]/5 dark:from-[#0A1628]/20 dark:to-[#22D3EE]/10 backdrop-blur-sm p-5"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0A1628] to-[#22D3EE] flex items-center justify-center text-white shrink-0 shadow-lg">
+                          <BookOpen className="w-7 h-7" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-base font-bold text-foreground">{scannedBook.title}</h4>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">by {scannedBook.author}</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="rounded-lg bg-background/60 p-2.5">
+                              <p className="text-[10px] text-muted-foreground">ISBN</p>
+                              <p className="text-xs font-mono font-medium text-foreground">{scannedBook.ISBN}</p>
+                            </div>
+                            <div className="rounded-lg bg-background/60 p-2.5">
+                              <p className="text-[10px] text-muted-foreground">Category</p>
+                              <p className="text-xs font-medium text-foreground">{scannedBook.category}</p>
+                            </div>
+                            <div className="rounded-lg bg-background/60 p-2.5">
+                              <p className="text-[10px] text-muted-foreground">Available</p>
+                              <p className={`text-xs font-bold ${scannedBook.available > 3 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{scannedBook.available} / {scannedBook.copies}</p>
+                            </div>
+                            <div className="rounded-lg bg-background/60 p-2.5">
+                              <p className="text-[10px] text-muted-foreground">Shelf</p>
+                              <p className="text-xs font-mono font-medium text-foreground">{scannedBook.shelf}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Scanning Animation */}
+                {isScanningBook && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-5 flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-birla-cyan/30 bg-birla-cyan/5"
+                  >
+                    <div className="relative">
+                      <QrCode className="w-16 h-16 text-birla-cyan animate-pulse" />
+                      <ScanLine className="w-20 h-20 text-birla-cyan/30 absolute -top-2 -left-2 animate-bounce" />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-3">Point camera at book QR code...</p>
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
+          )}
+
+          {/* Generate Mode */}
+          {qrScanMode === 'generate' && (
+            <div className="space-y-5">
+              <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-2"><QrCode className="w-5 h-5 text-birla-gold" />Book QR Code Generator</h3>
+                <p className="text-sm text-muted-foreground mb-5">Each book has a unique QR code containing its ISBN. Print and attach these QR codes to book covers for quick scanning.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {catalogData.map((book) => (
+                    <motion.div
+                      key={book.id}
+                      variants={itemVariants}
+                      className="rounded-xl border border-border bg-gradient-to-br from-[#0A1628]/5 to-[#22D3EE]/5 dark:from-[#0A1628]/15 dark:to-[#22D3EE]/5 backdrop-blur-sm p-4 hover:shadow-lg hover:border-birla-cyan/30 transition-all"
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        <SimulatedQRCode data={book.ISBN} size={110} />
+                        <h4 className="text-xs font-semibold text-foreground mt-3 line-clamp-2">{book.title}</h4>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{book.author}</p>
+                        <p className="text-[9px] font-mono text-birla-cyan mt-1">{book.ISBN}</p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400">{book.category}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${book.available > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
+                            {book.available > 0 ? `${book.available} avail` : 'Unavailable'}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => alert(`QR Code for "${book.title}" (ISBN: ${book.ISBN}) sent to printer!`)}
+                          className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla-gold text-[#0A1628] text-[10px] font-bold hover:opacity-90 transition-opacity"
+                        >
+                          <Printer className="w-3 h-3" /> Print QR
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
           E-BOOKS TAB
       ═══════════════════════════════════════════════════════════════ */}
       {activeTab === 'ebooks' && (
@@ -399,39 +731,64 @@ export default function LibraryModule() {
                 <FormField label="Number of Copies"><InputField value={bookEntryForm.copies} onChange={(e) => setBookEntryForm({ ...bookEntryForm, copies: e.target.value })} placeholder="0" type="number" /></FormField>
                 <FormField label="Accession Number"><InputField value={bookEntryForm.accessionNumber} onChange={(e) => setBookEntryForm({ ...bookEntryForm, accessionNumber: e.target.value })} placeholder="ACC-001" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Add Book</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleBookEntrySubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Add Book</button></div>
             </motion.div>
           )}
 
-          {/* Form 2: Book Issue */}
+          {/* Form 2: Book Issue (with QRStudentLookup) */}
           {activeForm === 1 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><BookCheck className="w-5 h-5 text-emerald-500" />Book Issue Form</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FormField label="Student Name">
-                  <InputField value={bookIssueForm.studentName} onChange={(e) => setBookIssueForm({ ...bookIssueForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {bookIssueForm.studentName && <StudentUDISE bspId="BSP-2025-001" penNo="PEN-XA-001" upparId="UPP-001" />}
+                <div className="lg:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setIssueStudent(student)
+                      if (student) {
+                        setBookIssueForm(prev => ({ ...prev }))
+                      }
+                    }}
+                    mode="student"
+                    placeholder="Scan student QR or enter Student ID / Name"
+                    showDetails={false}
+                    label="Student Identification (QR Scan / ID Lookup)"
+                  />
+                  <StudentDetailsCard student={issueStudent} />
+                </div>
+                <FormField label="Class">
+                  {issueStudent ? (
+                    <input type="text" value={`${issueStudent.class}-${issueStudent.section}`} readOnly className="w-full px-3 py-2 rounded-lg border border-input bg-muted text-sm text-foreground font-medium" />
+                  ) : (
+                    <SelectField value={bookIssueForm.class || ''} onChange={(e) => setBookIssueForm({ ...bookIssueForm, class: e.target.value })} options={['Select class...','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} />
+                  )}
                 </FormField>
-                <FormField label="Class"><SelectField value={bookIssueForm.class} onChange={(e) => setBookIssueForm({ ...bookIssueForm, class: e.target.value })} options={['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} /></FormField>
-                <FormField label="Book"><SelectField value={bookIssueForm.bookSelect} onChange={(e) => setBookIssueForm({ ...bookIssueForm, bookSelect: e.target.value })} options={['Concepts of Physics', 'Mathematics for Class X', 'NCERT Biology XII', 'Wings of Fire', 'India After Gandhi', 'Hindi Vyakaran', 'Organic Chemistry', 'The Discovery of India']} /></FormField>
+                <FormField label="Book"><SelectField value={bookIssueForm.bookSelect} onChange={(e) => setBookIssueForm({ ...bookIssueForm, bookSelect: e.target.value })} options={['Select book...','Concepts of Physics', 'Mathematics for Class X', 'NCERT Biology XII', 'Wings of Fire', 'India After Gandhi', 'Hindi Vyakaran', 'Organic Chemistry', 'The Discovery of India']} /></FormField>
                 <FormField label="Issue Date"><InputField value={bookIssueForm.issueDate} onChange={(e) => setBookIssueForm({ ...bookIssueForm, issueDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Due Date"><InputField value={bookIssueForm.dueDate} onChange={(e) => setBookIssueForm({ ...bookIssueForm, dueDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Issued By"><InputField value={bookIssueForm.issuedBy} onChange={(e) => setBookIssueForm({ ...bookIssueForm, issuedBy: e.target.value })} placeholder="Librarian name" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Issue Book</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleBookIssueSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Issue Book</button></div>
             </motion.div>
           )}
 
-          {/* Form 3: Book Return */}
+          {/* Form 3: Book Return (with QRStudentLookup) */}
           {activeForm === 2 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><BookOpenCheck className="w-5 h-5 text-blue-500" />Book Return Form</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Issue ID"><InputField value={bookReturnForm.issueId} onChange={(e) => setBookReturnForm({ ...bookReturnForm, issueId: e.target.value })} placeholder="ISS-001" /></FormField>
-                <FormField label="Student Name">
-                  <InputField value={bookReturnForm.studentName} onChange={(e) => setBookReturnForm({ ...bookReturnForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {bookReturnForm.studentName && <StudentUDISE bspId="BSP-2025-012" penNo="PEN-VIIIA-012" upparId="UPP-012" />}
-                </FormField>
+                <div className="lg:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setReturnStudent(student)
+                    }}
+                    mode="student"
+                    placeholder="Scan student QR or enter Student ID / Name"
+                    showDetails={false}
+                    label="Student Identification (QR Scan / ID Lookup)"
+                  />
+                  <StudentDetailsCard student={returnStudent} />
+                </div>
                 <FormField label="Book Title"><InputField value={bookReturnForm.bookTitle} onChange={(e) => setBookReturnForm({ ...bookReturnForm, bookTitle: e.target.value })} placeholder="Book title" /></FormField>
                 <FormField label="Return Date"><InputField value={bookReturnForm.returnDate} onChange={(e) => setBookReturnForm({ ...bookReturnForm, returnDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Condition"><SelectField value={bookReturnForm.condition} onChange={(e) => setBookReturnForm({ ...bookReturnForm, condition: e.target.value })} options={['Good', 'Damaged', 'Lost']} /></FormField>
@@ -440,7 +797,7 @@ export default function LibraryModule() {
                 </FormField>
                 <FormField label="Remarks"><InputField value={bookReturnForm.remarks} onChange={(e) => setBookReturnForm({ ...bookReturnForm, remarks: e.target.value })} placeholder="Any remarks" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Return Book</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleBookReturnSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Return Book</button></div>
             </motion.div>
           )}
 
@@ -459,44 +816,69 @@ export default function LibraryModule() {
                 <FormField label="Tags"><InputField value={ebookForm.tags} onChange={(e) => setEbookForm({ ...ebookForm, tags: e.target.value })} placeholder="Comma separated tags" /></FormField>
                 <FormField label="File Size (MB)"><InputField value={ebookForm.fileSize} onChange={(e) => setEbookForm({ ...ebookForm, fileSize: e.target.value })} placeholder="0" type="number" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Upload E-Book</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleEbookUploadSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Upload E-Book</button></div>
             </motion.div>
           )}
 
-          {/* Form 5: Library Membership */}
+          {/* Form 5: Library Membership (with QRStudentLookup) */}
           {activeForm === 4 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Shield className="w-5 h-5 text-birla-cyan" />Library Membership Form</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FormField label="Student Name">
-                  <InputField value={membershipForm.studentName} onChange={(e) => setMembershipForm({ ...membershipForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {membershipForm.studentName && <StudentUDISE bspId="BSP-2025-045" penNo="PEN-IXB-045" upparId="UPP-045" />}
+                <div className="lg:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setMembershipStudent(student)
+                      if (student) {
+                        setMembershipForm(prev => ({ ...prev, class: `${student.class}-${student.section}` }))
+                      }
+                    }}
+                    mode="student"
+                    placeholder="Scan student QR or enter Student ID / Name"
+                    showDetails={false}
+                    label="Student Identification (QR Scan / ID Lookup)"
+                  />
+                  <StudentDetailsCard student={membershipStudent} />
+                </div>
+                <FormField label="Class">
+                  {membershipStudent ? (
+                    <input type="text" value={`${membershipStudent.class}-${membershipStudent.section}`} readOnly className="w-full px-3 py-2 rounded-lg border border-input bg-muted text-sm text-foreground font-medium" />
+                  ) : (
+                    <SelectField value={membershipForm.class} onChange={(e) => setMembershipForm({ ...membershipForm, class: e.target.value })} options={['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} />
+                  )}
                 </FormField>
-                <FormField label="Class"><SelectField value={membershipForm.class} onChange={(e) => setMembershipForm({ ...membershipForm, class: e.target.value })} options={['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} /></FormField>
                 <FormField label="Membership Type"><SelectField value={membershipForm.membershipType} onChange={(e) => setMembershipForm({ ...membershipForm, membershipType: e.target.value })} options={['Standard', 'Premium']} /></FormField>
                 <FormField label="Issue Date"><InputField value={membershipForm.issueDate} onChange={(e) => setMembershipForm({ ...membershipForm, issueDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Valid Till"><InputField value={membershipForm.validTill} onChange={(e) => setMembershipForm({ ...membershipForm, validTill: e.target.value })} type="date" /></FormField>
                 <FormField label="Security Deposit (₹)"><InputField value={membershipForm.securityDeposit} onChange={(e) => setMembershipForm({ ...membershipForm, securityDeposit: e.target.value })} placeholder="500" type="number" /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Create Membership</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleMembershipSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Create Membership</button></div>
             </motion.div>
           )}
 
-          {/* Form 6: Book Reservation */}
+          {/* Form 6: Book Reservation (with QRStudentLookup) */}
           {activeForm === 5 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><BookMarked className="w-5 h-5 text-amber-500" />Book Reservation Form</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FormField label="Student Name">
-                  <InputField value={reservationForm.studentName} onChange={(e) => setReservationForm({ ...reservationForm, studentName: e.target.value })} placeholder="Enter student name" />
-                  {reservationForm.studentName && <StudentUDISE bspId="BSP-2025-067" penNo="PEN-VIB-067" upparId="UPP-067" />}
-                </FormField>
-                <FormField label="Book Title"><SelectField value={reservationForm.bookTitle} onChange={(e) => setReservationForm({ ...reservationForm, bookTitle: e.target.value })} options={['Concepts of Physics', 'Mathematics for Class X', 'NCERT Biology XII', 'Wings of Fire', 'India After Gandhi', 'Hindi Vyakaran', 'Organic Chemistry', 'The Discovery of India']} /></FormField>
+                <div className="lg:col-span-2">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setReservationStudent(student)
+                    }}
+                    mode="student"
+                    placeholder="Scan student QR or enter Student ID / Name"
+                    showDetails={false}
+                    label="Student Identification (QR Scan / ID Lookup)"
+                  />
+                  <StudentDetailsCard student={reservationStudent} />
+                </div>
+                <FormField label="Book Title"><SelectField value={reservationForm.bookTitle} onChange={(e) => setReservationForm({ ...reservationForm, bookTitle: e.target.value })} options={['Select book...','Concepts of Physics', 'Mathematics for Class X', 'NCERT Biology XII', 'Wings of Fire', 'India After Gandhi', 'Hindi Vyakaran', 'Organic Chemistry', 'The Discovery of India']} /></FormField>
                 <FormField label="Reservation Date"><InputField value={reservationForm.reservationDate} onChange={(e) => setReservationForm({ ...reservationForm, reservationDate: e.target.value })} type="date" /></FormField>
                 <FormField label="Priority"><SelectField value={reservationForm.priority} onChange={(e) => setReservationForm({ ...reservationForm, priority: e.target.value })} options={['Normal', 'High', 'Urgent']} /></FormField>
                 <FormField label="Notification Preference"><SelectField value={reservationForm.notificationPreference} onChange={(e) => setReservationForm({ ...reservationForm, notificationPreference: e.target.value })} options={['SMS', 'Email', 'Both', 'App Notification']} /></FormField>
               </div>
-              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Reserve Book</button></div>
+              <div className="mt-6 flex justify-end"><button onClick={handleReservationSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Reserve Book</button></div>
             </motion.div>
           )}
         </motion.div>

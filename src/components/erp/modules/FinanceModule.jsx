@@ -18,6 +18,7 @@ import {
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
+import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -274,6 +275,9 @@ export default function FinanceModule() {
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
+
+  // QR-selected student for fee forms
+  const [selectedFeeStudent, setSelectedFeeStudent] = useState(null)
 
   const autoCalcTotal = () => {
     const t = Number(feeStructureForm.tuitionFee) || 0
@@ -583,10 +587,20 @@ export default function FinanceModule() {
           {activeForm === 0 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><IndianRupee className="w-5 h-5 text-birla-gold" />Fee Payment Collection Form</h3>
+              <div className="mb-4">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      setSelectedFeeStudent(student)
+                      if (student) setFeePayment({...feePayment, studentName: student.name})
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for fee collection"
+                  />
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
                   <InputField value={feePayment.studentName} onChange={(e) => setFeePayment({ ...feePayment, studentName: e.target.value })} placeholder="Enter student name" />
-                  {feePayment.studentName && <StudentUDISE bspId="BSP-2025-001" penNo="PEN-XA-001" upparId="UPP-001" />}
+                  {(selectedFeeStudent || feePayment.studentName) && <StudentUDISE bspId={selectedFeeStudent?.bspId || 'BSP-2025-001'} penNo={selectedFeeStudent?.penNo || 'PEN-XA-001'} upparId={selectedFeeStudent?.upparId || 'UPP-001'} />}
                 </FormField>
                 <FormField label="Fee Type">
                   <SelectField value={feePayment.feeType} onChange={(e) => setFeePayment({ ...feePayment, feeType: e.target.value })} options={['Tuition', 'Development', 'Transport', 'Lab', 'Exam', 'Annual']} />
@@ -614,7 +628,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Payment</button>
+                <button onClick={() => { alert('Fee Payment collected successfully!'); setSelectedFeeStudent(null) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Payment</button>
               </div>
             </motion.div>
           )}
@@ -656,7 +670,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Save Fee Structure</button>
+                <button onClick={() => alert('Fee Structure saved successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Save Fee Structure</button>
               </div>
             </motion.div>
           )}
@@ -665,6 +679,15 @@ export default function FinanceModule() {
           {activeForm === 2 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Award className="w-5 h-5 text-purple-500" />Scholarship Application Form</h3>
+              <div className="mb-4">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      if (student) setScholarshipForm({...scholarshipForm, studentName: student.name})
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for scholarship"
+                  />
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
                   <InputField value={scholarshipForm.studentName} onChange={(e) => setScholarshipForm({ ...scholarshipForm, studentName: e.target.value })} placeholder="Enter student name" />
@@ -693,7 +716,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Application</button>
+                <button onClick={() => alert('Scholarship Application submitted successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Application</button>
               </div>
             </motion.div>
           )}
@@ -702,6 +725,15 @@ export default function FinanceModule() {
           {activeForm === 3 && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><BadgePercent className="w-5 h-5 text-emerald-500" />Fee Waiver Form</h3>
+              <div className="mb-4">
+                  <QRStudentLookup
+                    onStudentSelect={(student) => {
+                      if (student) setFeeWaiverForm({...feeWaiverForm, studentName: student.name})
+                    }}
+                    label="Student Identification (QR / ID)"
+                    placeholder="Scan QR or search student for fee waiver"
+                  />
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField label="Student Name">
                   <InputField value={feeWaiverForm.studentName} onChange={(e) => setFeeWaiverForm({ ...feeWaiverForm, studentName: e.target.value })} placeholder="Enter student name" />
@@ -724,7 +756,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Apply Waiver</button>
+                <button onClick={() => alert('Fee Waiver applied successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Apply Waiver</button>
               </div>
             </motion.div>
           )}
@@ -760,7 +792,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Expense</button>
+                <button onClick={() => alert('Expense submitted successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Expense</button>
               </div>
             </motion.div>
           )}
@@ -790,7 +822,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Save Budget</button>
+                <button onClick={() => alert('Budget saved successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Save Budget</button>
               </div>
             </motion.div>
           )}
@@ -817,7 +849,7 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end gap-3">
-                <button className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Printer className="w-4 h-4" />Generate Bulk Receipts</button>
+                <button onClick={() => alert('Bulk Receipts generated successfully!')} className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Printer className="w-4 h-4" />Generate Bulk Receipts</button>
               </div>
             </motion.div>
           )}
