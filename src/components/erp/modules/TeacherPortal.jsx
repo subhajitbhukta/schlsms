@@ -18,6 +18,7 @@ import {
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
+import { TEACHER_ASSIGNMENTS, TEACHERS, getTeacherWorkload } from '@/components/erp/shared/teacherAssignments'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -191,8 +192,16 @@ export default function TeacherPortal() {
     }))
   }
 
+  // Current teacher (logged-in teacher) - get dynamic assignment data
+  const currentTeacher = TEACHERS.find(t => t.id === 'TCH002') // Mr. Rajesh Kumar - TGT Mathematics as example
+  const myWorkload = getTeacherWorkload('TCH002')
+  const myAssignments = myWorkload.assignments
+  const myClasses = myWorkload.uniqueClasses
+  const mySubjects = myWorkload.uniqueSubjects
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: GraduationCap },
+    { id: 'my-classes', label: 'My Classes', icon: GraduationCap },
     { id: 'attendance', label: 'Attendance', icon: UserCheck },
     { id: 'assignments', label: 'Assignments', icon: ClipboardList },
     { id: 'evaluation', label: 'Evaluation', icon: Award },
@@ -262,10 +271,10 @@ export default function TeacherPortal() {
         <div className="space-y-4">
           <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'My Classes', value: '6', change: '+1', icon: Users, color: 'from-blue-900 to-blue-700' },
-              { label: 'Assignments Due', value: '12', change: '+3', icon: ClipboardList, color: 'from-amber-800 to-amber-600' },
-              { label: 'Avg Attendance', value: '92%', change: '+2.1%', icon: UserCheck, color: 'from-emerald-800 to-emerald-600' },
-              { label: 'Class Avg Score', value: '76%', change: '+3.5%', icon: TrendingUp, color: 'from-purple-800 to-purple-600' },
+              { label: 'My Classes', value: String(myClasses.length), change: `${mySubjects.length} subjects`, icon: Users, color: 'from-blue-900 to-blue-700' },
+              { label: 'Periods/Week', value: String(myWorkload.totalPeriods), change: `${myWorkload.utilization}% load`, icon: Clock, color: 'from-amber-800 to-amber-600' },
+              { label: 'Assignments Due', value: '12', change: '+3', icon: ClipboardList, color: 'from-emerald-800 to-emerald-600' },
+              { label: 'Class Teacher Of', value: myWorkload.classTeacherOf.length > 0 ? myWorkload.classTeacherOf.join(', ') : 'None', change: myWorkload.isClassTeacher ? 'Active' : '', icon: GraduationCap, color: 'from-purple-800 to-purple-600' },
             ].map((card) => {
               const Icon = card.icon
               return (
@@ -275,9 +284,9 @@ export default function TeacherPortal() {
                     <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                    {card.change && <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
                       <ArrowUpRight className="w-3 h-3" />{card.change}
-                    </span>
+                    </span>}
                   </div>
                   <p className="text-xl font-bold">{card.value}</p>
                   <p className="text-[11px] text-white/70 mt-0.5">{card.label}</p>
@@ -286,27 +295,50 @@ export default function TeacherPortal() {
             })}
           </motion.div>
 
+          {/* My Assigned Classes & Subjects - Quick Overview */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-birla-gold" />My Assigned Classes & Subjects
+              </h3>
+              <button onClick={() => setActiveTab('my-classes')} className="text-xs text-birla-cyan hover:underline flex items-center gap-1">View Details <ChevronRight className="w-3 h-3" /></button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {myAssignments.map((asn) => (
+                <div key={asn.id} className="rounded-xl border border-border p-3 hover:shadow-md transition-all gradient-card-blue">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold gradient-birla text-white">Class {asn.class}-{asn.section}</span>
+                    {asn.isClassTeacher && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-birla-gold/20 text-birla-gold">CT</span>}
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{asn.subject}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{asn.periodsPerWeek} periods/week</p>
+                  <div className="w-full bg-muted rounded-full h-1 mt-2">
+                    <div className="bg-birla-gold h-1 rounded-full" style={{ width: `${Math.min((asn.periodsPerWeek / 8) * 100, 100)}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
                 <Calendar className="w-4 h-4 text-birla-gold" />Today&apos;s Schedule
               </h3>
               <div className="space-y-2">
-                {[
-                  { period: '1', time: '8:00 - 8:40', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-                  { period: '2', time: '8:45 - 9:25', subject: 'Mathematics', class: 'X-B', room: 'Room 202' },
-                  { period: '3', time: '9:30 - 10:10', subject: 'Mathematics', class: 'IX-A', room: 'Room 105' },
-                  { period: '5', time: '11:00 - 11:40', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-                  { period: '7', time: '1:00 - 1:40', subject: 'Mathematics', class: 'IX-B', room: 'Room 106' },
-                ].map((s, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                    <div className="w-9 h-9 rounded-xl gradient-birla flex items-center justify-center text-white font-bold text-xs">P{s.period}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground">{s.subject} - Class {s.class}</p>
-                      <p className="text-[10px] text-muted-foreground">{s.time} &bull; {s.room}</p>
+                {myAssignments.slice(0, 5).map((asn, i) => {
+                  const timeSlots = ['8:00 - 8:40', '8:45 - 9:25', '9:30 - 10:10', '11:00 - 11:40', '1:00 - 1:40']
+                  return (
+                    <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
+                      <div className="w-9 h-9 rounded-xl gradient-birla flex items-center justify-center text-white font-bold text-xs">P{i + 1}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground">{asn.subject} - Class {asn.class}-{asn.section}</p>
+                        <p className="text-[10px] text-muted-foreground">{timeSlots[i]} &bull; Room {200 + i}</p>
+                      </div>
+                      {asn.isClassTeacher && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-birla-gold/20 text-birla-gold">Class Teacher</span>}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </motion.div>
 
@@ -331,6 +363,151 @@ export default function TeacherPortal() {
               </div>
             </motion.div>
           </div>
+        </div>
+      )}
+
+      {/* My Classes & Subjects Tab */}
+      {activeTab === 'my-classes' && (
+        <div className="space-y-4">
+          {/* Teacher Info Card */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-birla-gold/30 bg-gradient-to-r from-[#0A1628] to-[#0f2340] p-5 text-white">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/10 border border-[#C8A45C]/40 flex items-center justify-center">
+                <Users className="w-8 h-8 text-[#C8A45C]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white">{currentTeacher?.name}</h3>
+                <p className="text-sm text-[#C8A45C]">{currentTeacher?.designation}</p>
+                <p className="text-xs text-white/60 mt-0.5">{currentTeacher?.department} Department &bull; {currentTeacher?.qualification} &bull; Emp ID: {currentTeacher?.empId}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-[#C8A45C]">{myWorkload.totalPeriods}<span className="text-sm text-white/60">/{myWorkload.maxPeriods}</span></p>
+                <p className="text-xs text-white/50">Periods/Week</p>
+                <div className="w-32 bg-white/20 rounded-full h-2 mt-2">
+                  <div className="bg-[#C8A45C] h-2 rounded-full transition-all" style={{ width: `${myWorkload.utilization}%` }} />
+                </div>
+                <p className="text-[10px] text-white/40 mt-0.5">{myWorkload.utilization}% Utilization</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Workload Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: 'Total Classes', value: String(myClasses.length), icon: Users, color: 'from-blue-900 to-blue-700' },
+              { label: 'Subjects Taught', value: String(mySubjects.length), icon: BookOpen, color: 'from-emerald-800 to-emerald-600' },
+              { label: 'Class Teacher Of', value: myWorkload.classTeacherOf.length > 0 ? myWorkload.classTeacherOf.length : '0', icon: GraduationCap, color: 'from-amber-800 to-amber-600' },
+              { label: 'Free Periods/Week', value: String(myWorkload.maxPeriods - myWorkload.totalPeriods), icon: Clock, color: 'from-purple-800 to-purple-600' },
+            ].map((card) => {
+              const Icon = card.icon
+              return (
+                <div key={card.label} className={`rounded-2xl bg-gradient-to-br ${card.color} p-4 text-white shadow-xl`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Icon className="w-5 h-5 text-white/60" />
+                  </div>
+                  <p className="text-xl font-bold">{card.value}</p>
+                  <p className="text-[11px] text-white/60 mt-0.5">{card.label}</p>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Workload Chart */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-birla-gold" />Period Allocation by Class
+            </h3>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={myAssignments.map(a => ({ name: `${a.class}-${a.section}`, periods: a.periodsPerWeek, subject: a.subject }))} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis type="number" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={50} />
+                  <Tooltip contentStyle={{ backgroundColor: darkMode ? '#1A2D4A' : '#fff', border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'), borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b' }} />
+                  <Bar dataKey="periods" fill="#C8A45C" radius={[0, 6, 6, 0]} name="Periods/Week" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Assignment Details Table */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <ClipboardList className="w-4 h-4 text-birla-cyan" />Detailed Class & Subject Assignments
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left p-2.5 text-muted-foreground font-medium">Subject</th>
+                    <th className="text-left p-2.5 text-muted-foreground font-medium">Class</th>
+                    <th className="text-left p-2.5 text-muted-foreground font-medium">Section</th>
+                    <th className="text-center p-2.5 text-muted-foreground font-medium">Periods/Week</th>
+                    <th className="text-center p-2.5 text-muted-foreground font-medium">Role</th>
+                    <th className="text-center p-2.5 text-muted-foreground font-medium">Workload</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myAssignments.map((asn) => (
+                    <tr key={asn.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="p-2.5 font-medium text-foreground flex items-center gap-2">
+                        <BookOpen className="w-3.5 h-3.5 text-birla-cyan" />{asn.subject}
+                      </td>
+                      <td className="p-2.5 text-foreground font-medium">{asn.class}</td>
+                      <td className="p-2.5 text-foreground">{asn.section}</td>
+                      <td className="p-2.5 text-center font-bold text-foreground">{asn.periodsPerWeek}</td>
+                      <td className="p-2.5 text-center">
+                        {asn.isClassTeacher ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold gradient-birla-gold text-birla-blue">Class Teacher</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-birla-cyan/10 text-birla-cyan">Subject Teacher</span>
+                        )}
+                      </td>
+                      <td className="p-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-muted rounded-full h-1.5">
+                            <div className="bg-birla-gold h-1.5 rounded-full" style={{ width: `${Math.min((asn.periodsPerWeek / 8) * 100, 100)}%` }} />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground w-8">{Math.round((asn.periodsPerWeek / 8) * 100)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/20">
+                    <td colSpan={3} className="p-2.5 text-xs font-bold text-foreground">Total</td>
+                    <td className="p-2.5 text-center text-xs font-bold text-foreground">{myWorkload.totalPeriods}</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </motion.div>
+
+          {/* Class Teacher Responsibilities */}
+          {myWorkload.isClassTeacher && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-birla-gold/30 bg-gradient-to-r from-[#0A1628]/80 to-transparent p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+                <GraduationCap className="w-4 h-4 text-birla-gold" />Class Teacher Responsibilities
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {myWorkload.classTeacherOf.map((cls) => (
+                  <div key={cls} className="rounded-xl border border-birla-gold/20 p-4 gradient-card-blue">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold gradient-birla-gold text-birla-blue">Class {cls}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Responsible for attendance, discipline, parent communication, and overall class coordination.</p>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => setActiveTab('attendance')} className="text-[10px] px-2 py-1 rounded-lg bg-birla-cyan/10 text-birla-cyan hover:bg-birla-cyan/20">Attendance</button>
+                      <button onClick={() => setActiveTab('communication')} className="text-[10px] px-2 py-1 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-500/20">Contact Parents</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       )}
 
@@ -400,9 +577,12 @@ export default function TeacherPortal() {
       {activeTab === 'timetable' && (
         <div className="space-y-4">
           <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-birla-gold" />Weekly Timetable
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-birla-gold" />Weekly Timetable
+              </h3>
+              <span className="text-[10px] text-muted-foreground">Based on your class & subject assignments ({myWorkload.totalPeriods} periods/week)</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead><tr className="border-b border-border">
@@ -412,29 +592,99 @@ export default function TeacherPortal() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {[
-                    { period: '1', time: '8:00-8:40', slots: ['Math X-A', 'Math IX-A', 'Math X-B', 'Math IX-B', 'Math X-A', 'Math IX-A'] },
-                    { period: '2', time: '8:45-9:25', slots: ['Math X-B', 'Math X-A', 'Math IX-A', 'Math X-A', 'Math IX-B', 'Math X-B'] },
-                    { period: '3', time: '9:30-10:10', slots: ['Math IX-A', 'Math IX-B', 'Math X-A', 'Math IX-B', 'Math X-B', 'Math IX-A'] },
-                    { period: '4', time: '10:15-10:55', slots: ['Break', 'Break', 'Break', 'Break', 'Break', 'Break'] },
-                    { period: '5', time: '11:00-11:40', slots: ['Math X-A', 'Math IX-B', 'Math X-B', 'Math IX-A', 'Math X-A', 'Free'] },
-                    { period: '6', time: '11:45-12:25', slots: ['Math IX-B', 'Math X-B', 'Math IX-B', 'Math X-B', 'Math IX-A', 'Free'] },
-                    { period: '7', time: '1:00-1:40', slots: ['Math IX-B', 'Free', 'Math IX-A', 'Free', 'Free', 'Free'] },
-                    { period: '8', time: '1:45-2:25', slots: ['Free', 'Free', 'Free', 'Free', 'Free', 'Free'] },
-                  ].map(row => (
-                    <tr key={row.period} className="border-b border-border hover:bg-muted/30">
-                      <td className="p-2"><div className="font-medium text-foreground">P{row.period}</div><div className="text-[10px] text-muted-foreground">{row.time}</div></td>
-                      {row.slots.map((slot, si) => (
-                        <td key={si} className="p-1.5 text-center">
-                          <span className={`inline-block px-2 py-1 rounded-lg text-[10px] font-medium ${slot === 'Break' ? 'bg-amber-500/10 text-amber-500' : slot === 'Free' ? 'bg-muted/30 text-muted-foreground' : 'bg-birla-cyan/10 text-birla-cyan'}`}>{slot}</span>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {(() => {
+                    // Generate timetable dynamically from assignments
+                    const classNames = myAssignments.map(a => `${a.subject.slice(0,4)} ${a.class}-${a.section}`)
+                    const freeSlot = 'Free'
+                    const breakSlot = 'Break'
+                    const days = 6
+                    const periods = 8
+                    // Distribute assignments across the week
+                    const schedule = Array.from({ length: periods }, () => Array(days).fill(freeSlot))
+                    // Period 4 is break
+                    schedule[3] = Array(days).fill(breakSlot)
+                    // Assign classes to periods based on assignment data
+                    let slotIdx = 0
+                    myAssignments.forEach(asn => {
+                      for (let p = 0; p < asn.periodsPerWeek && slotIdx < (periods - 1) * days; p++) {
+                        let placed = false
+                        for (let prd = 0; prd < periods && !placed; prd++) {
+                          if (prd === 3) continue // skip break
+                          for (let day = 0; day < days && !placed; day++) {
+                            if (schedule[prd][day] === freeSlot) {
+                              schedule[prd][day] = `${asn.subject.slice(0,4)} ${asn.class}-${asn.section}`
+                              slotIdx++
+                              placed = true
+                            }
+                          }
+                        }
+                      }
+                    })
+                    const timeLabels = ['8:00-8:40', '8:45-9:25', '9:30-10:10', '10:15-10:55', '11:00-11:40', '11:45-12:25', '1:00-1:40', '1:45-2:25']
+                    return schedule.map((slots, prdIdx) => (
+                      <tr key={prdIdx} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2"><div className="font-medium text-foreground">P{prdIdx + 1}</div><div className="text-[10px] text-muted-foreground">{timeLabels[prdIdx]}</div></td>
+                        {slots.map((slot, si) => (
+                          <td key={si} className="p-1.5 text-center">
+                            <span className={`inline-block px-2 py-1 rounded-lg text-[10px] font-medium ${slot === breakSlot ? 'bg-amber-500/10 text-amber-500' : slot === freeSlot ? 'bg-muted/30 text-muted-foreground' : 'bg-birla-cyan/10 text-birla-cyan'}`}>{slot}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  })()}
                 </tbody>
               </table>
             </div>
           </motion.div>
+
+          {/* Timetable Legend & Summary */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                <BookOpen className="w-4 h-4 text-birla-gold" />Assigned Subjects Summary
+              </h3>
+              <div className="space-y-2">
+                {mySubjects.map(subject => {
+                  const subjectAssignments = myAssignments.filter(a => a.subject === subject)
+                  const totalPeriods = subjectAssignments.reduce((sum, a) => sum + a.periodsPerWeek, 0)
+                  return (
+                    <div key={subject} className="flex items-center gap-3 p-2 rounded-xl border border-border hover:bg-muted/30">
+                      <div className="w-8 h-8 rounded-lg bg-birla-cyan/10 flex items-center justify-center text-birla-cyan text-xs font-bold">{subject.charAt(0)}</div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-foreground">{subject}</p>
+                        <p className="text-[10px] text-muted-foreground">{subjectAssignments.length} class(es) &bull; {totalPeriods} periods/week</p>
+                      </div>
+                      <div className="w-16 bg-muted rounded-full h-1.5">
+                        <div className="bg-birla-gold h-1.5 rounded-full" style={{ width: `${Math.min((totalPeriods / myWorkload.maxPeriods) * 100, 100)}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Users className="w-4 h-4 text-birla-cyan" />Class-wise Allocation
+              </h3>
+              <div className="space-y-2">
+                {myClasses.map(cls => {
+                  const classAssignments = myAssignments.filter(a => `${a.class}-${a.section}` === cls)
+                  const isCT = classAssignments.some(a => a.isClassTeacher)
+                  return (
+                    <div key={cls} className="flex items-center gap-3 p-2 rounded-xl border border-border hover:bg-muted/30">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${isCT ? 'gradient-birla-gold text-birla-blue' : 'bg-birla-cyan/10 text-birla-cyan'}`}>{cls}</div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-foreground">Class {cls}</p>
+                        <p className="text-[10px] text-muted-foreground">{classAssignments.map(a => a.subject).join(', ')} &bull; {classAssignments.reduce((s, a) => s + a.periodsPerWeek, 0)} periods</p>
+                      </div>
+                      {isCT && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold gradient-birla-gold text-birla-blue">CT</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          </div>
         </div>
       )}
 

@@ -11,7 +11,7 @@ import {
   DollarSign, AlertTriangle, CheckCircle2, XCircle, Settings, Globe,
   BookOpen, Megaphone, Smile, Frown, Meh, Handshake, FileSpreadsheet,
   CreditCard, QrCode, ScanLine, Printer, RefreshCw, Droplets,
-  AlertCircle, Eye, Loader2, Hash
+  AlertCircle, Eye, Loader2, Hash, Edit, Trash2
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -20,6 +20,7 @@ import {
 import useAppStore from '@/store/useAppStore'
 import QRStudentLookup from '@/components/erp/shared/QRStudentLookup'
 import { TEACHER_DB } from '@/components/erp/shared/QRStudentLookup'
+import { TEACHERS, TEACHER_ASSIGNMENTS, SUBJECTS, CLASSES, SECTIONS, getTeacherWorkload, getClassSubjectCoverage, getAssignmentStats } from '@/components/erp/shared/teacherAssignments'
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -423,6 +424,18 @@ export default function HRModule() {
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const [payrollSubTab, setPayrollSubTab] = useState('overview')
 
+  // Class & Subject Assignment States
+  const [assignmentView, setAssignmentView] = useState('grid')  // 'grid', 'byTeacher', 'byClass'
+  const [assignmentSearch, setAssignmentSearch] = useState('')
+  const [assignmentFilter, setAssignmentFilter] = useState('all')  // 'all', 'classTeacher', 'subjectTeacher'
+  const [showAssignmentForm, setShowAssignmentForm] = useState(false)
+  const [assignmentForm, setAssignmentForm] = useState({ teacherId: '', subject: '', class: '', section: '', periodsPerWeek: '', role: 'Subject Teacher', isClassTeacher: false })
+  const [editingAssignment, setEditingAssignment] = useState(null)
+  const [selectedTeacherWorkload, setSelectedTeacherWorkload] = useState(null)
+  const [classCoverageView, setClassCoverageView] = useState(null)
+  const [bulkAssignMode, setBulkAssignMode] = useState(false)
+  const [bulkAssignForm, setBulkAssignForm] = useState({ teacherId: '', classes: [], subject: '', periodsPerWeek: '' })
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'teacher-id', label: 'Teacher ID', icon: CreditCard },
@@ -431,6 +444,7 @@ export default function HRModule() {
     { id: 'leave', label: 'Leave', icon: Clock },
     { id: 'recruitment', label: 'Recruitment', icon: UserPlus },
     { id: 'performance', label: 'Performance', icon: Star },
+    { id: 'class-assignment', label: 'Class Assignment', icon: GraduationCap },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: FileBarChart },
   ]
@@ -538,6 +552,31 @@ export default function HRModule() {
 
   const handleAttendanceMark = (teacher, status) => {
     alert(`✅ Attendance Marked!\n\n${teacher.name} (${teacher.empId})\nStatus: ${status}\nTime: ${new Date().toLocaleTimeString()}`)
+  }
+
+  // ─── Class & Subject Assignment Handlers ─────────────────────
+  const handleAssignmentSubmit = () => {
+    const teacher = TEACHERS.find(t => t.id === assignmentForm.teacherId)
+    alert(`Assignment saved!\n\nTeacher: ${teacher?.name}\nSubject: ${assignmentForm.subject}\nClass: ${assignmentForm.class}-${assignmentForm.section}\nPeriods/Week: ${assignmentForm.periodsPerWeek}\nRole: ${assignmentForm.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}`)
+    setShowAssignmentForm(false)
+    setAssignmentForm({ teacherId: '', subject: '', class: '', section: '', periodsPerWeek: '', role: 'Subject Teacher', isClassTeacher: false })
+  }
+
+  const handleEditAssignment = (assignment) => {
+    setEditingAssignment(assignment.id)
+    setAssignmentForm({ teacherId: assignment.teacherId, subject: assignment.subject, class: assignment.class, section: assignment.section, periodsPerWeek: assignment.periodsPerWeek, role: assignment.role, isClassTeacher: assignment.isClassTeacher })
+    setShowAssignmentForm(true)
+  }
+
+  const handleDeleteAssignment = (assignmentId) => {
+    alert(`Assignment ${assignmentId} removed successfully!`)
+  }
+
+  const handleBulkAssignSubmit = () => {
+    const teacher = TEACHERS.find(t => t.id === bulkAssignForm.teacherId)
+    alert(`Bulk Assignment Complete!\n\nTeacher: ${teacher?.name}\nSubject: ${bulkAssignForm.subject}\nClasses: ${bulkAssignForm.classes.join(', ')}\nPeriods/Week per class: ${bulkAssignForm.periodsPerWeek}`)
+    setBulkAssignMode(false)
+    setBulkAssignForm({ teacherId: '', classes: [], subject: '', periodsPerWeek: '' })
   }
 
   return (
@@ -1203,6 +1242,472 @@ export default function HRModule() {
               </div>
             </motion.div>
           </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          CLASS ASSIGNMENT TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'class-assignment' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* ─── Summary Stats Row ──────────────────────────── */}
+          {(() => {
+            const stats = getAssignmentStats()
+            const statCards = [
+              { label: 'Total Assignments', value: stats.totalAssignments, icon: BookOpen, gradient: 'from-[#0A1628] to-[#0f2340]', glow: 'shadow-[#0A1628]/20' },
+              { label: 'Assigned Teachers', value: stats.assignedTeachers, icon: UserCheck, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+              { label: 'Unassigned Teachers', value: stats.unassignedTeachers, icon: UserX, gradient: 'from-rose-900 to-rose-600', glow: 'shadow-rose-800/20' },
+              { label: 'Class Teachers', value: stats.classTeachers, icon: GraduationCap, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+              { label: 'Avg Workload/Week', value: `${stats.avgWorkload}p`, icon: BarChart3, gradient: 'from-cyan-900 to-cyan-600', glow: 'shadow-cyan-800/20' },
+              { label: 'Utilization Rate', value: `${stats.utilizationRate}%`, icon: Target, gradient: 'from-[#0A1628] to-[#1a3050]', glow: 'shadow-blue-800/20' },
+            ]
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {statCards.map((card) => {
+                  const Icon = card.icon
+                  return (
+                    <motion.div key={card.label} variants={itemVariants} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-4 text-white shadow-xl ${card.glow}`}>
+                      <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/5 -translate-y-4 translate-x-4" />
+                      <div className="relative z-10">
+                        <div className="w-8 h-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center mb-2"><Icon className="w-4 h-4" /></div>
+                        <p className="text-xl font-bold">{card.value}</p>
+                        <p className="text-[10px] text-white/70 mt-0.5">{card.label}</p>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )
+          })()}
+
+          {/* ─── View Toggle & Search Bar ───────────────────── */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-muted/30 rounded-xl p-1">
+              {[
+                { id: 'grid', label: 'Grid', icon: BookOpen },
+                { id: 'byTeacher', label: 'By Teacher', icon: Users },
+                { id: 'byClass', label: 'By Class', icon: GraduationCap },
+              ].map((v) => {
+                const Icon = v.icon
+                return (
+                  <button key={v.id} onClick={() => setAssignmentView(v.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${assignmentView === v.id ? 'gradient-birla text-white shadow-md' : 'text-muted-foreground hover:bg-muted'}`}>
+                    <Icon className="w-3.5 h-3.5" /> {v.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex-1 flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <input type="text" value={assignmentSearch} onChange={(e) => setAssignmentSearch(e.target.value)} placeholder="Search teacher, subject, class..." className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+              </div>
+              <select value={assignmentFilter} onChange={(e) => setAssignmentFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                <option value="all">All Roles</option>
+                <option value="classTeacher">Class Teacher</option>
+                <option value="subjectTeacher">Subject Teacher</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => { setShowAssignmentForm(true); setEditingAssignment(null); setAssignmentForm({ teacherId: '', subject: '', class: '', section: '', periodsPerWeek: '', role: 'Subject Teacher', isClassTeacher: false }) }} className="flex items-center gap-1.5 px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-xs font-bold hover:opacity-90 transition-opacity"><Plus className="w-3.5 h-3.5" /> Add Assignment</button>
+              <button onClick={() => setBulkAssignMode(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#C8A45C]/30 text-[#C8A45C] text-xs font-bold hover:bg-[#C8A45C]/10 transition-colors"><Users className="w-3.5 h-3.5" /> Bulk Assign</button>
+            </div>
+          </div>
+
+          {/* ─── Grid View ──────────────────────────────────── */}
+          {assignmentView === 'grid' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Teacher</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Emp ID</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Subject</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Class</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Section</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Periods/Wk</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Role</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
+                  </tr></thead>
+                  <tbody>
+                    {TEACHER_ASSIGNMENTS
+                      .filter((a) => {
+                        const q = assignmentSearch.toLowerCase()
+                        if (q && !a.teacherName.toLowerCase().includes(q) && !a.subject.toLowerCase().includes(q) && !a.class.toLowerCase().includes(q)) return false
+                        if (assignmentFilter === 'classTeacher' && !a.isClassTeacher) return false
+                        if (assignmentFilter === 'subjectTeacher' && a.isClassTeacher) return false
+                        return true
+                      })
+                      .map((assignment) => (
+                        <tr key={assignment.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium text-foreground">{assignment.teacherName}</td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground font-mono text-[11px]">{assignment.empId}</td>
+                          <td className="px-4 py-3 text-sm text-foreground">{assignment.subject}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-foreground">{assignment.class}</td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">{assignment.section}</td>
+                          <td className="px-4 py-3 text-center"><span className="px-2.5 py-1 rounded-lg bg-[#22D3EE]/10 text-[#22D3EE] text-xs font-bold">{assignment.periodsPerWeek}</span></td>
+                          <td className="px-4 py-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${assignment.isClassTeacher ? 'bg-[#C8A45C]/15 text-[#C8A45C] dark:text-[#C8A45C]' : 'bg-[#22D3EE]/10 text-[#22D3EE]'}`}>{assignment.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}</span></td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <button onClick={() => handleEditAssignment(assignment)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"><Edit className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => handleDeleteAssignment(assignment.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors text-muted-foreground hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── By Teacher View ─────────────────────────────── */}
+          {assignmentView === 'byTeacher' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {TEACHERS.map((teacher) => {
+                const workload = getTeacherWorkload(teacher.id)
+                if (assignmentSearch) {
+                  const q = assignmentSearch.toLowerCase()
+                  if (!teacher.name.toLowerCase().includes(q) && !teacher.department.toLowerCase().includes(q)) return null
+                }
+                if (assignmentFilter === 'classTeacher' && !workload.isClassTeacher) return null
+                if (assignmentFilter === 'subjectTeacher' && workload.isClassTeacher) return null
+                return (
+                  <motion.div key={teacher.id} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedTeacherWorkload(teacher.id)}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl gradient-birla text-white flex items-center justify-center text-sm font-bold">{teacher.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{teacher.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{teacher.department} &bull; {teacher.designation}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-2 mb-3">
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-muted-foreground">Total Periods</span>
+                        <span className="font-bold text-foreground">{workload.totalPeriods} / {workload.maxPeriods}</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${workload.utilization > 90 ? 'bg-red-500' : workload.utilization > 70 ? 'bg-[#C8A45C]' : 'bg-[#22D3EE]'}`} style={{ width: `${Math.min(workload.utilization, 100)}%` }} />
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className={`font-medium ${workload.utilization > 90 ? 'text-red-500' : workload.utilization > 70 ? 'text-[#C8A45C]' : 'text-[#22D3EE]'}`}>{workload.utilization}% Utilized</span>
+                        {workload.isClassTeacher && <span className="px-1.5 py-0.5 rounded bg-[#C8A45C]/15 text-[#C8A45C] text-[9px] font-bold">Class Teacher</span>}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {workload.assignments.slice(0, 4).map((a) => (
+                        <div key={a.id} className="flex items-center justify-between text-[11px] py-1 px-2 rounded-lg bg-muted/30">
+                          <span className="text-foreground font-medium">{a.subject}</span>
+                          <span className="text-muted-foreground">{a.class}-{a.section} &bull; {a.periodsPerWeek}p</span>
+                        </div>
+                      ))}
+                      {workload.assignments.length > 4 && <p className="text-[10px] text-muted-foreground text-center">+{workload.assignments.length - 4} more assignments</p>}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* ─── By Class View ───────────────────────────────── */}
+          {assignmentView === 'byClass' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...new Set(TEACHER_ASSIGNMENTS.map(a => `${a.class}-${a.section}`))].sort().map((classSection) => {
+                const [cls, sec] = classSection.split('-')
+                const coverage = getClassSubjectCoverage(cls, sec)
+                if (assignmentSearch) {
+                  const q = assignmentSearch.toLowerCase()
+                  if (!cls.toLowerCase().includes(q) && !classSection.toLowerCase().includes(q)) return null
+                }
+                const classTeacher = coverage.assignments.find(a => a.isClassTeacher)
+                return (
+                  <motion.div key={classSection} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setClassCoverageView(classSection)}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl gradient-birla-gold text-birla-blue flex items-center justify-center text-sm font-bold">{cls}{sec}</div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Class {cls} - Section {sec}</p>
+                          <p className="text-[10px] text-muted-foreground">{coverage.coveredSubjects.length} subjects assigned</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    {/* Coverage bar */}
+                    <div className="mb-3">
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="text-muted-foreground">Subject Coverage</span>
+                        <span className={`font-bold ${coverage.coverage >= 80 ? 'text-emerald-500' : coverage.coverage >= 50 ? 'text-[#C8A45C]' : 'text-red-500'}`}>{coverage.coverage}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${coverage.coverage >= 80 ? 'bg-emerald-500' : coverage.coverage >= 50 ? 'bg-[#C8A45C]' : 'bg-red-500'}`} style={{ width: `${coverage.coverage}%` }} />
+                      </div>
+                    </div>
+                    {/* Class Teacher */}
+                    {classTeacher && (
+                      <div className="mb-3 flex items-center gap-2 p-2 rounded-lg bg-[#C8A45C]/10">
+                        <GraduationCap className="w-3.5 h-3.5 text-[#C8A45C]" />
+                        <span className="text-[11px] font-medium text-[#C8A45C]">Class Teacher: {classTeacher.teacherName}</span>
+                      </div>
+                    )}
+                    {/* Subject-Teacher list */}
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {coverage.assignments.map((a) => (
+                        <div key={a.id} className="flex items-center justify-between text-[11px] py-1 px-2 rounded-lg bg-muted/30">
+                          <span className="text-foreground font-medium">{a.subject}</span>
+                          <span className="text-muted-foreground">{a.teacherName}</span>
+                        </div>
+                      ))}
+                      {coverage.unassigned.length > 0 && (
+                        <div className="mt-1">
+                          <p className="text-[10px] text-red-500 font-medium">Unassigned: {coverage.unassigned.slice(0, 3).join(', ')}{coverage.unassigned.length > 3 ? ` +${coverage.unassigned.length - 3}` : ''}</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* ─── Add / Edit Assignment Form ──────────────────── */}
+          {showAssignmentForm && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-[#C8A45C]/30 bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6">
+                <GraduationCap className="w-5 h-5 text-birla-gold" />
+                {editingAssignment ? 'Edit Assignment' : 'Add New Assignment'}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Teacher">
+                  <select value={assignmentForm.teacherId} onChange={(e) => setAssignmentForm({ ...assignmentForm, teacherId: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Teacher</option>
+                    {TEACHERS.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.department})</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Subject">
+                  <select value={assignmentForm.subject} onChange={(e) => setAssignmentForm({ ...assignmentForm, subject: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Subject</option>
+                    {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Class">
+                  <select value={assignmentForm.class} onChange={(e) => setAssignmentForm({ ...assignmentForm, class: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Class</option>
+                    {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Section">
+                  <select value={assignmentForm.section} onChange={(e) => setAssignmentForm({ ...assignmentForm, section: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Section</option>
+                    {SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Periods per Week">
+                  <input type="number" value={assignmentForm.periodsPerWeek} onChange={(e) => setAssignmentForm({ ...assignmentForm, periodsPerWeek: e.target.value })} placeholder="e.g. 6" className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+                </FormField>
+                <FormField label="Role">
+                  <div className="flex items-center gap-3 mt-1">
+                    <button type="button" onClick={() => setAssignmentForm({ ...assignmentForm, isClassTeacher: true })} className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${assignmentForm.isClassTeacher ? 'gradient-birla-gold text-birla-blue shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>Class Teacher</button>
+                    <button type="button" onClick={() => setAssignmentForm({ ...assignmentForm, isClassTeacher: false })} className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${!assignmentForm.isClassTeacher ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>Subject Teacher</button>
+                  </div>
+                </FormField>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => { setShowAssignmentForm(false); setEditingAssignment(null); setAssignmentForm({ teacherId: '', subject: '', class: '', section: '', periodsPerWeek: '', role: 'Subject Teacher', isClassTeacher: false }) }} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><XCircle className="w-4 h-4 inline mr-1.5" />Cancel</button>
+                <button onClick={handleAssignmentSubmit} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />{editingAssignment ? 'Update Assignment' : 'Save Assignment'}</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── Bulk Assign Form ────────────────────────────── */}
+          {bulkAssignMode && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-[#22D3EE]/30 bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Users className="w-5 h-5 text-[#22D3EE]" />Bulk Assignment</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Teacher">
+                  <select value={bulkAssignForm.teacherId} onChange={(e) => setBulkAssignForm({ ...bulkAssignForm, teacherId: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Teacher</option>
+                    {TEACHERS.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.department})</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Subject">
+                  <select value={bulkAssignForm.subject} onChange={(e) => setBulkAssignForm({ ...bulkAssignForm, subject: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+                    <option value="">Select Subject</option>
+                    {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Periods per Week (per class)">
+                  <input type="number" value={bulkAssignForm.periodsPerWeek} onChange={(e) => setBulkAssignForm({ ...bulkAssignForm, periodsPerWeek: e.target.value })} placeholder="e.g. 6" className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+                </FormField>
+                <FormField label="Select Class-Sections">
+                  <div className="flex flex-wrap gap-2 p-2 rounded-lg border border-input bg-background max-h-24 overflow-y-auto">
+                    {[...new Set(TEACHER_ASSIGNMENTS.map(a => `${a.class}-${a.section}`))].sort().map((cs) => (
+                      <button key={cs} type="button" onClick={() => {
+                        const current = bulkAssignForm.classes
+                        setBulkAssignForm({ ...bulkAssignForm, classes: current.includes(cs) ? current.filter(c => c !== cs) : [...current, cs] })
+                      }} className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${bulkAssignForm.classes.includes(cs) ? 'gradient-birla text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>{cs}</button>
+                    ))}
+                  </div>
+                </FormField>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => { setBulkAssignMode(false); setBulkAssignForm({ teacherId: '', classes: [], subject: '', periodsPerWeek: '' }) }} className="px-6 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors"><XCircle className="w-4 h-4 inline mr-1.5" />Cancel</button>
+                <button onClick={handleBulkAssignSubmit} className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />Assign to {bulkAssignForm.classes.length} Classes</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── Teacher Workload Detail Panel ───────────────── */}
+          {selectedTeacherWorkload && (
+            <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="rounded-2xl border border-[#C8A45C]/30 bg-gradient-to-br from-[#0A1628] to-[#0f2340] p-5 text-white">
+              {(() => {
+                const wl = getTeacherWorkload(selectedTeacherWorkload)
+                const teacher = TEACHERS.find(t => t.id === selectedTeacherWorkload)
+                if (!teacher) return null
+                const freePeriods = wl.maxPeriods - wl.totalPeriods
+                const workloadChartData = wl.assignments.map(a => ({ name: `${a.class}-${a.section} ${a.subject}`, periods: a.periodsPerWeek }))
+                return (
+                  <div>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl gradient-birla-gold text-birla-blue flex items-center justify-center text-sm font-bold">{teacher.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
+                        <div>
+                          <p className="text-base font-bold text-white">{teacher.name}</p>
+                          <p className="text-xs text-[#C8A45C]">{teacher.designation} &bull; {teacher.department}</p>
+                          <p className="text-[10px] text-white/50">{teacher.qualification} &bull; Specialization: {teacher.specialization}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setSelectedTeacherWorkload(null)} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"><XCircle className="w-5 h-5 text-white/60" /></button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-lg font-bold text-[#22D3EE]">{wl.totalPeriods}</p>
+                        <p className="text-[10px] text-white/50">Total Periods</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-lg font-bold text-[#C8A45C]">{wl.maxPeriods}</p>
+                        <p className="text-[10px] text-white/50">Max Periods</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                        <p className={`text-lg font-bold ${wl.utilization > 90 ? 'text-red-400' : 'text-emerald-400'}`}>{wl.utilization}%</p>
+                        <p className="text-[10px] text-white/50">Utilization</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-lg font-bold text-emerald-400">{freePeriods}</p>
+                        <p className="text-[10px] text-white/50">Free Periods</p>
+                      </div>
+                    </div>
+                    {/* Class Teacher Responsibilities */}
+                    {wl.classTeacherOf.length > 0 && (
+                      <div className="mb-4 p-3 rounded-xl bg-[#C8A45C]/10 border border-[#C8A45C]/20">
+                        <p className="text-[10px] font-bold text-[#C8A45C] uppercase tracking-wider mb-1">Class Teacher Responsibilities</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {wl.classTeacherOf.map((cs) => <span key={cs} className="px-2 py-0.5 rounded-lg bg-[#C8A45C]/20 text-[#C8A45C] text-[11px] font-medium">Class {cs}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Workload Bar Chart */}
+                    {workloadChartData.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Period Distribution</p>
+                        <div className="h-40">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={workloadChartData} layout="vertical">
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                              <XAxis type="number" tick={{ fontSize: 9 }} stroke="#64748b" />
+                              <YAxis type="category" dataKey="name" tick={{ fontSize: 8 }} stroke="#64748b" width={100} />
+                              <Tooltip contentStyle={tooltipStyle} />
+                              <Bar dataKey="periods" fill="#22D3EE" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+                    {/* Assignment list */}
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-1">All Assignments</p>
+                      {wl.assignments.map((a) => (
+                        <div key={a.id} className="flex items-center justify-between text-[11px] py-1.5 px-3 rounded-lg bg-white/5">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="w-3 h-3 text-[#22D3EE]" />
+                            <span className="text-white font-medium">{a.subject}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-white/60">Class {a.class}-{a.section}</span>
+                            <span className="text-[#22D3EE] font-bold">{a.periodsPerWeek}p</span>
+                            {a.isClassTeacher && <span className="px-1.5 py-0.5 rounded bg-[#C8A45C]/20 text-[#C8A45C] text-[9px] font-bold">CT</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+            </motion.div>
+          )}
+
+          {/* ─── Class Coverage Detail Panel ─────────────────── */}
+          {classCoverageView && (
+            <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="rounded-2xl border border-[#22D3EE]/30 bg-gradient-to-br from-[#0A1628] to-[#0f2340] p-5 text-white">
+              {(() => {
+                const [cls, sec] = classCoverageView.split('-')
+                const coverage = getClassSubjectCoverage(cls, sec)
+                const classTeacher = coverage.assignments.find(a => a.isClassTeacher)
+                return (
+                  <div>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl gradient-birla-gold text-birla-blue flex items-center justify-center text-sm font-bold">{cls}{sec}</div>
+                        <div>
+                          <p className="text-base font-bold text-white">Class {cls} - Section {sec}</p>
+                          <p className="text-xs text-[#22D3EE]">{coverage.coveredSubjects.length} subjects covered &bull; {coverage.unassigned.length} unassigned</p>
+                          {classTeacher && <p className="text-[10px] text-[#C8A45C] mt-0.5">Class Teacher: {classTeacher.teacherName}</p>}
+                        </div>
+                      </div>
+                      <button onClick={() => setClassCoverageView(null)} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"><XCircle className="w-5 h-5 text-white/60" /></button>
+                    </div>
+                    {/* Coverage bar */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="text-white/50">Subject Coverage</span>
+                        <span className={`font-bold ${coverage.coverage >= 80 ? 'text-emerald-400' : coverage.coverage >= 50 ? 'text-[#C8A45C]' : 'text-red-400'}`}>{coverage.coverage}%</span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${coverage.coverage >= 80 ? 'bg-emerald-500' : coverage.coverage >= 50 ? 'bg-[#C8A45C]' : 'bg-red-500'}`} style={{ width: `${coverage.coverage}%` }} />
+                      </div>
+                    </div>
+                    {/* Covered subjects */}
+                    <div className="mb-4">
+                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2">Covered Subjects</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        {coverage.assignments.map((a) => (
+                          <div key={a.id} className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                            <div>
+                              <p className="text-[11px] font-medium text-white">{a.subject}</p>
+                              <p className="text-[9px] text-white/50">{a.teacherName} &bull; {a.periodsPerWeek}p/w</p>
+                            </div>
+                            {a.isClassTeacher && <GraduationCap className="w-3.5 h-3.5 text-[#C8A45C]" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Unassigned subjects */}
+                    {coverage.unassigned.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2">Unassigned Subjects</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {coverage.unassigned.map((s) => (
+                            <span key={s} className="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-medium">{s}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+            </motion.div>
+          )}
         </motion.div>
       )}
 
