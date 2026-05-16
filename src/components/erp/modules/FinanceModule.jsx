@@ -11,7 +11,8 @@ import {
   Building2, Phone, Mail, MapPin, Zap, Globe, ChevronLeft,
   MessageSquare, Save, CheckSquare, Layers, Target, Banknote,
   FileSpreadsheet, BookOpen, FileBarChart, DollarSign, HandCoins,
-  Landmark, Calculator, BadgePercent, Truck, GraduationCap, ClipboardList
+  Landmark, Calculator, BadgePercent, Truck, GraduationCap, ClipboardList,
+  Share2, Copy, Check, X
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -237,12 +238,31 @@ export default function FinanceModule() {
   const [budgetForm, setBudgetForm] = useState({ department: '', category: '', allocatedAmount: '', spentAmount: '', balance: '', financialYear: '2025-26' })
   const [bulkReceipt, setBulkReceipt] = useState({ class: '', section: '', feeType: 'Tuition', fromMonth: 'April', toMonth: 'March', })
 
+  // Fee Receipt States
+  const [generatedReceipt, setGeneratedReceipt] = useState(null)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
+  const [shareOption, setShareOption] = useState(null) // 'whatsapp', 'email', null
+  const [shareEmail, setShareEmail] = useState('')
+  const [sharePhone, setSharePhone] = useState('')
+  const [shareSent, setShareSent] = useState(false)
+  const [receiptCopied, setReceiptCopied] = useState(false)
+  const [allReceipts, setAllReceipts] = useState([
+    { id: 'RCP-2026-0847', studentName: 'Priya Gupta', class: 'X-A', bspId: 'BSP-2025-002', penNo: 'PEN-XA-002', upparId: 'UPP-002', feeType: 'Tuition', amount: 62000, paymentMode: 'UPI', transactionId: 'UPI20260304567', date: '2026-03-04', academicYear: '2025-26', status: 'Paid' },
+    { id: 'RCP-2026-0846', studentName: 'Vivaan Kumar', class: 'V-A', bspId: 'BSP-2025-007', penNo: 'PEN-VA-007', upparId: 'UPP-007', feeType: 'Development', amount: 12000, paymentMode: 'Net Banking', transactionId: 'NB20260304123', date: '2026-03-04', academicYear: '2025-26', status: 'Paid' },
+    { id: 'RCP-2026-0845', studentName: 'Ananya Iyer', class: 'VIII-A', bspId: 'BSP-2025-012', penNo: 'PEN-VIIIA-012', upparId: 'UPP-012', feeType: 'Transport', amount: 24000, paymentMode: 'Card', transactionId: 'CD20260303890', date: '2026-03-03', academicYear: '2025-26', status: 'Paid' },
+    { id: 'RCP-2026-0844', studentName: 'Aditya Singh', class: 'III-B', bspId: 'BSP-2025-018', penNo: 'PEN-IIIB-018', upparId: 'UPP-018', feeType: 'Exam', amount: 2500, paymentMode: 'UPI', transactionId: 'UPI20260303456', date: '2026-03-03', academicYear: '2025-26', status: 'Pending' },
+    { id: 'RCP-2026-0843', studentName: 'Kavya Joshi', class: 'II-A', bspId: 'BSP-2025-023', penNo: 'PEN-IIA-023', upparId: 'UPP-023', feeType: 'Annual', amount: 6000, paymentMode: 'Cash', transactionId: 'CASH-20260302', date: '2026-03-02', academicYear: '2025-26', status: 'Paid' },
+  ])
+  const [receiptSearch, setReceiptSearch] = useState('')
+  const [selectedReceiptForReprint, setSelectedReceiptForReprint] = useState(null)
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'fee-structure', label: 'Fee Structure', icon: IndianRupee },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'analytics', label: 'Analytics', icon: TrendingUp },
     { id: 'expenses', label: 'Expenses', icon: Wallet },
+    { id: 'receipts', label: 'Receipts', icon: Receipt },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: FileBarChart },
   ]
@@ -568,6 +588,99 @@ export default function FinanceModule() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
+          RECEIPTS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'receipts' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Receipt className="w-5 h-5 text-birla-gold" />Fee Receipts</h3>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={receiptSearch}
+                  onChange={(e) => setReceiptSearch(e.target.value)}
+                  placeholder="Search receipts..."
+                  className="pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 w-56"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Receipt Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: 'Total Receipts', value: allReceipts.length, icon: Receipt, color: 'emerald' },
+              { label: 'Total Collected', value: `₹${allReceipts.reduce((s, r) => s + r.amount, 0).toLocaleString('en-IN')}`, icon: IndianRupee, color: 'purple' },
+              { label: 'Pending', value: allReceipts.filter(r => r.status === 'Pending').length, icon: Clock, color: 'amber' },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <motion.div key={item.label} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div>
+                    <div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          {/* Receipts Table */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Receipt No</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Student</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Class</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">BSP ID</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Fee Type</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Amount</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Mode</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Date</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allReceipts
+                    .filter(r => {
+                      if (!receiptSearch) return true
+                      const q = receiptSearch.toLowerCase()
+                      return r.studentName.toLowerCase().includes(q) || r.id.toLowerCase().includes(q) || r.class.toLowerCase().includes(q)
+                    })
+                    .map((r, idx) => (
+                    <tr key={r.id + idx} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3 text-xs font-mono font-medium text-foreground">{r.id}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{r.studentName}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{r.class}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{r.bspId}</td>
+                      <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-birla-gold/10 text-birla-gold">{r.feeType}</span></td>
+                      <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">₹{r.amount.toLocaleString('en-IN')}</td>
+                      <td className="px-4 py-3 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-foreground">{r.paymentMode}</span></td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{r.date}</td>
+                      <td className="px-4 py-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${r.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{r.status}</span></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => { setGeneratedReceipt(r); setSelectedReceiptForReprint(r); setShowReceiptModal(true) }} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="View / Print"><Eye className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => { setGeneratedReceipt(r); setShareOption('whatsapp'); setSharePhone(''); setShareSent(false) }} className="p-1.5 rounded-lg hover:bg-green-500/10 transition-colors text-green-600 dark:text-green-400" title="Share via WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => { setGeneratedReceipt(r); setShareOption('email'); setShareEmail(''); setShareSent(false) }} className="p-1.5 rounded-lg hover:bg-blue-500/10 transition-colors text-blue-600 dark:text-blue-400" title="Share via Email"><Mail className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => { navigator.clipboard.writeText(r.id); setReceiptCopied(true); setTimeout(() => setReceiptCopied(false), 2000) }} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Copy Receipt No">{receiptCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
           FORMS TAB
       ═══════════════════════════════════════════════════════════════ */}
       {activeTab === 'forms' && (
@@ -628,7 +741,28 @@ export default function FinanceModule() {
                 </FormField>
               </div>
               <div className="mt-6 flex justify-end">
-                <button onClick={() => { alert('Fee Payment collected successfully!'); setSelectedFeeStudent(null) }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Payment</button>
+                <button onClick={() => {
+                  const receiptNo = `RCP-2026-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`
+                  const newReceipt = {
+                    id: receiptNo,
+                    studentName: feePayment.studentName || 'Student',
+                    class: selectedFeeStudent ? `${selectedFeeStudent.class}-${selectedFeeStudent.section}` : '',
+                    bspId: selectedFeeStudent?.bspId || 'BSP-2025-001',
+                    penNo: selectedFeeStudent?.penNo || 'PEN-XA-001',
+                    upparId: selectedFeeStudent?.upparId || 'UPP-001',
+                    feeType: feePayment.feeType,
+                    amount: Number(feePayment.amount) || 0,
+                    paymentMode: feePayment.paymentMode,
+                    transactionId: feePayment.transactionId || '-',
+                    date: feePayment.date || new Date().toISOString().split('T')[0],
+                    academicYear: feePayment.academicYear,
+                    status: 'Paid',
+                  }
+                  setGeneratedReceipt(newReceipt)
+                  setAllReceipts(prev => [newReceipt, ...prev])
+                  setShowReceiptModal(true)
+                  setSelectedFeeStudent(null)
+                }} className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Payment & Generate Receipt</button>
               </div>
             </motion.div>
           )}
@@ -1213,6 +1347,316 @@ export default function FinanceModule() {
               </div>
             </motion.div>
           )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          RECEIPT MODAL
+      ═══════════════════════════════════════════════════════════════ */}
+      {showReceiptModal && generatedReceipt && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => { setShowReceiptModal(false); setShareOption(null); setShareSent(false) }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-background shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Receipt Content - Always white background for printing */}
+            <div id="receipt-print-area" className="bg-white text-gray-900 relative">
+              {/* Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+                <span className="text-[120px] font-black text-gray-100/40 -rotate-45 tracking-widest">BOMIS</span>
+              </div>
+
+              {/* School Header */}
+              <div className="relative z-10 border-b-4 border-amber-500 px-8 pt-6 pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">B</div>
+                    <div>
+                      <h1 className="text-xl font-bold text-gray-900 tracking-wide">BIRLA OPEN MINDS INTERNATIONAL SCHOOL</h1>
+                      <p className="text-sm text-gray-500 font-medium">Singur, Hooghly, West Bengal</p>
+                    </div>
+                  </div>
+                  <div className="text-right text-[10px] text-gray-400 space-y-0.5">
+                    <p className="flex items-center justify-end gap-1"><Phone className="w-3 h-3" /> +91 3212 252 100</p>
+                    <p className="flex items-center justify-end gap-1"><Mail className="w-3 h-3" /> info@bomissingur.edu.in</p>
+                    <p className="flex items-center justify-end gap-1"><MapPin className="w-3 h-3" /> Singur, Hooghly - 712409</p>
+                    <p>UDISE+: 19180100301</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Receipt Title */}
+              <div className="relative z-10 text-center py-3 bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
+                <h2 className="text-lg font-bold text-gray-800 tracking-widest uppercase">Fee Receipt</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Receipt No: <span className="font-mono font-bold text-amber-700">{generatedReceipt.id}</span></p>
+              </div>
+
+              {/* Receipt Details */}
+              <div className="relative z-10 px-8 py-4">
+                <div className="grid grid-cols-3 gap-3 text-sm border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="px-3 py-2 bg-gray-50 border-r border-gray-200">
+                    <span className="text-[10px] text-gray-400 block">Receipt No</span>
+                    <span className="font-mono font-semibold text-gray-800">{generatedReceipt.id}</span>
+                  </div>
+                  <div className="px-3 py-2 bg-gray-50 border-r border-gray-200">
+                    <span className="text-[10px] text-gray-400 block">Date</span>
+                    <span className="font-semibold text-gray-800">{generatedReceipt.date}</span>
+                  </div>
+                  <div className="px-3 py-2 bg-gray-50">
+                    <span className="text-[10px] text-gray-400 block">Academic Year</span>
+                    <span className="font-semibold text-gray-800">{generatedReceipt.academicYear}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Student Details */}
+              <div className="relative z-10 px-8 pb-4">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Student Details</h3>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-2">
+                    <div className="px-4 py-2.5 border-r border-b border-gray-200">
+                      <span className="text-[10px] text-gray-400 block">Student Name</span>
+                      <span className="font-semibold text-gray-800">{generatedReceipt.studentName}</span>
+                    </div>
+                    <div className="px-4 py-2.5 border-b border-gray-200">
+                      <span className="text-[10px] text-gray-400 block">Class & Section</span>
+                      <span className="font-semibold text-gray-800">{generatedReceipt.class}</span>
+                    </div>
+                    <div className="px-4 py-2.5 border-r border-gray-200">
+                      <span className="text-[10px] text-gray-400 block">BSP ID</span>
+                      <span className="font-mono text-sm font-semibold text-blue-700">{generatedReceipt.bspId}</span>
+                    </div>
+                    <div className="px-4 py-2.5 border-r border-b border-gray-200">
+                      <span className="text-[10px] text-gray-400 block">PEN No</span>
+                      <span className="font-mono text-sm font-semibold text-emerald-700">{generatedReceipt.penNo}</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-2.5">
+                    <span className="text-[10px] text-gray-400 block">Uppar ID</span>
+                    <span className="font-mono text-sm font-semibold text-amber-700">{generatedReceipt.upparId}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fee Breakdown */}
+              <div className="relative z-10 px-8 pb-4">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Fee Breakdown</h3>
+                <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+                  <thead>
+                    <tr className="bg-gray-800 text-white">
+                      <th className="text-left px-4 py-2 text-xs font-semibold">#</th>
+                      <th className="text-left px-4 py-2 text-xs font-semibold">Fee Component</th>
+                      <th className="text-right px-4 py-2 text-xs font-semibold">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-gray-200">
+                      <td className="px-4 py-2.5 text-sm text-gray-600">1</td>
+                      <td className="px-4 py-2.5 text-sm font-medium text-gray-800">{generatedReceipt.feeType} Fee</td>
+                      <td className="px-4 py-2.5 text-sm font-semibold text-right text-gray-800">₹{generatedReceipt.amount.toLocaleString('en-IN')}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-amber-50 border-t-2 border-amber-400">
+                      <td colSpan={2} className="px-4 py-3 text-sm font-bold text-gray-900">Total Amount</td>
+                      <td className="px-4 py-3 text-right text-base font-black text-amber-700">₹{generatedReceipt.amount.toLocaleString('en-IN')}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Payment Details */}
+              <div className="relative z-10 px-8 pb-4">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment Details</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="px-4 py-2.5 bg-gray-50 border-r border-gray-200">
+                    <span className="text-[10px] text-gray-400 block">Payment Mode</span>
+                    <span className="font-semibold text-gray-800">{generatedReceipt.paymentMode}</span>
+                  </div>
+                  <div className="px-4 py-2.5 bg-gray-50">
+                    <span className="text-[10px] text-gray-400 block">Transaction ID</span>
+                    <span className="font-mono text-sm font-semibold text-gray-800">{generatedReceipt.transactionId}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount in Words */}
+              <div className="relative z-10 px-8 pb-4">
+                <div className="border border-dashed border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
+                  <span className="text-[10px] text-gray-400 block">Amount in Words</span>
+                  <span className="text-sm font-medium text-gray-700 italic">Rupees {generatedReceipt.amount.toLocaleString('en-IN')} Only</span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="relative z-10 px-8 pb-6">
+                <div className="flex items-end justify-between border-t-2 border-gray-200 pt-4">
+                  <div className="text-center">
+                    <div className="w-28 border-b border-gray-300 mb-1" />
+                    <span className="text-[10px] text-gray-500 font-medium">Authorized Signatory</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center">
+                      <span className="text-[9px] text-gray-400">School Seal</span>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-28 border-b border-gray-300 mb-1" />
+                    <span className="text-[10px] text-gray-500 font-medium">Parent / Guardian</span>
+                  </div>
+                </div>
+                <p className="text-center text-[10px] text-gray-400 mt-4 italic">This is a computer-generated receipt. No physical signature is required. For queries, contact the school accounts office.</p>
+              </div>
+            </div>
+
+            {/* Action Buttons Bar */}
+            {!shareOption && !shareSent && (
+              <div className="border-t border-border bg-card px-6 py-4 flex flex-wrap items-center justify-center gap-3">
+                <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg">
+                  <Printer className="w-4 h-4" /> Print Receipt
+                </button>
+                <button onClick={() => { /* Simulate PDF download */ const link = document.createElement('a'); link.download = `${generatedReceipt.id}.txt`; link.href = URL.createObjectURL(new Blob([`Fee Receipt - ${generatedReceipt.id}\nStudent: ${generatedReceipt.studentName}\nClass: ${generatedReceipt.class}\nAmount: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\nDate: ${generatedReceipt.date}\nPayment Mode: ${generatedReceipt.paymentMode}`], { type: 'text/plain' })); link.click() }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors shadow-lg">
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+                <button onClick={() => { setShareOption('whatsapp'); setSharePhone(''); setShareSent(false) }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-colors shadow-lg" style={{ backgroundColor: '#25D366' }}>
+                  <MessageSquare className="w-4 h-4" /> WhatsApp
+                </button>
+                <button onClick={() => { setShareOption('email'); setShareEmail(''); setShareSent(false) }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors shadow-lg">
+                  <Mail className="w-4 h-4" /> Email
+                </button>
+                <button onClick={() => { setShowReceiptModal(false); setShareOption(null); setShareSent(false) }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors">
+                  <X className="w-4 h-4" /> Close
+                </button>
+              </div>
+            )}
+
+            {/* WhatsApp Share Dialog */}
+            {shareOption === 'whatsapp' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="border-t border-border bg-card px-6 py-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#25D366' }}><MessageSquare className="w-4 h-4 text-white" /></div>
+                  <h4 className="text-sm font-bold text-foreground">Share via WhatsApp</h4>
+                </div>
+                {shareSent ? (
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+                    <p className="text-sm font-medium text-foreground">WhatsApp message opened successfully!</p>
+                    <button onClick={() => { setShareOption(null); setShareSent(false) }} className="px-4 py-2 rounded-lg gradient-birla text-white text-sm font-medium">Done</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <label className="text-xs text-muted-foreground mb-1 block">Phone Number</label>
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-2 rounded-lg border border-input bg-muted text-sm text-foreground font-medium">+91</span>
+                        <input type="tel" value={sharePhone} onChange={(e) => setSharePhone(e.target.value)} placeholder="Enter 10-digit mobile number" className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <label className="text-xs text-muted-foreground mb-1 block">Message Preview</label>
+                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300 max-h-32 overflow-y-auto whitespace-pre-line font-mono">{`🏫 *Birla Open Minds International School, Singur*\n📋 *FEE RECEIPT*\n\n📌 Receipt No: ${generatedReceipt.id}\n📅 Date: ${generatedReceipt.date}\n🎓 Academic Year: ${generatedReceipt.academicYear}\n\n👤 Student: ${generatedReceipt.studentName}\n📚 Class: ${generatedReceipt.class}\n🆔 BSP: ${generatedReceipt.bspId} | PEN: ${generatedReceipt.penNo}\n\n💰 *${generatedReceipt.feeType} Fee*: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\n━━━━━━━━━━━━━━━━━━━━\n💵 *Total*: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\n\n💳 Payment: ${generatedReceipt.paymentMode}\n🔢 Txn ID: ${generatedReceipt.transactionId}\n\n✅ Status: ${generatedReceipt.status}\n\n_This is a computer-generated receipt._`}</div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => setShareOption(null)} className="px-4 py-2 rounded-lg border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors">Cancel</button>
+                      <button
+                        onClick={() => {
+                          const msg = encodeURIComponent(`🏫 *Birla Open Minds International School, Singur*\n📋 *FEE RECEIPT*\n\n📌 Receipt No: ${generatedReceipt.id}\n📅 Date: ${generatedReceipt.date}\n🎓 Academic Year: ${generatedReceipt.academicYear}\n\n👤 Student: ${generatedReceipt.studentName}\n📚 Class: ${generatedReceipt.class}\n🆔 BSP: ${generatedReceipt.bspId} | PEN: ${generatedReceipt.penNo}\n\n💰 *${generatedReceipt.feeType} Fee*: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\n━━━━━━━━━━━━━━━━━━━━\n💵 *Total*: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\n\n💳 Payment: ${generatedReceipt.paymentMode}\n🔢 Txn ID: ${generatedReceipt.transactionId}\n\n✅ Status: ${generatedReceipt.status}\n\n_This is a computer-generated receipt._`)
+                          const phone = sharePhone.replace(/\D/g, '')
+                          window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank')
+                          setShareSent(true)
+                        }}
+                        disabled={sharePhone.length < 10}
+                        className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: '#25D366' }}
+                      >
+                        <span className="flex items-center gap-2"><Send className="w-3.5 h-3.5" /> Send via WhatsApp</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+
+            {/* Email Share Dialog */}
+            {shareOption === 'email' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="border-t border-border bg-card px-6 py-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center"><Mail className="w-4 h-4 text-white" /></div>
+                  <h4 className="text-sm font-bold text-foreground">Share via Email</h4>
+                </div>
+                {shareSent ? (
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <CheckCircle2 className="w-12 h-12 text-blue-500" />
+                    <p className="text-sm font-medium text-foreground">Email sent successfully!</p>
+                    <button onClick={() => { setShareOption(null); setShareSent(false) }} className="px-4 py-2 rounded-lg gradient-birla text-white text-sm font-medium">Done</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-3">
+                      <label className="text-xs text-muted-foreground mb-1 block">Email Address</label>
+                      <input type="email" value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} placeholder="parent@example.com" className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+                    </div>
+                    <div className="mb-3">
+                      <label className="text-xs text-muted-foreground mb-1 block">Subject</label>
+                      <input type="text" readOnly value={`Fee Receipt - ${generatedReceipt.id} - Birla Open Minds International School`} className="w-full px-3 py-2 rounded-lg border border-input bg-muted text-sm text-foreground cursor-not-allowed" />
+                    </div>
+                    <div className="mb-4">
+                      <label className="text-xs text-muted-foreground mb-1 block">Email Body Preview</label>
+                      <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300 max-h-32 overflow-y-auto whitespace-pre-line font-mono">{`Dear Parent/Guardian,
+
+Please find the fee receipt details below:
+
+Receipt No: ${generatedReceipt.id}
+Date: ${generatedReceipt.date}
+Academic Year: ${generatedReceipt.academicYear}
+
+Student: ${generatedReceipt.studentName}
+Class: ${generatedReceipt.class}
+BSP ID: ${generatedReceipt.bspId} | PEN: ${generatedReceipt.penNo}
+
+${generatedReceipt.feeType} Fee: ₹${generatedReceipt.amount.toLocaleString('en-IN')}
+Total Amount: ₹${generatedReceipt.amount.toLocaleString('en-IN')}
+
+Payment Mode: ${generatedReceipt.paymentMode}
+Transaction ID: ${generatedReceipt.transactionId}
+Status: ${generatedReceipt.status}
+
+This is a computer-generated receipt from Birla Open Minds International School, Singur.
+
+Regards,
+Accounts Department
+BOMIS, Singur`}</div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => setShareOption(null)} className="px-4 py-2 rounded-lg border border-border text-muted-foreground text-sm font-medium hover:bg-muted transition-colors">Cancel</button>
+                      <button
+                        onClick={() => {
+                          const subject = encodeURIComponent(`Fee Receipt - ${generatedReceipt.id} - Birla Open Minds International School`)
+                          const body = encodeURIComponent(`Dear Parent/Guardian,\n\nPlease find the fee receipt details below:\n\nReceipt No: ${generatedReceipt.id}\nDate: ${generatedReceipt.date}\nAcademic Year: ${generatedReceipt.academicYear}\n\nStudent: ${generatedReceipt.studentName}\nClass: ${generatedReceipt.class}\nBSP ID: ${generatedReceipt.bspId} | PEN: ${generatedReceipt.penNo}\n\n${generatedReceipt.feeType} Fee: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\nTotal Amount: ₹${generatedReceipt.amount.toLocaleString('en-IN')}\n\nPayment Mode: ${generatedReceipt.paymentMode}\nTransaction ID: ${generatedReceipt.transactionId}\nStatus: ${generatedReceipt.status}\n\nThis is a computer-generated receipt from Birla Open Minds International School, Singur.\n\nRegards,\nAccounts Department\nBOMIS, Singur`)
+                          window.open(`mailto:${shareEmail}?subject=${subject}&body=${body}`, '_blank')
+                          setShareSent(true)
+                        }}
+                        disabled={!shareEmail.includes('@')}
+                        className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="flex items-center gap-2"><Send className="w-3.5 h-3.5" /> Send Email</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </motion.div>
         </motion.div>
       )}
     </motion.div>
