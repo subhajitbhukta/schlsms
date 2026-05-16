@@ -3,18 +3,21 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Bus, MapPin, Navigation, Users, Phone, Clock, Route, ChevronRight,
-  CheckCircle2, AlertTriangle, XCircle, Search, Filter, Plus, Eye,
-  Wifi, WifiOff, Radio, Send, Bell, BellRing, Shield, Activity,
-  Timer, ArrowUpRight, Map, Compass, Car, UserCheck, AlertCircle,
-  Settings, RefreshCw, Locate, Zap, TrendingUp
+  Bus, MapPin, Users, Clock, Navigation, Phone, AlertTriangle,
+  TrendingUp, TrendingDown, ArrowUpRight, Download, Printer,
+  Plus, Search, Filter, Route, UserCheck, Shield, Smartphone,
+  ChevronRight, Save, Eye, Star, Car, Truck as TruckIcon,
+  MapPinned, PhoneCall, Calendar, Bell, CheckCircle2, XCircle,
+  FileText, BarChart3, PieChart as PieChartIcon, ClipboardList,
+  FileBarChart, Fuel, Wrench, Gauge, Activity, User, IndianRupee
 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
+// ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -24,113 +27,169 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+// ─── Mock Data ────────────────────────────────────────────────────
 const topStats = [
-  { label: 'Routes', value: '18', icon: Route, color: 'text-birla-cyan bg-birla-cyan/10', change: '+2 this year' },
-  { label: 'Vehicles', value: '24', icon: Bus, color: 'text-birla-gold bg-birla-gold/10', change: '2 in service' },
-  { label: 'Students', value: '890', icon: Users, color: 'text-emerald-500 bg-emerald-500/10', change: '+45 new' },
-  { label: 'Drivers', value: '28', icon: Car, color: 'text-purple-500 bg-purple-500/10', change: '4 on leave' },
+  { label: 'Total Routes', value: '6', change: '330 students', icon: Route, gradient: 'from-blue-900 to-blue-600', glow: 'shadow-blue-800/20' },
+  { label: 'Active Vehicles', value: '8', change: 'All inspected', icon: Bus, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+  { label: 'On-Time Rate', value: '94.2%', change: '+2.1% vs last', icon: Clock, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+  { label: 'Drivers', value: '10', change: '2 backup', icon: Users, gradient: 'from-purple-900 to-purple-600', glow: 'shadow-purple-800/20' },
 ]
 
-const busRoutes = [
-  { id: 'R-01', name: 'Singur Main Road', stops: 8, distance: '12.5 km', time: '35 min', students: 52, driver: 'Rajendra Kumar', vehicle: 'WB-12-AB-1234', status: 'On Route', optimized: true },
-  { id: 'R-02', name: 'Chandannagar Route', stops: 6, distance: '9.8 km', time: '28 min', students: 41, driver: 'Suresh Yadav', vehicle: 'WB-12-CD-5678', status: 'On Route', optimized: true },
-  { id: 'R-03', name: 'Bandel Expressway', stops: 10, distance: '18.2 km', time: '48 min', students: 68, driver: 'Manoj Singh', vehicle: 'WB-12-EF-9012', status: 'Delayed', optimized: false },
-  { id: 'R-04', name: 'Chinsurah Station', stops: 7, distance: '11.3 km', time: '32 min', students: 47, driver: 'Amit Das', vehicle: 'WB-12-GH-3456', status: 'On Route', optimized: true },
-  { id: 'R-05', name: 'Serampore Highway', stops: 9, distance: '15.7 km', time: '42 min', students: 58, driver: 'Vikram Pal', vehicle: 'WB-12-IJ-7890', status: 'At School', optimized: false },
-  { id: 'R-06', name: 'Tarakeswar Road', stops: 5, distance: '8.4 km', time: '25 min', students: 35, driver: 'Debashis Roy', vehicle: 'WB-12-KL-2345', status: 'On Route', optimized: true },
-  { id: 'R-07', name: 'Haripal Village', stops: 11, distance: '20.1 km', time: '55 min', students: 72, driver: 'Pranab Ghosh', vehicle: 'WB-12-MN-6789', status: 'Delayed', optimized: false },
-  { id: 'R-08', name: 'Dhaniakhali Route', stops: 6, distance: '10.2 km', time: '30 min', students: 39, driver: 'Sanjay Mondal', vehicle: 'WB-12-OP-0123', status: 'On Route', optimized: true },
+const routesData = [
+  { id: 1, name: 'Route 1 - Singur', number: 'R-01', stops: 'Singur, Haripal, Balibela', distance: 18, time: 45, vehicle: 'WB-12-AB-1234', driver: 'Raju Mondal', capacity: 52, students: 68, fee: 22000 },
+  { id: 2, name: 'Route 2 - Chandannagar', number: 'R-02', stops: 'Chandannagar, Chinsurah, Mogra', distance: 22, time: 55, vehicle: 'WB-12-CD-5678', driver: 'Sanjay Das', capacity: 52, students: 82, fee: 24000 },
+  { id: 3, name: 'Route 3 - Srirampore', number: 'R-03', stops: 'Srirampore, Konnagar, Rishra', distance: 15, time: 40, vehicle: 'WB-12-EF-9012', driver: 'Bipin Ghosh', capacity: 42, students: 55, fee: 20000 },
+  { id: 4, name: 'Route 4 - Hooghly', number: 'R-04', stops: 'Hooghly, Bandel, Tribeni', distance: 25, time: 60, vehicle: 'WB-12-GH-3456', driver: 'Amit Shaw', capacity: 42, students: 42, fee: 26000 },
+  { id: 5, name: 'Route 5 - Bardhaman', number: 'R-05', stops: 'Bardhaman, Memari, Katwa', distance: 35, time: 75, vehicle: 'WB-12-IJ-7890', driver: 'Dilip Roy', capacity: 52, students: 38, fee: 28000 },
+  { id: 6, name: 'Route 6 - Tarakeswar', number: 'R-06', stops: 'Tarakeswar, Arambagh, Khanakul', distance: 28, time: 65, vehicle: 'WB-12-KL-1234', driver: 'Pranab Sen', capacity: 42, students: 45, fee: 24000 },
 ]
 
-const drivers = [
-  { id: 'D-001', name: 'Rajendra Kumar', license: 'DL-2019-458723', route: 'R-01', phone: '+91 98321 45670', vehicle: 'WB-12-AB-1234', status: 'On Duty', experience: '8 yrs', rating: 4.8 },
-  { id: 'D-002', name: 'Suresh Yadav', license: 'DL-2020-567834', route: 'R-02', phone: '+91 87654 32109', vehicle: 'WB-12-CD-5678', status: 'On Duty', experience: '6 yrs', rating: 4.5 },
-  { id: 'D-003', name: 'Manoj Singh', license: 'DL-2018-345612', route: 'R-03', phone: '+91 76543 21098', vehicle: 'WB-12-EF-9012', status: 'On Duty', experience: '10 yrs', rating: 4.2 },
-  { id: 'D-004', name: 'Amit Das', license: 'DL-2021-678945', route: 'R-04', phone: '+91 65432 10987', vehicle: 'WB-12-GH-3456', status: 'On Duty', experience: '5 yrs', rating: 4.7 },
-  { id: 'D-005', name: 'Vikram Pal', license: 'DL-2017-234567', route: 'R-05', phone: '+91 54321 09876', vehicle: 'WB-12-IJ-7890', status: 'Break', experience: '12 yrs', rating: 4.9 },
-  { id: 'D-006', name: 'Debashis Roy', license: 'DL-2022-789012', route: 'R-06', phone: '+91 43210 98765', vehicle: 'WB-12-KL-2345', status: 'On Duty', experience: '3 yrs', rating: 4.3 },
-  { id: 'D-007', name: 'Pranab Ghosh', license: 'DL-2019-456123', route: 'R-07', phone: '+91 32109 87654', vehicle: 'WB-12-MN-6789', status: 'On Duty', experience: '7 yrs', rating: 4.6 },
-  { id: 'D-008', name: 'Sanjay Mondal', license: 'DL-2020-123456', route: 'R-08', phone: '+91 21098 76543', vehicle: 'WB-12-OP-0123', status: 'On Leave', experience: '4 yrs', rating: 4.1 },
+const driversData = [
+  { id: 1, name: 'Raju Mondal', license: 'WB-2019-1234567', expiry: 'Dec 2027', phone: '+91 98765 43210', route: 'R-01', vehicle: 'WB-12-AB-1234', experience: 12, bloodGroup: 'B+' },
+  { id: 2, name: 'Sanjay Das', license: 'WB-2020-2345678', expiry: 'Mar 2028', phone: '+91 76543 21098', route: 'R-02', vehicle: 'WB-12-CD-5678', experience: 8, bloodGroup: 'O+' },
+  { id: 3, name: 'Bipin Ghosh', license: 'WB-2018-3456789', expiry: 'Sep 2026', phone: '+91 54321 09876', route: 'R-03', vehicle: 'WB-12-EF-9012', experience: 15, bloodGroup: 'A+' },
+  { id: 4, name: 'Amit Shaw', license: 'WB-2021-4567890', expiry: 'Jun 2027', phone: '+91 21098 76543', route: 'R-04', vehicle: 'WB-12-GH-3456', experience: 6, bloodGroup: 'AB+' },
+  { id: 5, name: 'Dilip Roy', license: 'WB-2017-5678901', expiry: 'Jan 2027', phone: '+91 09876 54321', route: 'R-05', vehicle: 'WB-12-IJ-7890', experience: 18, bloodGroup: 'B-' },
+  { id: 6, name: 'Pranab Sen', license: 'WB-2019-6789012', expiry: 'Nov 2027', phone: '+91 43210 98765', route: 'R-06', vehicle: 'WB-12-KL-1234', experience: 10, bloodGroup: 'O-' },
 ]
 
-const pickupAlerts = [
-  { id: 1, student: 'Aarav Sharma', class: 'X-A', route: 'R-01', type: 'Pickup', stop: 'Singur Market', time: '7:12 AM', parent: 'Mr. Rakesh Sharma', parentPhone: '+91 98765 43210', notified: true, status: 'Completed' },
-  { id: 2, student: 'Priya Gupta', class: 'X-A', route: 'R-02', type: 'Pickup', stop: 'Chandannagar Stand', time: '7:18 AM', parent: 'Mrs. Sunita Gupta', parentPhone: '+91 87654 32109', notified: true, status: 'Completed' },
-  { id: 3, student: 'Arjun Reddy', class: 'IX-B', route: 'R-03', type: 'Pickup', stop: 'Bandel Junction', time: '7:25 AM', parent: 'Mr. Venkat Reddy', parentPhone: '+91 76543 21098', notified: true, status: 'Delayed' },
-  { id: 4, student: 'Ananya Iyer', class: 'VIII-A', route: 'R-04', type: 'Drop', stop: 'Chinsurah Station', time: '3:45 PM', parent: 'Mrs. Lakshmi Iyer', parentPhone: '+91 65432 10987', notified: true, status: 'In Transit' },
-  { id: 5, student: 'Rohan Patel', class: 'VII-A', route: 'R-05', type: 'Drop', stop: 'Serampore More', time: '3:52 PM', parent: 'Mr. Jignesh Patel', parentPhone: '+91 54321 09876', notified: false, status: 'Pending' },
-  { id: 6, student: 'Ishita Banerjee', class: 'VI-B', route: 'R-06', type: 'Pickup', stop: 'Tarakeswar Road', time: '7:30 AM', parent: 'Mrs. Ruma Banerjee', parentPhone: '+91 43210 98765', notified: true, status: 'Completed' },
-  { id: 7, student: 'Vivaan Kumar', class: 'V-A', route: 'R-01', type: 'Drop', stop: 'Singur Market', time: '4:05 PM', parent: 'Mr. Suresh Kumar', parentPhone: '+91 32109 87654', notified: true, status: 'In Transit' },
-  { id: 8, student: 'Meera Nair', class: 'IV-A', route: 'R-07', type: 'Pickup', stop: 'Haripal Village', time: '6:55 AM', parent: 'Mrs. Geeta Nair', parentPhone: '+91 21098 76543', notified: true, status: 'Completed' },
+const vehiclesData = [
+  { number: 'WB-12-AB-1234', type: 'Bus', capacity: 52, regExpiry: 'Mar 2027', insExpiry: 'Jun 2026', pollExpiry: 'Sep 2026', lastService: 'Jan 15, 2026', nextService: 'Jul 15, 2026', status: 'Active' },
+  { number: 'WB-12-CD-5678', type: 'Bus', capacity: 52, regExpiry: 'May 2027', insExpiry: 'Aug 2026', pollExpiry: 'Nov 2026', lastService: 'Feb 10, 2026', nextService: 'Aug 10, 2026', status: 'Active' },
+  { number: 'WB-12-EF-9012', type: 'Bus', capacity: 42, regExpiry: 'Jul 2027', insExpiry: 'Oct 2026', pollExpiry: 'Jan 2027', lastService: 'Dec 20, 2025', nextService: 'Jun 20, 2026', status: 'Active' },
+  { number: 'WB-12-GH-3456', type: 'Bus', capacity: 42, regExpiry: 'Sep 2027', insExpiry: 'Dec 2026', pollExpiry: 'Mar 2027', lastService: 'Mar 1, 2026', nextService: 'Sep 1, 2026', status: 'Active' },
+  { number: 'WB-12-IJ-7890', type: 'Bus', capacity: 52, regExpiry: 'Nov 2027', insExpiry: 'Feb 2027', pollExpiry: 'May 2027', lastService: 'Jan 25, 2026', nextService: 'Jul 25, 2026', status: 'Active' },
+  { number: 'WB-12-KL-1234', type: 'Bus', capacity: 42, regExpiry: 'Jan 2028', insExpiry: 'Apr 2027', pollExpiry: 'Jul 2027', lastService: 'Feb 5, 2026', nextService: 'Aug 5, 2026', status: 'Active' },
+  { number: 'WB-12-MN-5678', type: 'Van', capacity: 18, regExpiry: 'Aug 2027', insExpiry: 'Nov 2026', pollExpiry: 'Feb 2027', lastService: 'Mar 2, 2026', nextService: 'Jun 2, 2026', status: 'Maintenance' },
+  { number: 'WB-12-OP-9012', type: 'Car', capacity: 6, regExpiry: 'Oct 2027', insExpiry: 'Jan 2027', pollExpiry: 'Apr 2027', lastService: 'Feb 18, 2026', nextService: 'May 18, 2026', status: 'Active' },
 ]
 
-const attendanceData = [
-  { route: 'R-01', total: 52, boarded: 50, deboarded: 48, absent: 2, percentage: 96 },
-  { route: 'R-02', total: 41, boarded: 39, deboarded: 39, absent: 2, percentage: 95 },
-  { route: 'R-03', total: 68, boarded: 62, deboarded: 60, absent: 6, percentage: 91 },
-  { route: 'R-04', total: 47, boarded: 46, deboarded: 45, absent: 1, percentage: 98 },
-  { route: 'R-05', total: 58, boarded: 54, deboarded: 52, absent: 4, percentage: 93 },
-  { route: 'R-06', total: 35, boarded: 34, deboarded: 34, absent: 1, percentage: 97 },
-  { route: 'R-07', total: 72, boarded: 66, deboarded: 64, absent: 6, percentage: 92 },
-  { route: 'R-08', total: 39, boarded: 37, deboarded: 36, absent: 2, percentage: 95 },
+// ─── Report Data ──────────────────────────────────────────────────
+const routeUtilData = [
+  { route: 'R-01 Singur', students: 68, capacity: 52 },
+  { route: 'R-02 Chandannagar', students: 82, capacity: 52 },
+  { route: 'R-03 Srirampore', students: 55, capacity: 42 },
+  { route: 'R-04 Hooghly', students: 42, capacity: 42 },
+  { route: 'R-05 Bardhaman', students: 38, capacity: 52 },
+  { route: 'R-06 Tarakeswar', students: 45, capacity: 42 },
 ]
 
-const scanLogs = [
-  { id: 1, student: 'Aarav Sharma', route: 'R-01', type: 'Board', time: '7:12 AM', stop: 'Singur Market', cardId: 'BOM-001' },
-  { id: 2, student: 'Kavya Joshi', route: 'R-01', type: 'Board', time: '7:15 AM', stop: 'Singur Hospital', cardId: 'BOM-010' },
-  { id: 3, student: 'Vivaan Kumar', route: 'R-01', type: 'Board', time: '7:18 AM', stop: 'Singur School Gate', cardId: 'BOM-007' },
-  { id: 4, student: 'Priya Gupta', route: 'R-02', type: 'Board', time: '7:20 AM', stop: 'Chandannagar Stand', cardId: 'BOM-002' },
-  { id: 5, student: 'Arjun Reddy', route: 'R-03', type: 'Board', time: '7:28 AM', stop: 'Bandel Junction', cardId: 'BOM-003' },
-  { id: 6, student: 'Aarav Sharma', route: 'R-01', type: 'Deboard', time: '3:48 PM', stop: 'Singur Market', cardId: 'BOM-001' },
-  { id: 7, student: 'Ananya Iyer', route: 'R-04', type: 'Deboard', time: '3:50 PM', stop: 'Chinsurah Station', cardId: 'BOM-004' },
-  { id: 8, student: 'Ishita Banerjee', route: 'R-06', type: 'Deboard', time: '3:55 PM', stop: 'Tarakeswar Road', cardId: 'BOM-006' },
+const transportAttendanceData = [
+  { day: 'Mon', boarded: 318, dropped: 315 },
+  { day: 'Tue', boarded: 322, dropped: 320 },
+  { day: 'Wed', boarded: 325, dropped: 323 },
+  { day: 'Thu', boarded: 310, dropped: 308 },
+  { day: 'Fri', boarded: 328, dropped: 326 },
+  { day: 'Sat', boarded: 290, dropped: 288 },
 ]
 
-const busMarkers = [
-  { id: 'BUS-01', route: 'R-01', lat: '22.81°N', lng: '88.49°E', speed: '32 km/h', heading: 'School', eta: '8 min', status: 'Moving', fuel: '72%' },
-  { id: 'BUS-02', route: 'R-02', lat: '22.86°N', lng: '88.36°E', speed: '28 km/h', heading: 'School', eta: '12 min', status: 'Moving', fuel: '65%' },
-  { id: 'BUS-03', route: 'R-03', lat: '22.93°N', lng: '88.38°E', speed: '12 km/h', heading: 'School', eta: '22 min', status: 'Slow Traffic', fuel: '48%' },
-  { id: 'BUS-04', route: 'R-04', lat: '22.90°N', lng: '88.40°E', speed: '35 km/h', heading: 'School', eta: '10 min', status: 'Moving', fuel: '80%' },
-  { id: 'BUS-05', route: 'R-05', lat: '22.75°N', lng: '88.34°E', speed: '0 km/h', heading: 'Parked', eta: 'Arrived', status: 'At School', fuel: '55%' },
-  { id: 'BUS-06', route: 'R-06', lat: '22.78°N', lng: '88.45°E', speed: '30 km/h', heading: 'School', eta: '15 min', status: 'Moving', fuel: '90%' },
+const driverPerfData = [
+  { name: 'Raju M.', trips: 45, onTime: 95, rating: 4.5 },
+  { name: 'Sanjay D.', trips: 44, onTime: 92, rating: 4.3 },
+  { name: 'Bipin G.', trips: 43, onTime: 98, rating: 4.8 },
+  { name: 'Amit S.', trips: 42, onTime: 88, rating: 4.0 },
+  { name: 'Dilip R.', trips: 40, onTime: 96, rating: 4.6 },
+  { name: 'Pranab S.', trips: 44, onTime: 94, rating: 4.4 },
 ]
 
-const routeOptimizationData = [
-  { route: 'R-03', current: '18.2 km', optimized: '14.8 km', savings: '3.4 km', timeSaved: '12 min', suggestion: 'Skip Bandel Market, use Expressway bypass' },
-  { route: 'R-05', current: '15.7 km', optimized: '12.1 km', savings: '3.6 km', timeSaved: '15 min', suggestion: 'Merge Serampore stops, avoid GT Road junction' },
-  { route: 'R-07', current: '20.1 km', optimized: '16.5 km', savings: '3.6 km', timeSaved: '18 min', suggestion: 'Reverse loop direction, start from Haripal end' },
+const vehicleMaintenanceData = [
+  { vehicle: 'WB-12-AB-1234', lastService: 'Jan 15', nextService: 'Jul 15', status: 'OK', color: '#10B981' },
+  { vehicle: 'WB-12-CD-5678', lastService: 'Feb 10', nextService: 'Aug 10', status: 'OK', color: '#10B981' },
+  { vehicle: 'WB-12-EF-9012', lastService: 'Dec 20', nextService: 'Jun 20', status: 'Due Soon', color: '#F59E0B' },
+  { vehicle: 'WB-12-GH-3456', lastService: 'Mar 1', nextService: 'Sep 1', status: 'OK', color: '#10B981' },
+  { vehicle: 'WB-12-IJ-7890', lastService: 'Jan 25', nextService: 'Jul 25', status: 'OK', color: '#10B981' },
+  { vehicle: 'WB-12-KL-1234', lastService: 'Feb 5', nextService: 'Aug 5', status: 'OK', color: '#10B981' },
+  { vehicle: 'WB-12-MN-5678', lastService: 'Mar 2', nextService: 'Jun 2', status: 'In Service', color: '#EF4444' },
+  { vehicle: 'WB-12-OP-9012', lastService: 'Feb 18', nextService: 'May 18', status: 'Due Soon', color: '#F59E0B' },
 ]
 
-const parentTrackingData = [
-  { student: 'Aarav Sharma', class: 'X-A', route: 'R-01', bus: 'BUS-01', currentStop: 'Singur Hospital', eta: '8 min', status: 'En Route', parentNotified: true },
-  { student: 'Priya Gupta', class: 'X-A', route: 'R-02', bus: 'BUS-02', currentStop: 'Chandannagar Market', eta: '12 min', status: 'En Route', parentNotified: true },
-  { student: 'Arjun Reddy', class: 'IX-B', route: 'R-03', bus: 'BUS-03', currentStop: 'Bandel Junction', eta: '22 min', status: 'Delayed - Traffic', parentNotified: true },
-  { student: 'Rohan Patel', class: 'VII-A', route: 'R-05', bus: 'BUS-05', currentStop: 'School Campus', eta: 'Arrived', status: 'At School', parentNotified: false },
+const transportFeeReportData = [
+  { route: 'R-01 Singur', collected: 1452000, pending: 440000 },
+  { route: 'R-02 Chandannagar', collected: 1848000, pending: 120000 },
+  { route: 'R-03 Srirampore', collected: 990000, pending: 110000 },
+  { route: 'R-04 Hooghly', collected: 882000, pending: 210000 },
+  { route: 'R-05 Bardhaman', collected: 840000, pending: 224000 },
+  { route: 'R-06 Tarakeswar', collected: 972000, pending: 108000 },
 ]
 
-const routeAttendanceChart = [
-  { route: 'R-01', boarded: 50, absent: 2 },
-  { route: 'R-02', boarded: 39, absent: 2 },
-  { route: 'R-03', boarded: 62, absent: 6 },
-  { route: 'R-04', boarded: 46, absent: 1 },
-  { route: 'R-05', boarded: 54, absent: 4 },
-  { route: 'R-06', boarded: 34, absent: 1 },
-  { route: 'R-07', boarded: 66, absent: 6 },
-  { route: 'R-08', boarded: 37, absent: 2 },
+const studentTransportData = [
+  { class: 'I', total: 24, transport: 12, bspIds: 'BSP-2025-101 to 112' },
+  { class: 'II', total: 28, transport: 15, bspIds: 'BSP-2025-201 to 215' },
+  { class: 'III', total: 26, transport: 14, bspIds: 'BSP-2025-301 to 314' },
+  { class: 'IV', total: 30, transport: 18, bspIds: 'BSP-2025-401 to 418' },
+  { class: 'V', total: 32, transport: 20, bspIds: 'BSP-2025-501 to 520' },
+  { class: 'VI', total: 28, transport: 16, bspIds: 'BSP-2025-601 to 616' },
+  { class: 'VII', total: 30, transport: 18, bspIds: 'BSP-2025-701 to 718' },
+  { class: 'VIII', total: 32, transport: 22, bspIds: 'BSP-2025-801 to 822' },
+  { class: 'IX', total: 28, transport: 15, bspIds: 'BSP-2025-901 to 915' },
+  { class: 'X', total: 26, transport: 14, bspIds: 'BSP-2025-001 to 014' },
+  { class: 'XI', total: 24, transport: 12, bspIds: 'BSP-2025-X01 to X12' },
+  { class: 'XII', total: 22, transport: 10, bspIds: 'BSP-2025-XI01 to XI10' },
 ]
 
+// ─── Reusable Components ─────────────────────────────────────────
+function FormField({ label, children }) {
+  return (<div><label className="text-xs text-muted-foreground mb-1 block">{label}</label>{children}</div>)
+}
+
+function InputField({ value, onChange, placeholder, type = 'text' }) {
+  return (<input type={type} value={value} onChange={onChange} placeholder={placeholder} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />)
+}
+
+function SelectField({ value, onChange, options }) {
+  return (<select value={value} onChange={onChange} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">{options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>)
+}
+
+function StudentUDISE({ bspId, penNo, upparId }) {
+  return (
+    <div className="flex flex-wrap gap-2 mt-1">
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium">BSP: {bspId}</span>
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">PEN: {penNo}</span>
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">Uppar: {upparId}</span>
+    </div>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────
 export default function TransportModule() {
   const { darkMode } = useAppStore()
-  const [activeTab, setActiveTab] = useState('gps')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('overview')
+  const [activeForm, setActiveForm] = useState(0)
+  const [activeReport, setActiveReport] = useState(0)
+
+  // Form States
+  const [routeForm, setRouteForm] = useState({ routeName: '', routeNumber: '', stops: '', totalDistance: '', estimatedTime: '', vehicleAssigned: '', driverAssigned: '', capacity: '', fee: '' })
+  const [driverForm, setDriverForm] = useState({ name: '', licenseNumber: '', licenseExpiry: '', phone: '', emergencyContact: '', address: '', routeAssigned: '', vehicleNumber: '', experience: '', bloodGroup: 'A+', photo: false })
+  const [studentTransportForm, setStudentTransportForm] = useState({ studentName: '', class: '', route: '', stop: '', pickupTime: '', dropTime: '', fee: '', parentPhone: '' })
+  const [vehicleForm, setVehicleForm] = useState({ vehicleNumber: '', type: 'Bus', capacity: '', registrationExpiry: '', insuranceExpiry: '', pollutionCertExpiry: '', lastService: '', nextService: '' })
+  const [pickupAlertForm, setPickupAlertForm] = useState({ studentName: '', route: '', stop: '', alertType: 'Picked Up', time: '', parentNotified: false, notes: '' })
+  const [transportFeeForm, setTransportFeeForm] = useState({ studentName: '', route: '', amount: '', paymentMode: 'Cash', month: 'April', receiptNo: '' })
 
   const tabs = [
-    { id: 'gps', label: 'GPS Tracking', icon: MapPin },
-    { id: 'routes', label: 'Route Optimization', icon: Route },
-    { id: 'drivers', label: 'Driver Management', icon: Car },
-    { id: 'alerts', label: 'Pickup Alerts', icon: BellRing },
-    { id: 'attendance', label: 'Transport Attendance', icon: UserCheck },
-    { id: 'parent', label: 'Parent Tracking', icon: Compass },
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'gps', label: 'GPS Tracking', icon: Navigation },
+    { id: 'routes', label: 'Routes', icon: Route },
+    { id: 'drivers', label: 'Drivers', icon: Users },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: FileBarChart },
+  ]
+
+  const forms = [
+    { name: 'Route Creation', icon: Route },
+    { name: 'Driver Registration', icon: Users },
+    { name: 'Student Transport', icon: UserCheck },
+    { name: 'Vehicle Registration', icon: Bus },
+    { name: 'Pickup Alert', icon: Bell },
+    { name: 'Transport Fee', icon: IndianRupee },
+  ]
+
+  const reports = [
+    { name: 'Route Utilization', icon: Route },
+    { name: 'Transport Attendance', icon: UserCheck },
+    { name: 'Driver Performance', icon: Star },
+    { name: 'Vehicle Maintenance', icon: Wrench },
+    { name: 'Fee Collection', icon: IndianRupee },
+    { name: 'Student Transport', icon: Users },
   ]
 
   const tooltipStyle = {
@@ -142,672 +201,508 @@ export default function TransportModule() {
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* Top Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {topStats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div key={stat.label} className="rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] text-muted-foreground">{stat.change}</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-            </div>
-          )
-        })}
-      </motion.div>
-
-      {/* Tab Navigation */}
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* ─── Tab Navigation ──────────────────────────────── */}
       <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((tab) => {
           const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
-          )
+          return (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}><Icon className="w-3.5 h-3.5" /> {tab.label}</button>)
         })}
       </motion.div>
 
-      {/* GPS Bus Tracking */}
-      {activeTab === 'gps' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-birla-cyan" />
-              GPS Bus Tracking
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
-            </button>
+      {/* ═══════════════════════════════════════════════════════════════
+          OVERVIEW TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'overview' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {topStats.map((card) => {
+              const Icon = card.icon
+              return (
+                <motion.div key={card.label} variants={itemVariants} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}>
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3"><div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"><Icon className="w-5 h-5" /></div><span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">{card.change}</span></div>
+                    <p className="text-2xl font-bold">{card.value}</p>
+                    <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
-
-          {/* Map Placeholder */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="relative h-72 sm:h-80 bg-gradient-to-br from-birla-blue/5 via-birla-cyan/5 to-birla-gold/5 dark:from-birla-blue/20 dark:via-birla-cyan/10 dark:to-birla-gold/5">
-              {/* Grid lines */}
-              <div className="absolute inset-0 opacity-10">
-                {[...Array(8)].map((_, i) => (
-                  <div key={`h-${i}`} className="absolute w-full border-t border-border" style={{ top: `${(i + 1) * 12.5}%` }} />
-                ))}
-                {[...Array(10)].map((_, i) => (
-                  <div key={`v-${i}`} className="absolute h-full border-l border-border" style={{ left: `${(i + 1) * 10}%` }} />
-                ))}
-              </div>
-
-              {/* Route Lines */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M 10 60 Q 25 40 40 55 Q 55 70 70 35 Q 80 20 90 30" fill="none" stroke="#22D3EE" strokeWidth="0.5" strokeDasharray="2,1" opacity="0.6" />
-                <path d="M 15 80 Q 30 65 50 70 Q 65 75 80 50" fill="none" stroke="#C8A45C" strokeWidth="0.5" strokeDasharray="2,1" opacity="0.6" />
-                <path d="M 5 30 Q 20 25 35 40 Q 50 55 75 45 Q 85 40 95 25" fill="none" stroke="#10B981" strokeWidth="0.5" strokeDasharray="2,1" opacity="0.6" />
-              </svg>
-
-              {/* Bus Markers */}
-              {busMarkers.map((bus, idx) => {
-                const positions = [
-                  { left: '12%', top: '55%' },
-                  { left: '28%', top: '35%' },
-                  { left: '48%', top: '45%' },
-                  { left: '65%', top: '30%' },
-                  { left: '82%', top: '50%' },
-                  { left: '38%', top: '68%' },
-                ]
-                const pos = positions[idx] || { left: '50%', top: '50%' }
-                return (
-                  <div
-                    key={bus.id}
-                    className="absolute group cursor-pointer"
-                    style={{ left: pos.left, top: pos.top, transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div className={`relative flex items-center justify-center w-8 h-8 rounded-full shadow-lg ${
-                      bus.status === 'Moving' ? 'bg-emerald-500' :
-                      bus.status === 'Slow Traffic' ? 'bg-amber-500 animate-pulse' :
-                      'bg-blue-500'
-                    }`}>
-                      <Bus className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-current text-emerald-500" />
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 w-48">
-                      <div className="bg-card border border-border rounded-xl p-3 shadow-xl text-xs">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground">{bus.id}</span>
-                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
-                            bus.status === 'Moving' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                            bus.status === 'Slow Traffic' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                            'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                          }`}>{bus.status}</span>
-                        </div>
-                        <div className="space-y-1 text-muted-foreground">
-                          <p>Route: {bus.route}</p>
-                          <p>Speed: {bus.speed}</p>
-                          <p>ETA: {bus.eta}</p>
-                          <p>Fuel: {bus.fuel}</p>
-                          <p>{bus.lat}, {bus.lng}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* School Marker */}
-              <div className="absolute" style={{ left: '85%', top: '20%', transform: 'translate(-50%, -50%)' }}>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 shadow-lg animate-pulse-glow">
-                  <MapPin className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-[9px] font-medium text-foreground mt-1 text-center whitespace-nowrap">BOMIS School</p>
-              </div>
-
-              {/* Legend */}
-              <div className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm border border-border rounded-xl p-2.5">
-                <p className="text-[10px] font-semibold text-foreground mb-1.5">Legend</p>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-[10px] text-muted-foreground">On Route</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-500" /><span className="text-[10px] text-muted-foreground">Delayed</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500" /><span className="text-[10px] text-muted-foreground">At School</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500" /><span className="text-[10px] text-muted-foreground">School</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Live Bus Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {busMarkers.map((bus) => (
-              <div key={bus.id} className="rounded-xl border border-border bg-card p-4 hover:shadow-sm transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      bus.status === 'Moving' ? 'bg-emerald-500/10 text-emerald-600' :
-                      bus.status === 'Slow Traffic' ? 'bg-amber-500/10 text-amber-600' :
-                      'bg-blue-500/10 text-blue-600'
-                    }`}>
-                      <Bus className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{bus.id}</p>
-                      <p className="text-[10px] text-muted-foreground">Route {bus.route}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    bus.status === 'Moving' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    bus.status === 'Slow Traffic' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                  }`}>
-                    {bus.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Speed</p>
-                    <p className="font-medium text-foreground">{bus.speed}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">ETA</p>
-                    <p className="font-medium text-foreground">{bus.eta}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Heading</p>
-                    <p className="font-medium text-foreground">{bus.heading}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Fuel</p>
-                    <p className="font-medium text-foreground">{bus.fuel}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 mt-2">
-                  <Wifi className="w-3 h-3 text-emerald-500" />
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400">GPS Active</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">{bus.lat}, {bus.lng}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Route Optimization */}
-      {activeTab === 'routes' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Route className="w-5 h-5 text-birla-gold" />
-            Route Optimization
-          </h3>
-
-          {/* Route List */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Name</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Stops</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Distance</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Time</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Students</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Driver</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vehicle</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Optimized</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {busRoutes.map((route) => (
-                    <tr key={route.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-birla-cyan">{route.id}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{route.name}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{route.stops}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{route.distance}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{route.time}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{route.students}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{route.driver}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{route.vehicle}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          route.status === 'On Route' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          route.status === 'Delayed' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                          'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        }`}>
-                          {route.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {route.optimized ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-amber-500" />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Optimization Suggestions */}
-          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-500" />
-            Optimization Suggestions
-          </h4>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {routeOptimizationData.map((opt) => (
-              <div key={opt.route} className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-foreground">Route {opt.route}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-medium">Can Optimize</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Current</p>
-                    <p className="font-medium text-foreground">{opt.current}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-emerald-500/5">
-                    <p className="text-emerald-600 dark:text-emerald-400 text-[10px]">Optimized</p>
-                    <p className="font-medium text-emerald-600 dark:text-emerald-400">{opt.optimized}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Distance Saved</p>
-                    <p className="font-medium text-emerald-600 dark:text-emerald-400">{opt.savings}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Time Saved</p>
-                    <p className="font-medium text-emerald-600 dark:text-emerald-400">{opt.timeSaved}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-1.5">
-                  <TrendingUp className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-muted-foreground">{opt.suggestion}</p>
-                </div>
-                <button className="mt-3 w-full py-1.5 rounded-lg gradient-birla text-white text-[11px] font-medium hover:opacity-90 transition-opacity">
-                  Apply Optimization
-                </button>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Driver Management */}
-      {activeTab === 'drivers' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Car className="w-5 h-5 text-purple-500" />
-              Driver Management
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Add Driver
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {drivers.map((driver) => (
-              <div key={driver.id} className="rounded-xl border border-border bg-card p-4 hover:shadow-sm transition-all">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full gradient-birla-gold flex items-center justify-center text-sm font-bold text-birla-blue">
-                    {driver.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{driver.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{driver.id}</p>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                    driver.status === 'On Duty' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    driver.status === 'Break' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    'bg-red-500/10 text-red-600 dark:text-red-400'
-                  }`}>
-                    {driver.status}
-                  </span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">License:</span>
-                    <span className="font-mono text-foreground">{driver.license}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Route className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">Route:</span>
-                    <span className="text-foreground">{driver.route}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Bus className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">Vehicle:</span>
-                    <span className="font-mono text-foreground">{driver.vehicle}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-foreground">{driver.phone}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">{driver.experience}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-amber-500">★</span>
-                      <span className="font-medium text-foreground">{driver.rating}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Pickup Alerts */}
-      {activeTab === 'alerts' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <BellRing className="w-5 h-5 text-amber-500" />
-            Student Pickup & Drop Alerts
-          </h3>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {pickupAlerts.map((alert) => (
-              <div key={alert.id} className="rounded-xl border border-border bg-card p-4 hover:shadow-sm transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      alert.type === 'Pickup' ? 'bg-birla-cyan/10 text-birla-cyan' : 'bg-purple-500/10 text-purple-500'
-                    }`}>
-                      {alert.type === 'Pickup' ? <Navigation className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{alert.student}</p>
-                      <p className="text-[10px] text-muted-foreground">Class {alert.class} &bull; Route {alert.route}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    alert.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    alert.status === 'Delayed' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    alert.status === 'In Transit' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                    'bg-red-500/10 text-red-600 dark:text-red-400'
-                  }`}>
-                    {alert.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Type</p>
-                    <p className="font-medium text-foreground">{alert.type}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Stop</p>
-                    <p className="font-medium text-foreground">{alert.stop}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Time</p>
-                    <p className="font-medium text-foreground">{alert.time}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30">
-                    <p className="text-muted-foreground text-[10px]">Parent Notified</p>
-                    <p className={`font-medium ${alert.notified ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {alert.notified ? 'Yes' : 'No'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    {alert.parent} &bull; {alert.parentPhone}
-                  </div>
-                  {!alert.notified && (
-                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-medium hover:bg-amber-500/20 transition-colors">
-                      <Send className="w-3 h-3" /> Notify
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Transport Attendance */}
-      {activeTab === 'attendance' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-emerald-500" />
-            Transport Attendance
-          </h3>
-
-          {/* Attendance Chart */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground mb-3">Route-wise Boarding & Absent Students - Today</p>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={routeAttendanceChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="route" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="boarded" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Boarded" />
-                  <Bar dataKey="absent" fill="#F59E0B" radius={[4, 4, 0, 0]} name="Absent" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Attendance by Route */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Total</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Boarded</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Deboarded</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Absent</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Attendance %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceData.map((row) => (
-                    <tr key={row.route} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-sm font-mono text-birla-cyan">{row.route}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{row.total}</td>
-                      <td className="px-4 py-3 text-sm text-emerald-600 dark:text-emerald-400">{row.boarded}</td>
-                      <td className="px-4 py-3 text-sm text-blue-600 dark:text-blue-400">{row.deboarded}</td>
-                      <td className="px-4 py-3 text-sm text-amber-600 dark:text-amber-400">{row.absent}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${row.percentage}%`,
-                                backgroundColor: row.percentage >= 95 ? '#10B981' : row.percentage >= 90 ? '#F59E0B' : '#EF4444',
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs text-foreground">{row.percentage}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Scan Logs */}
-          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Radio className="w-4 h-4 text-birla-cyan" />
-            RFID Scan Logs
-          </h4>
-          <div className="rounded-2xl border border-border bg-card overflow-hidden max-h-72 overflow-y-auto">
-            <table className="w-full">
-              <thead className="sticky top-0 bg-card">
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Student</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Time</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Stop</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Card ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scanLogs.map((log) => (
-                  <tr key={log.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-2.5 text-sm text-foreground">{log.student}</td>
-                    <td className="px-4 py-2.5 text-xs font-mono text-birla-cyan">{log.route}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        log.type === 'Board' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                      }`}>{log.type}</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-foreground">{log.time}</td>
-                    <td className="px-4 py-2.5 text-xs text-foreground">{log.stop}</td>
-                    <td className="px-4 py-2.5 text-xs font-mono text-muted-foreground">{log.cardId}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Parent Live Tracking */}
-      {activeTab === 'parent' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Compass className="w-5 h-5 text-birla-cyan" />
-            Parent Live Tracking Screen
-          </h3>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {parentTrackingData.map((track) => (
-              <div key={track.student} className="rounded-2xl border border-border bg-card p-5 gradient-card-blue">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl gradient-birla-gold flex items-center justify-center text-lg font-bold text-birla-blue">
-                    {track.student.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-foreground">{track.student}</h4>
-                    <p className="text-[11px] text-muted-foreground">Class {track.class} &bull; Route {track.route} &bull; Bus {track.bus}</p>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${
-                    track.status === 'En Route' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    track.status.includes('Delayed') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                  }`}>
-                    {track.status}
-                  </span>
-                </div>
-
-                {/* Mini Map Placeholder */}
-                <div className="rounded-xl bg-muted/20 border border-border/50 h-24 mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-10">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={`mh-${i}`} className="absolute w-full border-t border-border" style={{ top: `${(i + 1) * 25}%` }} />
-                    ))}
-                    {[...Array(5)].map((_, i) => (
-                      <div key={`mv-${i}`} className="absolute h-full border-l border-border" style={{ left: `${(i + 1) * 20}%` }} />
-                    ))}
-                  </div>
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 50" preserveAspectRatio="none">
-                    <path d="M 10 35 Q 30 20 50 30 Q 70 40 90 15" fill="none" stroke="#22D3EE" strokeWidth="1" strokeDasharray="3,2" opacity="0.7" />
-                  </svg>
-                  <div className="absolute" style={{ left: '15%', top: '55%' }}>
-                    <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shadow">
-                      <Bus className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  </div>
-                  <div className="absolute" style={{ right: '10%', top: '25%' }}>
-                    <div className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center shadow">
-                      <MapPin className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-xs mb-4">
-                  <div className="p-2 rounded-lg bg-muted/30 text-center">
-                    <p className="text-muted-foreground text-[10px]">Current Stop</p>
-                    <p className="font-medium text-foreground text-[11px]">{track.currentStop}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30 text-center">
-                    <p className="text-muted-foreground text-[10px]">ETA</p>
-                    <p className="font-medium text-foreground text-[11px]">{track.eta}</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-muted/30 text-center">
-                    <p className="text-muted-foreground text-[10px]">Notified</p>
-                    <p className={`font-medium text-[11px] ${track.parentNotified ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {track.parentNotified ? 'Yes' : 'No'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg gradient-birla text-white text-xs font-medium hover:opacity-90 transition-opacity">
-                    <Locate className="w-3.5 h-3.5" /> Track Live
-                  </button>
-                  <button className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">
-                    <Bell className="w-3.5 h-3.5" /> Alerts
-                  </button>
-                  <button className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">
-                    <Phone className="w-3.5 h-3.5" /> Call
-                  </button>
-                </div>
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Route className="w-4 h-4 text-birla-cyan" />Route-wise Students</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={routeUtilData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="route" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="students" fill="#22D3EE" name="Students" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="capacity" fill="#C8A45C" name="Capacity" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-            ))}
+            </motion.div>
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Bus className="w-4 h-4 text-birla-gold" />Vehicle Status</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={[
+                      { name: 'Active', value: 6, color: '#10B981' },
+                      { name: 'Due Soon', value: 1, color: '#F59E0B' },
+                      { name: 'In Service', value: 1, color: '#EF4444' },
+                    ]} cx="50%" cy="50%" innerRadius={50} outerRadius={85} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                      {[{ name: 'Active', value: 6, color: '#10B981' }, { name: 'Due Soon', value: 1, color: '#F59E0B' }, { name: 'In Service', value: 1, color: '#EF4444' }].map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
           </div>
+        </motion.div>
+      )}
 
-          {/* Notification Settings */}
+      {/* ═══════════════════════════════════════════════════════════════
+          GPS TRACKING TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'gps' && (
+        <motion.div variants={itemVariants} className="space-y-6">
           <div className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-muted-foreground" />
-              Parent Notification Settings
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                { label: 'Bus Arriving (5 min)', desc: 'Alert when bus is 5 min away', enabled: true },
-                { label: 'Pickup Confirmation', desc: 'Alert when child boards the bus', enabled: true },
-                { label: 'Drop Confirmation', desc: 'Alert when child deboards the bus', enabled: true },
-                { label: 'Delay Notification', desc: 'Alert if bus is delayed by 10+ min', enabled: true },
-                { label: 'Route Change', desc: 'Alert if route is changed', enabled: false },
-                { label: 'Speed Alert', desc: 'Alert if bus exceeds speed limit', enabled: false },
-              ].map((setting) => (
-                <div key={setting.label} className="rounded-xl border border-border p-3 flex items-start gap-3">
-                  <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                    setting.enabled ? 'bg-emerald-500' : 'bg-muted'
-                  }`}>
-                    {setting.enabled && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-foreground">{setting.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{setting.desc}</p>
-                  </div>
-                </div>
-              ))}
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Navigation className="w-4 h-4 text-birla-cyan" />Live Vehicle Tracking</h3>
+            <div className="h-64 rounded-xl bg-muted/30 flex items-center justify-center border border-border">
+              <div className="text-center">
+                <Navigation className="w-12 h-12 text-birla-cyan mx-auto mb-3 animate-pulse" />
+                <p className="text-sm font-medium text-foreground">GPS Tracking Dashboard</p>
+                <p className="text-xs text-muted-foreground mt-1">6 vehicles currently active on routes</p>
+              </div>
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {routesData.slice(0, 6).map((route) => (
+              <motion.div key={route.id} variants={itemVariants} className="p-4 rounded-2xl border border-border gradient-card-blue">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-foreground">{route.name}</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Vehicle</span><span className="font-medium text-foreground">{route.vehicle}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Driver</span><span className="font-medium text-foreground">{route.driver}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Students</span><span className="font-medium text-foreground">{route.students}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">ETA</span><span className="font-medium text-birla-cyan">{route.time} min</span></div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          ROUTES TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'routes' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="p-5 border-b border-border"><h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Route className="w-4 h-4 text-birla-cyan" />All Routes</h3></div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Stops</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Distance</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Time</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vehicle</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Driver</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Students</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Fee (₹)</th>
+                </tr></thead>
+                <tbody>
+                  {routesData.map((r) => (
+                    <tr key={r.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{r.name}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{r.stops}</td>
+                      <td className="px-4 py-3 text-sm text-right text-foreground">{r.distance} km</td>
+                      <td className="px-4 py-3 text-sm text-right text-foreground">{r.time} min</td>
+                      <td className="px-4 py-3 text-xs font-mono text-foreground">{r.vehicle}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{r.driver}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-foreground">{r.students}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{r.fee.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          DRIVERS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'drivers' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="p-5 border-b border-border"><h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Users className="w-4 h-4 text-birla-gold" />Driver Directory</h3></div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Name</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">License No</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Expiry</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Phone</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vehicle</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Exp (Yrs)</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Blood Grp</th>
+                </tr></thead>
+                <tbody>
+                  {driversData.map((d) => (
+                    <tr key={d.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{d.name}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{d.license}</td>
+                      <td className="px-4 py-3 text-xs text-foreground">{d.expiry}</td>
+                      <td className="px-4 py-3 text-xs text-foreground">{d.phone}</td>
+                      <td className="px-4 py-3 text-sm text-birla-cyan font-medium">{d.route}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-foreground">{d.vehicle}</td>
+                      <td className="px-4 py-3 text-sm text-right text-foreground">{d.experience}</td>
+                      <td className="px-4 py-3 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-500/10 text-red-600 dark:text-red-400">{d.bloodGroup}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          FORMS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'forms' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {forms.map((f, idx) => {
+              const Icon = f.icon
+              return (<button key={idx} onClick={() => setActiveForm(idx)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeForm === idx ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}><Icon className="w-3.5 h-3.5" /> {f.name}</button>)
+            })}
+          </div>
+
+          {/* Form 1: Route Creation */}
+          {activeForm === 0 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Route className="w-5 h-5 text-birla-cyan" />Route Creation Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Route Name"><InputField value={routeForm.routeName} onChange={(e) => setRouteForm({ ...routeForm, routeName: e.target.value })} placeholder="e.g. Route 7 - Dankuni" /></FormField>
+                <FormField label="Route Number"><InputField value={routeForm.routeNumber} onChange={(e) => setRouteForm({ ...routeForm, routeNumber: e.target.value })} placeholder="e.g. R-07" /></FormField>
+                <FormField label="Stops (comma separated)"><InputField value={routeForm.stops} onChange={(e) => setRouteForm({ ...routeForm, stops: e.target.value })} placeholder="e.g. Dankuni, Janai, Balagarh" /></FormField>
+                <FormField label="Total Distance (km)"><InputField value={routeForm.totalDistance} onChange={(e) => setRouteForm({ ...routeForm, totalDistance: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Estimated Time (min)"><InputField value={routeForm.estimatedTime} onChange={(e) => setRouteForm({ ...routeForm, estimatedTime: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Vehicle Assigned"><InputField value={routeForm.vehicleAssigned} onChange={(e) => setRouteForm({ ...routeForm, vehicleAssigned: e.target.value })} placeholder="e.g. WB-12-AB-1234" /></FormField>
+                <FormField label="Driver Assigned"><InputField value={routeForm.driverAssigned} onChange={(e) => setRouteForm({ ...routeForm, driverAssigned: e.target.value })} placeholder="Driver name" /></FormField>
+                <FormField label="Capacity"><InputField value={routeForm.capacity} onChange={(e) => setRouteForm({ ...routeForm, capacity: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Fee (₹)"><InputField value={routeForm.fee} onChange={(e) => setRouteForm({ ...routeForm, fee: e.target.value })} placeholder="0" type="number" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Create Route</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 2: Driver Registration */}
+          {activeForm === 1 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Users className="w-5 h-5 text-birla-gold" />Driver Registration Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Full Name"><InputField value={driverForm.name} onChange={(e) => setDriverForm({ ...driverForm, name: e.target.value })} placeholder="Driver name" /></FormField>
+                <FormField label="License Number"><InputField value={driverForm.licenseNumber} onChange={(e) => setDriverForm({ ...driverForm, licenseNumber: e.target.value })} placeholder="WB-XXXX-XXXXXXX" /></FormField>
+                <FormField label="License Expiry"><InputField value={driverForm.licenseExpiry} onChange={(e) => setDriverForm({ ...driverForm, licenseExpiry: e.target.value })} type="date" /></FormField>
+                <FormField label="Phone"><InputField value={driverForm.phone} onChange={(e) => setDriverForm({ ...driverForm, phone: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+                <FormField label="Emergency Contact"><InputField value={driverForm.emergencyContact} onChange={(e) => setDriverForm({ ...driverForm, emergencyContact: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+                <FormField label="Address"><InputField value={driverForm.address} onChange={(e) => setDriverForm({ ...driverForm, address: e.target.value })} placeholder="Full address" /></FormField>
+                <FormField label="Route Assigned"><SelectField value={driverForm.routeAssigned} onChange={(e) => setDriverForm({ ...driverForm, routeAssigned: e.target.value })} options={['', 'R-01', 'R-02', 'R-03', 'R-04', 'R-05', 'R-06']} /></FormField>
+                <FormField label="Vehicle Number"><InputField value={driverForm.vehicleNumber} onChange={(e) => setDriverForm({ ...driverForm, vehicleNumber: e.target.value })} placeholder="WB-12-XX-XXXX" /></FormField>
+                <FormField label="Experience (Years)"><InputField value={driverForm.experience} onChange={(e) => setDriverForm({ ...driverForm, experience: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Blood Group"><SelectField value={driverForm.bloodGroup} onChange={(e) => setDriverForm({ ...driverForm, bloodGroup: e.target.value })} options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']} /></FormField>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={driverForm.photo} onChange={(e) => setDriverForm({ ...driverForm, photo: e.target.checked })} className="rounded border-input" /> Photo Uploaded</label>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Driver</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 3: Student Transport Assignment */}
+          {activeForm === 2 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><UserCheck className="w-5 h-5 text-emerald-500" />Student Transport Assignment Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Student Name">
+                  <InputField value={studentTransportForm.studentName} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, studentName: e.target.value })} placeholder="Enter student name" />
+                  {studentTransportForm.studentName && <StudentUDISE bspId="BSP-2025-001" penNo="PEN-XA-001" upparId="UPP-001" />}
+                </FormField>
+                <FormField label="Class"><SelectField value={studentTransportForm.class} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, class: e.target.value })} options={['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII']} /></FormField>
+                <FormField label="Route"><SelectField value={studentTransportForm.route} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
+                <FormField label="Stop"><InputField value={studentTransportForm.stop} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, stop: e.target.value })} placeholder="Bus stop name" /></FormField>
+                <FormField label="Pickup Time"><InputField value={studentTransportForm.pickupTime} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, pickupTime: e.target.value })} type="time" /></FormField>
+                <FormField label="Drop Time"><InputField value={studentTransportForm.dropTime} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, dropTime: e.target.value })} type="time" /></FormField>
+                <FormField label="Fee (₹)"><InputField value={studentTransportForm.fee} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, fee: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Parent Phone"><InputField value={studentTransportForm.parentPhone} onChange={(e) => setStudentTransportForm({ ...studentTransportForm, parentPhone: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Assign Transport</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 4: Vehicle Registration */}
+          {activeForm === 3 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Bus className="w-5 h-5 text-blue-500" />Vehicle Registration Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Vehicle Number"><InputField value={vehicleForm.vehicleNumber} onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleNumber: e.target.value })} placeholder="WB-12-XX-XXXX" /></FormField>
+                <FormField label="Type"><SelectField value={vehicleForm.type} onChange={(e) => setVehicleForm({ ...vehicleForm, type: e.target.value })} options={['Bus', 'Van', 'Car']} /></FormField>
+                <FormField label="Capacity"><InputField value={vehicleForm.capacity} onChange={(e) => setVehicleForm({ ...vehicleForm, capacity: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Registration Expiry"><InputField value={vehicleForm.registrationExpiry} onChange={(e) => setVehicleForm({ ...vehicleForm, registrationExpiry: e.target.value })} type="date" /></FormField>
+                <FormField label="Insurance Expiry"><InputField value={vehicleForm.insuranceExpiry} onChange={(e) => setVehicleForm({ ...vehicleForm, insuranceExpiry: e.target.value })} type="date" /></FormField>
+                <FormField label="Pollution Cert Expiry"><InputField value={vehicleForm.pollutionCertExpiry} onChange={(e) => setVehicleForm({ ...vehicleForm, pollutionCertExpiry: e.target.value })} type="date" /></FormField>
+                <FormField label="Last Service Date"><InputField value={vehicleForm.lastService} onChange={(e) => setVehicleForm({ ...vehicleForm, lastService: e.target.value })} type="date" /></FormField>
+                <FormField label="Next Service Date"><InputField value={vehicleForm.nextService} onChange={(e) => setVehicleForm({ ...vehicleForm, nextService: e.target.value })} type="date" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Register Vehicle</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 5: Pickup Alert */}
+          {activeForm === 4 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Bell className="w-5 h-5 text-amber-500" />Pickup/Drop Alert Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Student Name">
+                  <InputField value={pickupAlertForm.studentName} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, studentName: e.target.value })} placeholder="Enter student name" />
+                  {pickupAlertForm.studentName && <StudentUDISE bspId="BSP-2025-045" penNo="PEN-IXB-045" upparId="UPP-045" />}
+                </FormField>
+                <FormField label="Route"><SelectField value={pickupAlertForm.route} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
+                <FormField label="Stop"><InputField value={pickupAlertForm.stop} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, stop: e.target.value })} placeholder="Bus stop name" /></FormField>
+                <FormField label="Alert Type"><SelectField value={pickupAlertForm.alertType} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, alertType: e.target.value })} options={['Picked Up', 'Dropped', 'Missed', 'Delayed']} /></FormField>
+                <FormField label="Time"><InputField value={pickupAlertForm.time} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, time: e.target.value })} type="time" /></FormField>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={pickupAlertForm.parentNotified} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, parentNotified: e.target.checked })} className="rounded border-input" /> Parent Notified</label>
+                </div>
+                <FormField label="Notes"><InputField value={pickupAlertForm.notes} onChange={(e) => setPickupAlertForm({ ...pickupAlertForm, notes: e.target.value })} placeholder="Any notes" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Alert</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 6: Transport Fee Collection */}
+          {activeForm === 5 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><IndianRupee className="w-5 h-5 text-emerald-500" />Transport Fee Collection Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Student Name">
+                  <InputField value={transportFeeForm.studentName} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, studentName: e.target.value })} placeholder="Enter student name" />
+                  {transportFeeForm.studentName && <StudentUDISE bspId="BSP-2025-031" penNo="PEN-VIIA-031" upparId="UPP-031" />}
+                </FormField>
+                <FormField label="Route"><SelectField value={transportFeeForm.route} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, route: e.target.value })} options={['R-01 Singur', 'R-02 Chandannagar', 'R-03 Srirampore', 'R-04 Hooghly', 'R-05 Bardhaman', 'R-06 Tarakeswar']} /></FormField>
+                <FormField label="Amount (₹)"><InputField value={transportFeeForm.amount} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, amount: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Payment Mode"><SelectField value={transportFeeForm.paymentMode} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, paymentMode: e.target.value })} options={['Cash', 'UPI', 'NetBanking', 'Card', 'Cheque']} /></FormField>
+                <FormField label="Month"><SelectField value={transportFeeForm.month} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, month: e.target.value })} options={['April','May','June','July','August','September','October','November','December','January','February','March']} /></FormField>
+                <FormField label="Receipt No"><InputField value={transportFeeForm.receiptNo} onChange={(e) => setTransportFeeForm({ ...transportFeeForm, receiptNo: e.target.value })} placeholder="REC-001" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Collect Fee</button></div>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          REPORTS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'reports' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {reports.map((r, idx) => {
+              const Icon = r.icon
+              return (<button key={idx} onClick={() => setActiveReport(idx)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeReport === idx ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}><Icon className="w-3.5 h-3.5" /> {r.name}</button>)
+            })}
+          </div>
+
+          {/* Report 1: Route Utilization */}
+          {activeReport === 0 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Route className="w-4 h-4 text-birla-cyan" />Route Utilization Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={routeUtilData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="route" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Bar dataKey="students" fill="#22D3EE" name="Students" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="capacity" fill="#C8A45C" name="Capacity" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Students</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Capacity</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Utilization</th></tr></thead>
+                  <tbody>{routeUtilData.map((d) => { const util = ((d.students / d.capacity) * 100).toFixed(0); return (<tr key={d.route} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.route}</td><td className="px-4 py-3 text-sm text-right">{d.students}</td><td className="px-4 py-3 text-sm text-right">{d.capacity}</td><td className="px-4 py-3 text-right"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${Number(util) > 100 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : Number(util) > 80 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>{util}%</span></td></tr>); })}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 2: Transport Attendance */}
+          {activeReport === 1 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><UserCheck className="w-4 h-4 text-emerald-500" />Transport Attendance Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={transportAttendanceData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="day" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[280, 340]} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Line type="monotone" dataKey="boarded" stroke="#22D3EE" strokeWidth={2} name="Boarded" />
+                      <Line type="monotone" dataKey="dropped" stroke="#C8A45C" strokeWidth={2} name="Dropped" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Day</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Boarded</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Dropped</th></tr></thead>
+                  <tbody>{transportAttendanceData.map((d) => (<tr key={d.day} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.day}</td><td className="px-4 py-3 text-sm text-right">{d.boarded}</td><td className="px-4 py-3 text-sm text-right">{d.dropped}</td></tr>))}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 3: Driver Performance */}
+          {activeReport === 2 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Star className="w-4 h-4 text-birla-gold" />Driver Performance Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={driverPerfData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 5]} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="rating" fill="#C8A45C" name="Rating" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Driver</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Trips</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">On-Time %</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Rating</th></tr></thead>
+                  <tbody>{driverPerfData.map((d) => (<tr key={d.name} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.name}</td><td className="px-4 py-3 text-sm text-right">{d.trips}</td><td className="px-4 py-3 text-sm text-right"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${d.onTime >= 95 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{d.onTime}%</span></td><td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">{d.rating}</td></tr>))}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 4: Vehicle Maintenance */}
+          {activeReport === 3 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Wrench className="w-4 h-4 text-amber-500" />Vehicle Status Distribution</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={[
+                          { name: 'OK', value: 5, color: '#10B981' },
+                          { name: 'Due Soon', value: 2, color: '#F59E0B' },
+                          { name: 'In Service', value: 1, color: '#EF4444' },
+                        ]} cx="50%" cy="50%" innerRadius={50} outerRadius={85} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                          {[{ name: 'OK', value: 5, color: '#10B981' }, { name: 'Due Soon', value: 2, color: '#F59E0B' }, { name: 'In Service', value: 1, color: '#EF4444' }].map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                        </Pie>
+                        <Tooltip contentStyle={tooltipStyle} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                  <table className="w-full">
+                    <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vehicle</th><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Last Service</th><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Next Service</th><th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th></tr></thead>
+                    <tbody>{vehicleMaintenanceData.map((d) => (<tr key={d.vehicle} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-xs font-mono font-medium text-foreground">{d.vehicle}</td><td className="px-4 py-3 text-xs text-muted-foreground">{d.lastService}</td><td className="px-4 py-3 text-xs text-muted-foreground">{d.nextService}</td><td className="px-4 py-3 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: d.color + '1A', color: d.color }}>{d.status}</span></td></tr>))}</tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 5: Transport Fee Collection */}
+          {activeReport === 4 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><IndianRupee className="w-4 h-4 text-birla-gold" />Transport Fee Collection Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={transportFeeReportData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="route" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`₹${(v / 100000).toFixed(1)}L`]} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Bar dataKey="collected" fill="#10B981" name="Collected" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="pending" fill="#EF4444" name="Pending" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Route</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Collected (₹)</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Pending (₹)</th></tr></thead>
+                  <tbody>{transportFeeReportData.map((d) => (<tr key={d.route} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.route}</td><td className="px-4 py-3 text-sm text-right text-emerald-600 dark:text-emerald-400">₹{(d.collected / 100000).toFixed(1)}L</td><td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">₹{(d.pending / 100000).toFixed(1)}L</td></tr>))}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 6: Student Transport */}
+          {activeReport === 5 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Users className="w-4 h-4 text-birla-cyan" />Class-wise Transport Users (with UDISE+)</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead><tr className="border-b border-border bg-muted/30">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Class</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Total Students</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Transport Users</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">% Using</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">BSP ID Range</th>
+                    </tr></thead>
+                    <tbody>
+                      {studentTransportData.map((d) => {
+                        const pct = ((d.transport / d.total) * 100).toFixed(0)
+                        return (
+                          <tr key={d.class} className="border-b border-border/50 hover:bg-muted/20">
+                            <td className="px-4 py-3 text-sm font-medium text-foreground">{d.class}</td>
+                            <td className="px-4 py-3 text-sm text-right text-foreground">{d.total}</td>
+                            <td className="px-4 py-3 text-sm text-right font-bold text-birla-cyan">{d.transport}</td>
+                            <td className="px-4 py-3 text-right"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${Number(pct) >= 50 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{pct}%</span></td>
+                            <td className="px-4 py-3 text-xs text-blue-600 dark:text-blue-400 font-mono">{d.bspIds}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </motion.div>

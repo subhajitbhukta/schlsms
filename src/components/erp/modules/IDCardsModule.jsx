@@ -1,25 +1,115 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  CreditCard, Users, QrCode, Printer, Scan, Shield, Eye,
-  Plus, Download, ChevronRight, Zap, Calendar, Clock,
-  CheckCircle2, AlertTriangle, Search, Filter, Settings,
-  GraduationCap, UserCheck, Building2, Bus, AlertCircle,
-  FileText, RefreshCw, Trash2, Edit3, Copy, ExternalLink,
-  Hash, Tag, X, Check, Upload, Image, Camera, Fingerprint,
-  MapPin, Phone, Mail, Heart, Globe, Wifi, Lock, Unlock,
-  ScanLine, BadgeCheck, BadgeX, DoorOpen, Activity, BarChart3,
-  Grid3X3, LayoutGrid, Palette, Type, Move, Maximize2, FlipHorizontal,
-  User, Home, Stethoscope, ArrowUpRight, TrendingUp, Star, Sparkles
+  CreditCard, Users, QrCode, Plus, Download, ArrowUpRight,
+  TrendingUp, BarChart3, FileText, Calendar, CheckCircle2,
+  AlertTriangle, X, Save, RotateCcw, ClipboardList, Printer,
+  ScanLine, Shield, IdCard, UserCheck, Camera, Clock, Eye,
+  PieChart as PieChartIcon, Scan, MapPin, BadgeCheck, LayoutGrid,
+  UserCircle, Hash, AlertCircle, Building2
 } from 'lucide-react'
 import {
-  BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, PieChart, Pie, Cell, AreaChart,
+  Area, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
+// ─── Mock Data ────────────────────────────────────────────────────
+const topStats = [
+  { label: 'ID Cards Issued', value: '1,180', change: 'This year', icon: CreditCard, gradient: 'from-blue-900 to-blue-700', glow: 'shadow-blue-800/20' },
+  { label: 'QR Scans Today', value: '342', change: 'Gate entries', icon: QrCode, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+  { label: 'Visitor Passes', value: '28', change: 'Active', icon: UserCheck, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+  { label: 'Reissue Requests', value: '12', change: 'Pending', icon: AlertCircle, gradient: 'from-red-900 to-red-600', glow: 'shadow-red-800/20' },
+]
+
+const idCardIssuance = [
+  { cardType: 'Student', issued: 980, active: 950, expired: 30 },
+  { cardType: 'Teacher', issued: 85, active: 82, expired: 3 },
+  { cardType: 'Staff', issued: 65, active: 63, expired: 2 },
+  { cardType: 'Visitor', issued: 120, active: 28, expired: 92 },
+  { cardType: 'Parent', issued: 50, active: 45, expired: 5 },
+]
+
+const idCardPie = [
+  { name: 'Student', value: 980, color: '#0A1628' },
+  { name: 'Teacher', value: 85, color: '#22D3EE' },
+  { name: 'Staff', value: 65, color: '#C8A45C' },
+  { name: 'Visitor', value: 120, color: '#8B5CF6' },
+  { name: 'Parent', value: 50, color: '#10B981' },
+]
+
+const qrScanActivity = [
+  { day: 'Mon', gate1: 85, gate2: 72, gate3: 45, library: 30 },
+  { day: 'Tue', gate1: 92, gate2: 78, gate3: 50, library: 35 },
+  { day: 'Wed', gate1: 88, gate2: 75, gate3: 48, library: 28 },
+  { day: 'Thu', gate1: 95, gate2: 82, gate3: 55, library: 32 },
+  { day: 'Fri', gate1: 90, gate2: 80, gate3: 52, library: 38 },
+  { day: 'Sat', gate1: 60, gate2: 45, gate3: 25, library: 15 },
+  { day: 'Sun', gate1: 10, gate2: 8, gate3: 5, library: 3 },
+]
+
+const reissueData = [
+  { reason: 'Lost', count: 45, color: '#EF4444' },
+  { reason: 'Damaged', count: 32, color: '#F59E0B' },
+  { reason: 'Name Change', count: 8, color: '#22D3EE' },
+  { reason: 'Class Change', count: 15, color: '#8B5CF6' },
+  { reason: 'Expired', count: 22, color: '#C8A45C' },
+]
+
+const visitorPassData = [
+  { day: 'Mon', visitors: 12 },
+  { day: 'Tue', visitors: 15 },
+  { day: 'Wed', visitors: 10 },
+  { day: 'Thu', visitors: 18 },
+  { day: 'Fri', visitors: 14 },
+  { day: 'Sat', visitors: 5 },
+  { day: 'Sun', visitors: 2 },
+]
+
+const smartCampusAccess = [
+  { gate: 'Main Gate', entry: 342, exit: 335, peak: '8:00-9:00 AM' },
+  { gate: 'Gate 2 (Primary)', entry: 185, exit: 180, peak: '8:15-8:45 AM' },
+  { gate: 'Gate 3 (Sports)', entry: 45, exit: 42, peak: '3:00-4:00 PM' },
+  { gate: 'Library', entry: 78, exit: 75, peak: '9:00-10:00 AM' },
+]
+
+const studentIdCompliance = [
+  { class: 'I', total: 110, bspId: 108, penNo: 105, upparId: 102, idCard: 107, compliance: 93 },
+  { class: 'II', total: 105, bspId: 103, penNo: 100, upparId: 98, idCard: 102, compliance: 95 },
+  { class: 'III', total: 100, bspId: 98, penNo: 96, upparId: 94, idCard: 97, compliance: 94 },
+  { class: 'IV', total: 98, bspId: 96, penNo: 94, upparId: 90, idCard: 95, compliance: 92 },
+  { class: 'V', total: 102, bspId: 100, penNo: 98, upparId: 96, idCard: 99, compliance: 95 },
+  { class: 'VI', total: 95, bspId: 93, penNo: 90, upparId: 88, idCard: 92, compliance: 93 },
+  { class: 'VII', total: 90, bspId: 88, penNo: 85, upparId: 82, idCard: 87, compliance: 91 },
+  { class: 'VIII', total: 92, bspId: 90, penNo: 88, upparId: 85, idCard: 89, compliance: 92 },
+  { class: 'IX', total: 88, bspId: 86, penNo: 84, upparId: 82, idCard: 85, compliance: 94 },
+  { class: 'X', total: 85, bspId: 84, penNo: 83, upparId: 81, idCard: 83, compliance: 96 },
+]
+
+const bulkPreviewStudents = [
+  { name: 'Aarav Kumar', bspId: 'BSP/WB/2023/00125', penNo: 'PEN-2301-0456', upparId: 'UPPR-WB-102345', class: 'X-A', status: 'Ready' },
+  { name: 'Karan Singh', bspId: 'BSP/WB/2023/00201', penNo: 'PEN-2301-0532', upparId: 'UPPR-WB-103456', class: 'X-A', status: 'Ready' },
+  { name: 'Vikram Rao', bspId: 'BSP/WB/2023/00178', penNo: 'PEN-2301-0509', upparId: 'UPPR-WB-102890', class: 'X-A', status: 'Ready' },
+  { name: 'Sneha Das', bspId: 'BSP/WB/2023/00034', penNo: 'PEN-2301-0365', upparId: 'UPPR-WB-100987', class: 'X-B', status: 'Photo Missing' },
+  { name: 'Riya Mehta', bspId: 'BSP/WB/2023/00067', penNo: 'PEN-2301-0398', upparId: 'UPPR-WB-101567', class: 'X-B', status: 'Ready' },
+]
+
+const cardTypes = ['Student', 'Teacher', 'Staff', 'Visitor', 'Parent']
+const templateOptions = ['Standard Blue', 'Gold Premium', 'Smart QR', 'Eco Green', 'Minimalist']
+const houses = ['Ashoka', 'Tagore', 'Raman', 'Nehru']
+const transportRoutes = ['Route 1 - Singur', 'Route 2 - Chandannagar', 'Route 3 - Serampore', 'Route 4 - Bandel', 'Route 5 - Chinsurah']
+const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+const idProofTypes = ['Aadhaar', 'Voter ID', 'PAN', 'Passport', 'Driving License']
+const reissueReasons = ['Lost', 'Damaged', 'Name Change', 'Class Change', 'Expired']
+const urgencyOptions = ['Normal', 'Urgent']
+const qrPurposes = ['Attendance', 'Library', 'Transport', 'Gate Entry', 'Exam']
+const classes = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI-Sci', 'XI-Comm', 'XII-Sci', 'XII-Comm']
+const sections = ['A', 'B', 'C']
+
+// ─── Animation Variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -29,1230 +119,1121 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
-const HOUSE_COLORS = {
-  'Aryabhatta': { bg: 'bg-red-500', text: 'text-red-500', light: 'bg-red-500/10', border: 'border-red-500/30', hex: '#EF4444' },
-  'Raman': { bg: 'bg-blue-500', text: 'text-blue-500', light: 'bg-blue-500/10', border: 'border-blue-500/30', hex: '#3B82F6' },
-  'Tagore': { bg: 'bg-emerald-500', text: 'text-emerald-500', light: 'bg-emerald-500/10', border: 'border-emerald-500/30', hex: '#10B981' },
-  'Vivekananda': { bg: 'bg-amber-500', text: 'text-amber-500', light: 'bg-amber-500/10', border: 'border-amber-500/30', hex: '#F59E0B' },
-}
-
-const statsCards = [
-  { label: 'Active Cards', value: '2,547', change: '+124', up: true, icon: CreditCard, gradient: 'from-[#0A1628] to-[#1A2D4A]', glow: 'shadow-[#0A1628]/20' },
-  { label: 'Temp Passes', value: '12', change: '+3', up: true, icon: Clock, gradient: 'from-amber-800 to-amber-600', glow: 'shadow-amber-800/20' },
-  { label: 'QR Scans Today', value: '1,240', change: '+18%', up: true, icon: QrCode, gradient: 'from-[#22D3EE]/80 to-[#0E7490]', glow: 'shadow-[#22D3EE]/20' },
-  { label: 'Pending', value: '45', change: '-8', up: false, icon: AlertTriangle, gradient: 'from-red-800 to-red-600', glow: 'shadow-red-800/20' },
-]
-
-const sampleStudent = {
-  name: 'Aarav Sharma',
-  admissionNo: 'BOM/2023/0142',
-  class: 'X',
-  section: 'A',
-  rollNo: '12',
-  bloodGroup: 'B+',
-  dob: '15 Aug 2010',
-  contact: '+91 98765 43210',
-  house: 'Aryabhatta',
-  academicYear: '2025-26',
-  transportRoute: 'Route 7 - Howrah',
-  fatherName: 'Mr. Rajesh Sharma',
-  motherName: 'Mrs. Sunita Sharma',
-  address: '42, Salt Lake, Block A, Kolkata - 700091',
-  emergencyContact1: '+91 98765 43210 (Father)',
-  emergencyContact2: '+91 87654 32109 (Mother)',
-  busRoute: 'Route 7 - Howrah via Salt Lake',
-  medicalNotes: 'Allergy: Penicillin | Asthma: Mild',
-  schoolAddress: 'Birla Open Minds International School, Singur, Hooghly, West Bengal - 712409',
-  website: 'www.birlaopenminds.com',
-}
-
-const idCardsList = [
-  { id: 1, name: 'Aarav Sharma', admissionNo: 'BOM/2023/0142', class: 'X-A', house: 'Aryabhatta', status: 'Active', issueDate: '01 Apr 2025' },
-  { id: 2, name: 'Priya Menon', admissionNo: 'BOM/2023/0089', class: 'IX-B', house: 'Raman', status: 'Active', issueDate: '01 Apr 2025' },
-  { id: 3, name: 'Rohan Gupta', admissionNo: 'BOM/2024/0215', class: 'VIII-A', house: 'Tagore', status: 'Active', issueDate: '01 Apr 2025' },
-  { id: 4, name: 'Ananya Iyer', admissionNo: 'BOM/2022/0056', class: 'XI-A', house: 'Vivekananda', status: 'Active', issueDate: '01 Apr 2025' },
-  { id: 5, name: 'Kabir Patel', admissionNo: 'BOM/2023/0178', class: 'VII-A', house: 'Aryabhatta', status: 'Lost', issueDate: '01 Apr 2025' },
-  { id: 6, name: 'Sneha Reddy', admissionNo: 'BOM/2024/0034', class: 'VI-B', house: 'Raman', status: 'Active', issueDate: '01 Apr 2025' },
-  { id: 7, name: 'Arjun Mehta', admissionNo: 'BOM/2023/0098', class: 'X-C', house: 'Tagore', status: 'Damaged', issueDate: '01 Apr 2025' },
-  { id: 8, name: 'Pooja Singh', admissionNo: 'BOM/2024/0112', class: 'VII-A', house: 'Vivekananda', status: 'Active', issueDate: '01 Apr 2025' },
-]
-
-const reissueRequests = [
-  { id: 1, student: 'Kabir Patel', admissionNo: 'BOM/2023/0178', class: 'VII-A', reason: 'Lost on Bus Route 7', date: '03 Mar 2026', status: 'Approved', newQR: 'BOM-2023-0178-R2' },
-  { id: 2, student: 'Arjun Mehta', admissionNo: 'BOM/2023/0098', class: 'X-C', reason: 'Card damaged / chip broken', date: '05 Mar 2026', status: 'Processing', newQR: 'BOM-2023-0098-R1' },
-  { id: 3, student: 'Divya Sharma', admissionNo: 'BOM/2024/0067', class: 'VIII-B', reason: 'Lost in school premises', date: '07 Mar 2026', status: 'Pending', newQR: 'BOM-2024-0067-R1' },
-  { id: 4, student: 'Vikram Joshi', admissionNo: 'BOM/2022/0045', class: 'XII-A', reason: 'Photo faded', date: '08 Mar 2026', status: 'Pending', newQR: 'BOM-2022-0045-R1' },
-]
-
-const printQueueData = [
-  { id: 1, batch: 'Class VI - New Admissions', cards: 45, status: 'Printing', progress: 72, printer: 'HP LaserJet Pro #1' },
-  { id: 2, batch: 'Class IX - Reissue Batch', cards: 8, status: 'Queued', progress: 0, printer: 'HP LaserJet Pro #2' },
-  { id: 3, batch: 'Staff ID Cards - Q4', cards: 22, status: 'Queued', progress: 0, printer: 'HP LaserJet Pro #1' },
-  { id: 4, batch: 'Class XII - Board Exam Cards', cards: 84, status: 'Completed', progress: 100, printer: 'HP LaserJet Pro #1' },
-]
-
-const authorizedPersons = [
-  { name: 'Rajesh Sharma', relation: 'Father', photo: true, idVerified: true, addedDate: '01 Apr 2025' },
-  { name: 'Sunita Sharma', relation: 'Mother', photo: true, idVerified: true, addedDate: '01 Apr 2025' },
-  { name: 'Mohan Sharma', relation: 'Grandfather', photo: true, idVerified: true, addedDate: '15 Sep 2025' },
-  { name: 'Ramesh Kumar', relation: 'Uncle', photo: false, idVerified: false, addedDate: 'Pending' },
-]
-
-const scanLogData = [
-  { time: '08:12 AM', name: 'Aarav Sharma', class: 'X-A', type: 'Entry', status: 'Verified' },
-  { time: '08:14 AM', name: 'Priya Menon', class: 'IX-B', type: 'Entry', status: 'Verified' },
-  { time: '08:15 AM', name: 'Unknown Person', class: '-', type: 'Entry', status: 'Denied' },
-  { time: '08:18 AM', name: 'Rohan Gupta', class: 'VIII-A', type: 'Entry', status: 'Verified' },
-  { time: '08:20 AM', name: 'Ananya Iyer', class: 'XI-A', type: 'Entry', status: 'Verified' },
-  { time: '02:45 PM', name: 'Aarav Sharma', class: 'X-A', type: 'Exit', status: 'Verified' },
-  { time: '02:48 PM', name: 'Priya Menon', class: 'IX-B', type: 'Exit', status: 'Verified' },
-]
-
-const hourlyScanData = [
-  { hour: '7AM', scans: 120 },
-  { hour: '8AM', scans: 480 },
-  { hour: '9AM', scans: 85 },
-  { hour: '12PM', scans: 45 },
-  { hour: '1PM', scans: 30 },
-  { hour: '2PM', scans: 95 },
-  { hour: '3PM', scans: 520 },
-  { hour: '4PM', scans: 280 },
-]
-
-function IDCardFront({ cardLayout, houseColor, student }) {
-  return (
-    <div className={`relative ${cardLayout === 'vertical' ? 'w-[280px] h-[420px]' : 'w-[400px] h-[250px]'} rounded-2xl overflow-hidden shadow-2xl border-2 ${houseColor.border} bg-white`}>
-      <div className="bg-gradient-to-r from-[#0A1628] to-[#1A2D4A] text-white px-4 py-2.5 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-          <GraduationCap className="w-5 h-5 text-[#C8A45C]" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold tracking-wide">BIRLA OPEN MINDS</p>
-          <p className="text-[9px] text-white/70">International School, Singur</p>
-        </div>
-        <span className={`text-[8px] px-1.5 py-0.5 rounded-full ${houseColor.bg}/30 ${houseColor.light} border ${houseColor.border}`}>
-          {student.house}
-        </span>
-      </div>
-
-      {cardLayout === 'vertical' ? (
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className={`w-16 h-16 rounded-xl ${houseColor.bg} flex items-center justify-center text-white text-lg font-bold flex-shrink-0`}>
-              {student.name.split(' ').map(n => n[0]).join('')}
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#0A1628]">{student.name}</p>
-              <p className="text-[10px] text-gray-500">Adm: {student.admissionNo}</p>
-              <p className="text-[10px] text-gray-500">Class {student.class}-{student.section} &bull; Roll: {student.rollNo}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px] mb-3">
-            <div><span className="text-gray-400">Blood Group:</span> <span className="font-semibold text-[#0A1628]">{student.bloodGroup}</span></div>
-            <div><span className="text-gray-400">DOB:</span> <span className="font-semibold text-[#0A1628]">{student.dob}</span></div>
-            <div><span className="text-gray-400">Contact:</span> <span className="font-semibold text-[#0A1628]">{student.contact}</span></div>
-            <div><span className="text-gray-400">AY:</span> <span className="font-semibold text-[#0A1628]">{student.academicYear}</span></div>
-            <div><span className="text-gray-400">Transport:</span> <span className="font-semibold text-[#0A1628]">{student.transportRoute}</span></div>
-            <div><span className="text-gray-400">House:</span> <span className={`font-semibold ${houseColor.text}`}>{student.house}</span></div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-[#0A1628]/20 flex items-center justify-center bg-gray-50">
-              <QrCode className="w-10 h-10 text-[#0A1628]/40" />
-            </div>
-            <div className="text-right">
-              <div className="flex items-center gap-1 text-[8px] text-gray-400">
-                <Wifi className="w-3 h-3" />
-                <span>RFID/NFC Enabled</span>
-              </div>
-              <div className="flex items-center gap-1 text-[8px] text-gray-400 mt-0.5">
-                <Fingerprint className="w-3 h-3" />
-                <span>Biometric Ready</span>
-              </div>
-              <p className="text-[8px] text-gray-400 mt-1">ID: BOM-2025-0142-V</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-3 flex gap-3">
-          <div className={`w-24 h-28 rounded-xl ${houseColor.bg} flex items-center justify-center text-white text-2xl font-bold flex-shrink-0`}>
-            {student.name.split(' ').map(n => n[0]).join('')}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-[#0A1628]">{student.name}</p>
-            <p className="text-[10px] text-gray-500">Adm: {student.admissionNo} &bull; Class {student.class}-{student.section} &bull; Roll: {student.rollNo}</p>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[9px] mt-1.5">
-              <div><span className="text-gray-400">Blood:</span> <span className="font-semibold">{student.bloodGroup}</span></div>
-              <div><span className="text-gray-400">DOB:</span> <span className="font-semibold">{student.dob}</span></div>
-              <div><span className="text-gray-400">Contact:</span> <span className="font-semibold">{student.contact}</span></div>
-              <div><span className="text-gray-400">House:</span> <span className={`font-semibold ${houseColor.text}`}>{student.house}</span></div>
-            </div>
-            <div className="flex items-center justify-end gap-2 mt-2">
-              <div className="flex items-center gap-1 text-[8px] text-gray-400">
-                <Wifi className="w-3 h-3" /> RFID
-              </div>
-              <div className="w-10 h-10 rounded border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                <QrCode className="w-6 h-6 text-gray-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function IDCardBack({ cardLayout, student }) {
-  return (
-    <div className={`relative ${cardLayout === 'vertical' ? 'w-[280px] h-[420px]' : 'w-[400px] h-[250px]'} rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-200 bg-white`}>
-      <div className="bg-gradient-to-r from-[#0A1628]/5 to-[#22D3EE]/5 h-full p-4 flex flex-col">
-        {cardLayout === 'vertical' ? (
-          <>
-            <div className="text-[10px] space-y-1.5 mb-3">
-              <div className="flex items-start gap-2">
-                <MapPin className="w-3 h-3 text-[#0A1628] mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.schoolAddress}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Phone className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-gray-600">Emergency 1: {student.emergencyContact1}</p>
-                  <p className="text-gray-600">Emergency 2: {student.emergencyContact2}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <Bus className="w-3 h-3 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.busRoute}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Stethoscope className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.medicalNotes}</span>
-              </div>
-            </div>
-
-            <div className="flex-1" />
-
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-              <div>
-                <p className="text-[8px] text-gray-400 font-medium">SCAN TO VERIFY</p>
-                <p className="text-[9px] text-gray-600">birlaopenminds.com/verify</p>
-                <p className="text-[8px] text-gray-400 mt-0.5 flex items-center gap-1">
-                  <Globe className="w-2.5 h-2.5" />
-                  {student.website}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-lg border-2 border-dashed border-[#0A1628]/20 flex items-center justify-center bg-white">
-                <QrCode className="w-9 h-9 text-[#0A1628]/40" />
-              </div>
-            </div>
-
-            <p className="text-[7px] text-gray-400 text-center mt-2">
-              If found, please return to Birla Open Minds International School, Singur &bull; This card is non-transferable
-            </p>
-          </>
-        ) : (
-          <div className="flex gap-4 h-full">
-            <div className="flex-1 text-[9px] space-y-1.5">
-              <div className="flex items-start gap-1.5">
-                <MapPin className="w-3 h-3 text-[#0A1628] mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.schoolAddress}</span>
-              </div>
-              <div className="flex items-start gap-1.5">
-                <Phone className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0" />
-                <div className="text-gray-600">
-                  <p>Emg 1: {student.emergencyContact1}</p>
-                  <p>Emg 2: {student.emergencyContact2}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-1.5">
-                <Bus className="w-3 h-3 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.busRoute}</span>
-              </div>
-              <div className="flex items-start gap-1.5">
-                <Stethoscope className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">{student.medicalNotes}</span>
-              </div>
-            </div>
-            <div className="flex flex-col items-center justify-end gap-1">
-              <div className="w-12 h-12 rounded border border-dashed border-gray-300 flex items-center justify-center bg-white">
-                <QrCode className="w-8 h-8 text-gray-400" />
-              </div>
-              <p className="text-[7px] text-gray-400">SCAN TO VERIFY</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 export default function IDCardsModule() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
-  const [cardLayout, setCardLayout] = useState('vertical')
-  const [showBack, setShowBack] = useState(false)
-  const [scanState, setScanState] = useState('idle')
-  const [visitorForm, setVisitorForm] = useState({ name: '', purpose: '', host: '', phone: '' })
-  const [bulkClass, setBulkClass] = useState('all')
-  const [bulkProgress, setBulkProgress] = useState(0)
+  const [activeForm, setActiveForm] = useState('individualId')
+  const [activeReport, setActiveReport] = useState('idIssuance')
+
+  // ─── Form States ────────────────────────────────────────
+  const [individualIdData, setIndividualIdData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', cardType: 'Student', templateSelect: 'Standard Blue', houseSelect: '', transportRoute: '', validFrom: '', validTo: '', bloodGroup: '', emergencyContact1: '', emergencyContact2: '', medicalNotes: ''
+  })
+  const [bulkIdData, setBulkIdData] = useState({
+    class: '', section: '', cardType: 'Student', template: 'Standard Blue'
+  })
+  const [visitorPassData2, setVisitorPassData2] = useState({
+    visitorName: '', purpose: '', hostStudent: '', hostStaff: '', visitDate: '', inTime: '', expectedOutTime: '', idProofType: 'Aadhaar', idProofNumber: '', photo: false, temporaryQR: false
+  })
+  const [reissueData2, setReissueData2] = useState({
+    originalCardId: '', student: '', bspId: '', penNo: '', upparId: '', reissueReason: 'Lost', newPhoto: false, urgency: 'Normal', paymentAmount: ''
+  })
+  const [pickupAuthData, setPickupAuthData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', authorizedPersonName: '', relationship: '', phone: '', photoID: '', validFrom: '', validTo: '', alternateContact: ''
+  })
+  const [qrGenData, setQrGenData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', purpose: 'Attendance', validFrom: '', validTo: '', singleUse: false
+  })
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'designer', label: 'Card Designer', icon: CreditCard },
-    { id: 'bulk', label: 'Bulk Generate', icon: Grid3X3 },
+    { id: 'designer', label: 'Card Designer', icon: IdCard },
+    { id: 'bulk', label: 'Bulk Generate', icon: LayoutGrid },
     { id: 'print', label: 'Print', icon: Printer },
-    { id: 'qr-scan', label: 'QR Scan', icon: ScanLine },
-    { id: 'smart', label: 'Smart Campus', icon: Shield },
+    { id: 'qrscan', label: 'QR Scan', icon: ScanLine },
+    { id: 'smartcampus', label: 'Smart Campus', icon: Shield },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: TrendingUp },
+  ]
+
+  const formOptions = [
+    { key: 'individualId', label: 'Individual ID Card', icon: CreditCard },
+    { key: 'bulkId', label: 'Bulk ID Generation', icon: LayoutGrid },
+    { key: 'visitorPass', label: 'Visitor Pass', icon: UserCheck },
+    { key: 'reissue', label: 'Card Reissue', icon: AlertCircle },
+    { key: 'pickupAuth', label: 'Parent Pickup Auth', icon: UserCircle },
+    { key: 'qrGeneration', label: 'QR Code Generation', icon: QrCode },
+  ]
+
+  const reportOptions = [
+    { key: 'idIssuance', label: 'ID Card Issuance', icon: CreditCard },
+    { key: 'qrScanActivity', label: 'QR Scan Activity', icon: ScanLine },
+    { key: 'reissueReport', label: 'Reissue Request', icon: AlertCircle },
+    { key: 'visitorPassReport', label: 'Visitor Pass', icon: UserCheck },
+    { key: 'smartCampusAccess', label: 'Smart Campus Access', icon: Shield },
+    { key: 'compliance', label: 'Student ID Compliance', icon: BadgeCheck },
   ]
 
   const tooltipStyle = {
     backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
     borderRadius: '12px',
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
 
-  const handleScan = () => {
-    setScanState('scanning')
-    setTimeout(() => setScanState('success'), 1500)
-    setTimeout(() => setScanState('idle'), 3500)
+  const inputClass = 'w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 focus:border-birla-gold transition-all'
+  const labelClass = 'text-xs font-medium text-muted-foreground mb-1 block'
+  const formGroupClass = 'space-y-1'
+
+  const handleFormSubmit = (formName, data) => {
+    alert(`${formName} submitted successfully!\n${JSON.stringify(data, null, 2)}`)
   }
 
-  const handleBulkGenerate = () => {
-    setBulkProgress(0)
-    const interval = setInterval(() => {
-      setBulkProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return prev + 2
-      })
-    }, 60)
-  }
-
-  const houseColor = HOUSE_COLORS[sampleStudent.house]
+  const renderUdiseFields = (data, setData) => (
+    <>
+      <div className={formGroupClass}>
+        <label className={labelClass}>BSP ID (UDISE+)</label>
+        <input type="text" placeholder="BSP/WB/2023/XXXXX" value={data.bspId}
+          onChange={(e) => setData({ ...data, bspId: e.target.value })} className={inputClass} />
+      </div>
+      <div className={formGroupClass}>
+        <label className={labelClass}>PEN No</label>
+        <input type="text" placeholder="PEN-XXXX-XXXX" value={data.penNo}
+          onChange={(e) => setData({ ...data, penNo: e.target.value })} className={inputClass} />
+      </div>
+      <div className={formGroupClass}>
+        <label className={labelClass}>Uppar ID</label>
+        <input type="text" placeholder="UPPR-WB-XXXXXX" value={data.upparId}
+          onChange={(e) => setData({ ...data, upparId: e.target.value })} className={inputClass} />
+      </div>
+    </>
+  )
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* ─── Top Stats ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <motion.div
-              key={card.label}
-              variants={itemVariants}
-              className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
-              <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${card.up ? 'bg-emerald-500/20 text-emerald-200' : 'bg-red-500/20 text-red-200'}`}>
-                    {card.up ? <ArrowUpRight className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
-                    {card.change}
-                  </span>
-                </div>
-                <p className="text-2xl font-bold">{card.value}</p>
-                <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
-              </div>
-            </motion.div>
-          )
-        })}
-      </div>
-
-      {/* ─── Tab Navigation ───────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border overflow-x-auto">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Tab Navigation */}
+      <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-[#0A1628] text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}>
+              <Icon className="w-3.5 h-3.5" />{tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* ─── Overview Tab ──────────────────────────────────── */}
+      {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Scan Activity + Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Activity className="w-4 h-4 text-[#22D3EE]" />
-                Hourly Scan Activity Today
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {topStats.map((card) => {
+              const Icon = card.icon
+              return (
+                <motion.div key={card.label} variants={itemVariants}
+                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}>
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                        <ArrowUpRight className="w-3 h-3" />{card.change}
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold">{card.value}</p>
+                    <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-birla-cyan" />ID Card Issuance by Type
               </h3>
-              <div className="h-56">
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hourlyScanData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="hour" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <PieChart>
+                    <Pie data={idCardPie} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" nameKey="name" paddingAngle={3} label>
+                      {idCardPie.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                    </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="scans" fill="#22D3EE" radius={[4, 4, 0, 0]} name="QR Scans" />
-                  </BarChart>
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Zap className="w-4 h-4 text-[#C8A45C]" />
-                Quick Actions
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ScanLine className="w-4 h-4 text-emerald-500" />QR Scan Activity (This Week)
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: 'New ID Card', icon: Plus, color: 'bg-[#0A1628]/10 text-[#0A1628] dark:text-[#22D3EE]' },
-                  { label: 'Reissue', icon: RefreshCw, color: 'bg-amber-500/10 text-amber-500' },
-                  { label: 'Bulk Print', icon: Printer, color: 'bg-purple-500/10 text-purple-500' },
-                  { label: 'QR Scan', icon: ScanLine, color: 'bg-emerald-500/10 text-emerald-500' },
-                  { label: 'Visitor Pass', icon: User, color: 'bg-blue-500/10 text-blue-500' },
-                  { label: 'Templates', icon: Palette, color: 'bg-[#C8A45C]/10 text-[#C8A45C]' },
-                ].map((action) => {
-                  const Icon = action.icon
-                  return (
-                    <button key={action.label} className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border hover:border-[#C8A45C]/30 hover:shadow-md transition-all group">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* House Distribution */}
-              <div className="mt-4">
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">House Distribution</h4>
-                <div className="space-y-1.5">
-                  {Object.entries(HOUSE_COLORS).map(([name, colors]) => {
-                    const count = name === 'Aryabhatta' ? 685 : name === 'Raman' ? 642 : name === 'Tagore' ? 618 : 602
-                    return (
-                      <div key={name} className="flex items-center gap-2">
-                        <div className={`w-2.5 h-2.5 rounded-full ${colors.bg}`} />
-                        <span className="text-[10px] text-muted-foreground flex-1">{name}</span>
-                        <span className="text-[10px] font-semibold text-foreground">{count}</span>
-                      </div>
-                    )
-                  })}
-                </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={qrScanActivity}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                    <Bar dataKey="gate1" fill="#0A1628" name="Main Gate" />
+                    <Bar dataKey="gate2" fill="#22D3EE" name="Gate 2" />
+                    <Bar dataKey="library" fill="#C8A45C" name="Library" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
           </div>
+        </motion.div>
+      )}
 
-          {/* ID Cards List */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-[#0A1628]" />
-                Recent ID Cards
-              </h3>
-              <div className="flex gap-2">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="pl-8 pr-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-[#22D3EE]/30 w-40"
-                  />
+      {/* ═══════════════ CARD DESIGNER TAB ═══════════════ */}
+      {activeTab === 'designer' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <IdCard className="w-4 h-4 text-birla-cyan" />Card Designer Preview
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {templateOptions.map((template, i) => {
+              const gradients = ['gradient-birla', 'gradient-birla-gold', 'gradient-birla-cyan', 'from-emerald-900 to-emerald-600', 'from-gray-800 to-gray-600']
+              return (
+                <div key={template} className="rounded-2xl overflow-hidden border border-border hover:shadow-lg transition-all cursor-pointer group">
+                  <div className={`h-40 ${gradients[i]} p-4 relative`}>
+                    <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                      <QrCode className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div className="text-white mt-4">
+                      <p className="text-[10px] text-white/50 uppercase tracking-wider">Birla Open Minds</p>
+                      <p className="text-sm font-bold mt-1">Aarav Kumar</p>
+                      <p className="text-[10px] text-white/70 mt-0.5">Class X-A | BSP/WB/2023/00125</p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-card">
+                    <p className="text-xs font-medium text-foreground">{template}</p>
+                    <p className="text-[10px] text-muted-foreground">Click to select this template</p>
+                  </div>
                 </div>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════ BULK GENERATE TAB ═══════════════ */}
+      {activeTab === 'bulk' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+              <LayoutGrid className="w-5 h-5 text-cyan-500" />Bulk ID Generation
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className={formGroupClass}>
+                <label className={labelClass}>Class *</label>
+                <select value={bulkIdData.class} onChange={(e) => setBulkIdData({ ...bulkIdData, class: e.target.value })} className={inputClass}>
+                  <option value="">Select Class</option>
+                  {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className={formGroupClass}>
+                <label className={labelClass}>Section</label>
+                <select value={bulkIdData.section} onChange={(e) => setBulkIdData({ ...bulkIdData, section: e.target.value })} className={inputClass}>
+                  <option value="">All Sections</option>
+                  {sections.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className={formGroupClass}>
+                <label className={labelClass}>Card Type *</label>
+                <select value={bulkIdData.cardType} onChange={(e) => setBulkIdData({ ...bulkIdData, cardType: e.target.value })} className={inputClass}>
+                  {cardTypes.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className={formGroupClass}>
+                <label className={labelClass}>Template</label>
+                <select value={bulkIdData.template} onChange={(e) => setBulkIdData({ ...bulkIdData, template: e.target.value })} className={inputClass}>
+                  {templateOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
             </div>
+            <div className="flex items-center gap-3 mt-4">
+              <button onClick={() => handleFormSubmit('Bulk ID Generation', bulkIdData)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                <LayoutGrid className="w-4 h-4" />Generate IDs
+              </button>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Preview - Students with UDISE+ IDs</h3>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Student</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Adm No</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Class</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">House</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Status</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2.5 px-3">Issued</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {idCardsList.map((card) => {
-                    const hc = HOUSE_COLORS[card.house]
-                    return (
-                      <tr key={card.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-7 h-7 rounded-lg ${hc.bg} flex items-center justify-center text-white text-[10px] font-bold`}>
-                              {card.name.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <span className="text-sm text-foreground">{card.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-muted-foreground font-mono">{card.admissionNo}</td>
-                        <td className="py-2.5 px-3 text-xs text-foreground">{card.class}</td>
-                        <td className="py-2.5 px-3">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${hc.light} ${hc.text} font-medium`}>{card.house}</span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                            card.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500' :
-                            card.status === 'Lost' ? 'bg-red-500/10 text-red-500' :
-                            'bg-amber-500/10 text-amber-500'
-                          }`}>{card.status}</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-xs text-muted-foreground">{card.issueDate}</td>
-                      </tr>
-                    )
-                  })}
+                  {bulkPreviewStudents.map((s, i) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-2 px-3 font-medium">{s.name}</td>
+                      <td className="py-2 px-3 text-birla-cyan">{s.bspId}</td>
+                      <td className="py-2 px-3 text-birla-gold">{s.penNo}</td>
+                      <td className="py-2 px-3 text-purple-500">{s.upparId}</td>
+                      <td className="py-2 px-3">{s.class}</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          s.status === 'Ready' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        }`}>{s.status}</span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* ─── Card Designer Tab ─────────────────────────────── */}
-      {activeTab === 'designer' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Card Preview */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-[#C8A45C]" />
-                  ID Card Preview
-                </h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCardLayout('vertical')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                      cardLayout === 'vertical' ? 'bg-[#0A1628] text-white' : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Vertical
-                  </button>
-                  <button
-                    onClick={() => setCardLayout('horizontal')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                      cardLayout === 'horizontal' ? 'bg-[#0A1628] text-white' : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Horizontal
-                  </button>
-                  <div className="w-px h-6 bg-border mx-1" />
-                  <button
-                    onClick={() => setShowBack(false)}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                      !showBack ? 'bg-[#C8A45C] text-white' : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Front
-                  </button>
-                  <button
-                    onClick={() => setShowBack(true)}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                      showBack ? 'bg-[#C8A45C] text-white' : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Back
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-center py-6">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${showBack}-${cardLayout}`}
-                    initial={{ rotateY: 90, opacity: 0 }}
-                    animate={{ rotateY: 0, opacity: 1 }}
-                    exit={{ rotateY: -90, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    {showBack ? <IDCardBack cardLayout={cardLayout} student={sampleStudent} /> : <IDCardFront cardLayout={cardLayout} houseColor={houseColor} student={sampleStudent} />}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <div className="flex justify-center gap-3 mt-2">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0A1628] text-white text-sm font-medium hover:opacity-90 transition-opacity">
-                  <Download className="w-4 h-4" />
-                  Download Card
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted/50 transition-colors">
-                  <Printer className="w-4 h-4" />
-                  Print Card
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-muted/50 transition-colors">
-                  <FlipHorizontal className="w-4 h-4" />
-                  Flip Card
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Template Designer & Customization */}
-            <motion.div variants={itemVariants} className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                  <Palette className="w-4 h-4 text-[#22D3EE]" />
-                  Template Styles
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { name: 'Classic Blue', style: 'from-[#0A1628] to-[#1A2D4A]', selected: true },
-                    { name: 'Royal Gold', style: 'from-[#C8A45C] to-[#A08040]', selected: false },
-                    { name: 'Ocean Cyan', style: 'from-[#22D3EE] to-[#0E7490]', selected: false },
-                    { name: 'Emerald', style: 'from-emerald-600 to-emerald-800', selected: false },
-                  ].map((tmpl) => (
-                    <button key={tmpl.name} className={`p-3 rounded-xl border-2 transition-all ${
-                      tmpl.selected ? 'border-[#22D3EE] shadow-md' : 'border-border hover:border-muted'
-                    }`}>
-                      <div className={`h-8 rounded-lg bg-gradient-to-r ${tmpl.style} mb-2`} />
-                      <p className="text-[10px] font-medium text-foreground text-center">{tmpl.name}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                  <Settings className="w-4 h-4 text-[#C8A45C]" />
-                  Customization
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Student Name</label>
-                    <input
-                      type="text"
-                      defaultValue="Aarav Sharma"
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">House</label>
-                    <select className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30">
-                      <option>Aryabhatta</option>
-                      <option>Raman</option>
-                      <option>Tagore</option>
-                      <option>Vivekananda</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Card Layout</label>
-                    <div className="flex gap-2">
-                      <button className="flex-1 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors flex items-center justify-center gap-1.5">
-                        <Maximize2 className="w-3 h-3" /> Vertical
-                      </button>
-                      <button className="flex-1 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors flex items-center justify-center gap-1.5">
-                        <Move className="w-3 h-3" /> Horizontal
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* ─── Bulk Generate Tab ─────────────────────────────── */}
-      {activeTab === 'bulk' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Grid3X3 className="w-4 h-4 text-[#22D3EE]" />
-                Batch Configuration
-              </h3>
-              <div className="space-y-3">
+      {/* ═══════════════ PRINT TAB ═══════════════ */}
+      {activeTab === 'print' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Printer className="w-4 h-4 text-birla-cyan" />Print Queue
+          </h3>
+          <div className="space-y-3">
+            {[
+              { batch: 'Class X-A ID Cards', count: 35, status: 'In Queue', date: '2025-03-10' },
+              { batch: 'Staff ID Cards 2025', count: 65, status: 'Printing', date: '2025-03-09' },
+              { batch: 'Visitor Passes', count: 12, status: 'Completed', date: '2025-03-08' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Select Class</label>
-                  <select
-                    value={bulkClass}
-                    onChange={(e) => setBulkClass(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                  >
-                    <option value="all">All Classes</option>
-                    <option value="VI">Class VI</option>
-                    <option value="VII">Class VII</option>
-                    <option value="VIII">Class VIII</option>
-                    <option value="IX">Class IX</option>
-                    <option value="X">Class X</option>
-                    <option value="XI">Class XI</option>
-                    <option value="XII">Class XII</option>
-                  </select>
+                  <p className="text-sm font-medium">{item.batch}</p>
+                  <p className="text-xs text-muted-foreground">{item.count} cards • {item.date}</p>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Filter By</label>
-                  <select className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30">
-                    <option>All Students</option>
-                    <option>New Admissions Only</option>
-                    <option>Active Cards Only</option>
-                    <option>Reissue Required</option>
-                    <option>No Card Generated</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Template</label>
-                  <select className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30">
-                    <option>Classic Blue</option>
-                    <option>Royal Gold</option>
-                    <option>Ocean Cyan</option>
-                    <option>Emerald</option>
-                  </select>
-                </div>
-                <div className="p-3 rounded-xl bg-[#0A1628]/5 dark:bg-[#22D3EE]/5 border border-[#0A1628]/10 dark:border-[#22D3EE]/10">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">Cards to Generate</span>
-                    <span className="text-sm font-bold text-[#0A1628] dark:text-[#22D3EE]">
-                      {bulkClass === 'all' ? '2,547' : '120'}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Estimated time: {bulkClass === 'all' ? '~15 min' : '~2 min'}</p>
-                </div>
-                <button
-                  onClick={handleBulkGenerate}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0A1628] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                  <Zap className="w-4 h-4" />
-                  Generate ID Cards
-                </button>
+                <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                  item.status === 'Printing' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
+                  item.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                  'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                }`}>{item.status}</span>
               </div>
-            </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Activity className="w-4 h-4 text-[#C8A45C]" />
-                Generation Progress
-              </h3>
-              {bulkProgress > 0 && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-muted-foreground">
-                      {bulkProgress < 100 ? 'Generating...' : 'Complete!'}
-                    </span>
-                    <span className="text-sm font-bold text-[#22D3EE]">{bulkProgress}%</span>
-                  </div>
-                  <div className="h-3 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${bulkProgress}%` }}
-                      className="h-full rounded-full bg-gradient-to-r from-[#0A1628] to-[#22D3EE]"
-                    />
-                  </div>
-                </div>
-              )}
+      {/* ═══════════════ QR SCAN TAB ═══════════════ */}
+      {activeTab === 'qrscan' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <ScanLine className="w-4 h-4 text-emerald-500" />Daily QR Scan Count
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={qrScanActivity}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                  <Line type="monotone" dataKey="gate1" stroke="#0A1628" strokeWidth={2} dot={{ r: 3 }} name="Main Gate" />
+                  <Line type="monotone" dataKey="gate2" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3 }} name="Gate 2" />
+                  <Line type="monotone" dataKey="library" stroke="#C8A45C" strokeWidth={2} dot={{ r: 3 }} name="Library" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-              <h4 className="text-xs font-medium text-muted-foreground mb-2">Preview Grid</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-72 overflow-y-auto">
-                {[
-                  { name: 'Aarav Sharma', class: 'X-A', house: 'Aryabhatta' },
-                  { name: 'Priya Menon', class: 'IX-B', house: 'Raman' },
-                  { name: 'Rohan Gupta', class: 'VIII-A', house: 'Tagore' },
-                  { name: 'Ananya Iyer', class: 'XI-A', house: 'Vivekananda' },
-                  { name: 'Kabir Patel', class: 'VII-A', house: 'Aryabhatta' },
-                  { name: 'Sneha Reddy', class: 'VI-B', house: 'Raman' },
-                  { name: 'Arjun Mehta', class: 'X-C', house: 'Tagore' },
-                  { name: 'Pooja Singh', class: 'VII-A', house: 'Vivekananda' },
-                ].map((student, i) => {
-                  const hc = HOUSE_COLORS[student.house]
+      {/* ═══════════════ SMART CAMPUS TAB ═══════════════ */}
+      {activeTab === 'smartcampus' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-birla-cyan" />Smart Campus Access - Gate Entry/Exit
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Gate</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Entry</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Exit</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Peak Hour</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Heatmap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {smartCampusAccess.map((g, i) => {
+                  const intensity = g.entry / 342
                   return (
-                    <div key={i} className="p-3 rounded-xl border border-border hover:shadow-md transition-all group">
-                      <div className={`w-10 h-10 rounded-lg ${hc.bg} flex items-center justify-center text-white text-xs font-bold mx-auto mb-2`}>
-                        {student.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <p className="text-[10px] font-medium text-foreground text-center truncate">{student.name}</p>
-                      <p className="text-[9px] text-muted-foreground text-center">{student.class}</p>
-                      <span className={`inline-block text-[8px] px-1.5 py-0.5 rounded-full ${hc.light} ${hc.text} font-medium mx-auto mt-1`}>{student.house}</span>
-                    </div>
+                    <tr key={i} className="border-b border-border/50">
+                      <td className="py-2 px-3 font-medium">{g.gate}</td>
+                      <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">{g.entry}</td>
+                      <td className="py-2 px-3 text-red-600 dark:text-red-400">{g.exit}</td>
+                      <td className="py-2 px-3">{g.peak}</td>
+                      <td className="py-2 px-3">
+                        <div className="w-24 h-3 rounded-full overflow-hidden" style={{ background: `rgba(34, 211, 238, ${intensity * 0.3})` }}>
+                          <div className="h-full rounded-full" style={{ width: `${intensity * 100}%`, background: `rgba(34, 211, 238, ${0.4 + intensity * 0.6})` }} />
+                        </div>
+                      </td>
+                    </tr>
                   )
                 })}
-              </div>
-            </motion.div>
+              </tbody>
+            </table>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* ─── Print Tab ─────────────────────────────────────── */}
-      {activeTab === 'print' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Print Queue */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Printer className="w-4 h-4 text-[#0A1628]" />
-                  Print Queue
-                </h3>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0A1628] text-white text-xs font-medium hover:opacity-90 transition-opacity">
-                  <Plus className="w-3.5 h-3.5" />
-                  Add to Queue
+      {/* ═══════════════ FORMS TAB ═══════════════ */}
+      {activeTab === 'forms' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {formOptions.map((f) => {
+              const Icon = f.icon
+              return (
+                <button key={f.key} onClick={() => setActiveForm(f.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeForm === f.key ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{f.label}
                 </button>
-              </div>
-              <div className="space-y-3">
-                {printQueueData.map((job) => (
-                  <div key={job.id} className="p-4 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          job.status === 'Printing' ? 'bg-[#22D3EE]/10 text-[#22D3EE]' :
-                          job.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          <Printer className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{job.batch}</p>
-                          <p className="text-[10px] text-muted-foreground">{job.cards} cards &bull; {job.printer}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        job.status === 'Printing' ? 'bg-[#22D3EE]/10 text-[#22D3EE]' :
-                        job.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                        'bg-muted text-muted-foreground'
-                      }`}>{job.status}</span>
-                    </div>
-                    {job.status !== 'Completed' && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] text-muted-foreground">Progress</span>
-                          <span className="text-[10px] font-semibold text-foreground">{job.progress}%</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${job.progress}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                            className={`h-full rounded-full ${
-                              job.status === 'Printing' ? 'bg-gradient-to-r from-[#0A1628] to-[#22D3EE]' : 'bg-muted'
-                            }`}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Printer Status + Reissue */}
-            <motion.div variants={itemVariants} className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                  <Settings className="w-4 h-4 text-[#22D3EE]" />
-                  Printer Status
-                </h3>
-                <div className="space-y-2">
-                  {[
-                    { name: 'HP LaserJet Pro #1', status: 'Online', ink: 72, jobs: 3 },
-                    { name: 'HP LaserJet Pro #2', status: 'Idle', ink: 45, jobs: 0 },
-                    { name: 'Epson L805 (Color)', status: 'Offline', ink: 12, jobs: 0 },
-                  ].map((printer) => (
-                    <div key={printer.name} className="p-2.5 rounded-xl border border-border">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-medium text-foreground">{printer.name}</p>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                          printer.status === 'Online' ? 'bg-emerald-500/10 text-emerald-500' :
-                          printer.status === 'Idle' ? 'bg-amber-500/10 text-amber-500' :
-                          'bg-red-500/10 text-red-500'
-                        }`}>{printer.status}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                        <span>Ink: {printer.ink}%</span>
-                        <span>Queue: {printer.jobs}</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1">
-                        <div className={`h-full rounded-full ${
-                          printer.ink > 50 ? 'bg-emerald-500' :
-                          printer.ink > 20 ? 'bg-amber-500' : 'bg-red-500'
-                        }`} style={{ width: `${printer.ink}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <RefreshCw className="w-4 h-4 text-amber-500" />
-                  Reissue Requests
-                </h3>
-                <div className="space-y-2 max-h-44 overflow-y-auto">
-                  {reissueRequests.map((req) => (
-                    <div key={req.id} className="p-2 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-medium text-foreground">{req.student}</p>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                          req.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500' :
-                          req.status === 'Processing' ? 'bg-[#22D3EE]/10 text-[#22D3EE]' :
-                          'bg-amber-500/10 text-amber-500'
-                        }`}>{req.status}</span>
-                      </div>
-                      <p className="text-[9px] text-muted-foreground mt-0.5">{req.reason}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+              )
+            })}
           </div>
-        </div>
-      )}
 
-      {/* ─── QR Scan Tab ────────────────────────────────────── */}
-      {activeTab === 'qr-scan' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Scan Interface */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <ScanLine className="w-4 h-4 text-[#22D3EE]" />
-                QR Code Scanner
+          {/* 1. Individual ID Card Form */}
+          {activeForm === 'individualId' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <CreditCard className="w-5 h-5 text-blue-500" />Individual ID Card Form
               </h3>
-              <div className="flex flex-col items-center">
-                <div className="relative w-64 h-64 rounded-2xl border-2 border-dashed border-[#22D3EE]/30 flex items-center justify-center bg-[#0A1628]/5 dark:bg-[#22D3EE]/5 mb-4 overflow-hidden">
-                  {scanState === 'idle' && (
-                    <div className="text-center">
-                      <QrCode className="w-16 h-16 text-[#22D3EE]/30 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">Ready to Scan</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">Place ID card QR in front of scanner</p>
-                    </div>
-                  )}
-                  {scanState === 'scanning' && (
-                    <motion.div
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 0.8, repeat: Infinity }}
-                      className="text-center"
-                    >
-                      <ScanLine className="w-16 h-16 text-[#22D3EE] mx-auto mb-3" />
-                      <p className="text-sm font-medium text-[#22D3EE]">Scanning...</p>
-                    </motion.div>
-                  )}
-                  {scanState === 'success' && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="text-center"
-                    >
-                      <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-                        <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-                      </div>
-                      <p className="text-sm font-semibold text-emerald-500">Verified!</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">Aarav Sharma - Class X-A</p>
-                    </motion.div>
-                  )}
-                  {/* Scan line animation */}
-                  {scanState === 'scanning' && (
-                    <motion.div
-                      animate={{ y: [-100, 100] }}
-                      transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
-                      className="absolute left-4 right-4 h-0.5 bg-[#22D3EE]/50"
-                    />
-                  )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={individualIdData.student}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, student: e.target.value })} className={inputClass} />
                 </div>
-                <button
-                  onClick={handleScan}
-                  disabled={scanState !== 'idle'}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0A1628] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  <ScanLine className="w-4 h-4" />
-                  Simulate Scan
+                {renderUdiseFields(individualIdData, setIndividualIdData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Card Type *</label>
+                  <select value={individualIdData.cardType} onChange={(e) => setIndividualIdData({ ...individualIdData, cardType: e.target.value })} className={inputClass}>
+                    {cardTypes.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Template *</label>
+                  <select value={individualIdData.templateSelect} onChange={(e) => setIndividualIdData({ ...individualIdData, templateSelect: e.target.value })} className={inputClass}>
+                    {templateOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>House</label>
+                  <select value={individualIdData.houseSelect} onChange={(e) => setIndividualIdData({ ...individualIdData, houseSelect: e.target.value })} className={inputClass}>
+                    <option value="">Select House</option>
+                    {houses.map((h) => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Transport Route</label>
+                  <select value={individualIdData.transportRoute} onChange={(e) => setIndividualIdData({ ...individualIdData, transportRoute: e.target.value })} className={inputClass}>
+                    <option value="">Select Route</option>
+                    {transportRoutes.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid From *</label>
+                  <input type="date" value={individualIdData.validFrom}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, validFrom: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid To *</label>
+                  <input type="date" value={individualIdData.validTo}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, validTo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Blood Group</label>
+                  <select value={individualIdData.bloodGroup} onChange={(e) => setIndividualIdData({ ...individualIdData, bloodGroup: e.target.value })} className={inputClass}>
+                    <option value="">Select</option>
+                    {bloodGroups.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Emergency Contact 1</label>
+                  <input type="text" placeholder="+91 XXXXX XXXXX" value={individualIdData.emergencyContact1}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, emergencyContact1: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Emergency Contact 2</label>
+                  <input type="text" placeholder="+91 XXXXX XXXXX" value={individualIdData.emergencyContact2}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, emergencyContact2: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Medical Notes</label>
+                  <input type="text" placeholder="e.g. Allergic to Penicillin" value={individualIdData.medicalNotes}
+                    onChange={(e) => setIndividualIdData({ ...individualIdData, medicalNotes: e.target.value })} className={inputClass} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Individual ID Card', individualIdData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Generate ID Card
+                </button>
+                <button onClick={() => setIndividualIdData({ student: '', bspId: '', penNo: '', upparId: '', cardType: 'Student', templateSelect: 'Standard Blue', houseSelect: '', transportRoute: '', validFrom: '', validTo: '', bloodGroup: '', emergencyContact1: '', emergencyContact2: '', medicalNotes: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
                 </button>
               </div>
             </motion.div>
+          )}
 
-            {/* Scan Log */}
-            <motion.div variants={itemVariants} className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                  <Clock className="w-4 h-4 text-[#C8A45C]" />
-                  Today&apos;s Scan Log
-                </h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {scanLogData.map((log, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        log.type === 'Entry' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'
-                      }`}>
-                        {log.type === 'Entry' ? <DoorOpen className="w-3.5 h-3.5" /> : <ExternalLink className="w-3.5 h-3.5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-foreground">{log.name}</p>
-                        <p className="text-[9px] text-muted-foreground">{log.class} &bull; {log.type}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                          log.status === 'Verified' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                        }`}>{log.status}</span>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">{log.time}</p>
-                      </div>
-                    </div>
-                  ))}
+          {/* 2. Bulk ID Generation Form */}
+          {activeForm === 'bulkId' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <LayoutGrid className="w-5 h-5 text-cyan-500" />Bulk ID Generation Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Class *</label>
+                  <select value={bulkIdData.class} onChange={(e) => setBulkIdData({ ...bulkIdData, class: e.target.value })} className={inputClass}>
+                    <option value="">Select Class</option>
+                    {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Section</label>
+                  <select value={bulkIdData.section} onChange={(e) => setBulkIdData({ ...bulkIdData, section: e.target.value })} className={inputClass}>
+                    <option value="">All Sections</option>
+                    {sections.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Card Type *</label>
+                  <select value={bulkIdData.cardType} onChange={(e) => setBulkIdData({ ...bulkIdData, cardType: e.target.value })} className={inputClass}>
+                    {cardTypes.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Template *</label>
+                  <select value={bulkIdData.template} onChange={(e) => setBulkIdData({ ...bulkIdData, template: e.target.value })} className={inputClass}>
+                    {templateOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
                 </div>
               </div>
-
-              {/* Visitor Temporary ID */}
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                  <User className="w-4 h-4 text-purple-500" />
-                  Visitor Temporary ID
-                </h3>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Visitor Name"
-                    value={visitorForm.name}
-                    onChange={(e) => setVisitorForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Purpose of Visit"
-                    value={visitorForm.purpose}
-                    onChange={(e) => setVisitorForm(prev => ({ ...prev, purpose: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Host / Meeting With"
-                      value={visitorForm.host}
-                      onChange={(e) => setVisitorForm(prev => ({ ...prev, host: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Phone Number"
-                      value={visitorForm.phone}
-                      onChange={(e) => setVisitorForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/30"
-                    />
-                  </div>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
-                    <QrCode className="w-4 h-4" />
-                    Generate Temp QR Pass
-                  </button>
+              <div className="mt-4">
+                <h4 className="text-xs font-medium text-muted-foreground mb-2">Preview Table</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkPreviewStudents.map((s, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{s.name}</td>
+                          <td className="py-2 px-3 text-birla-cyan">{s.bspId}</td>
+                          <td className="py-2 px-3 text-birla-gold">{s.penNo}</td>
+                          <td className="py-2 px-3 text-purple-500">{s.upparId}</td>
+                          <td className="py-2 px-3">{s.class}</td>
+                          <td className="py-2 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${s.status === 'Ready' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{s.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Bulk ID Generation', bulkIdData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <LayoutGrid className="w-4 h-4" />Generate All IDs
+                </button>
+                <button onClick={() => setBulkIdData({ class: '', section: '', cardType: 'Student', template: 'Standard Blue' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
               </div>
             </motion.div>
-          </div>
+          )}
 
-          {/* Parent Pickup Authorization */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-500" />
-                Parent Pickup Authorization - Aarav Sharma (X-A)
+          {/* 3. Visitor Temporary Pass Form */}
+          {activeForm === 'visitorPass' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <UserCheck className="w-5 h-5 text-emerald-500" />Visitor Temporary Pass Form
               </h3>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0A1628] text-white text-xs font-medium hover:opacity-90 transition-opacity">
-                <Plus className="w-3.5 h-3.5" />
-                Add Person
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {authorizedPersons.map((person, i) => (
-                <div key={i} className="p-3 rounded-xl border border-border hover:shadow-md transition-all">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      person.photo ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {person.photo ? <UserCheck className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{person.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{person.relation}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px]">
-                    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full ${
-                      person.idVerified ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                    }`}>
-                      {person.idVerified ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                      {person.idVerified ? 'ID Verified' : 'Pending'}
-                    </span>
-                    <span className="text-muted-foreground">{person.addedDate}</span>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Visitor Name *</label>
+                  <input type="text" placeholder="Enter visitor name" value={visitorPassData2.visitorName}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, visitorName: e.target.value })} className={inputClass} />
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Purpose *</label>
+                  <input type="text" placeholder="Reason for visit" value={visitorPassData2.purpose}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, purpose: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Host Student</label>
+                  <input type="text" placeholder="Student name" value={visitorPassData2.hostStudent}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, hostStudent: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Host Staff</label>
+                  <input type="text" placeholder="Staff name" value={visitorPassData2.hostStaff}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, hostStaff: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Visit Date *</label>
+                  <input type="date" value={visitorPassData2.visitDate}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, visitDate: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>In Time *</label>
+                  <input type="time" value={visitorPassData2.inTime}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, inTime: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Expected Out Time</label>
+                  <input type="time" value={visitorPassData2.expectedOutTime}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, expectedOutTime: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>ID Proof Type *</label>
+                  <select value={visitorPassData2.idProofType} onChange={(e) => setVisitorPassData2({ ...visitorPassData2, idProofType: e.target.value })} className={inputClass}>
+                    {idProofTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>ID Proof Number *</label>
+                  <input type="text" placeholder="Enter ID number" value={visitorPassData2.idProofNumber}
+                    onChange={(e) => setVisitorPassData2({ ...visitorPassData2, idProofNumber: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className="flex items-center gap-2 text-sm text-foreground mt-6">
+                    <input type="checkbox" checked={visitorPassData2.photo}
+                      onChange={(e) => setVisitorPassData2({ ...visitorPassData2, photo: e.target.checked })}
+                      className="rounded border-input" />
+                    Photo Captured
+                  </label>
+                </div>
+                <div className={formGroupClass}>
+                  <label className="flex items-center gap-2 text-sm text-foreground mt-6">
+                    <input type="checkbox" checked={visitorPassData2.temporaryQR}
+                      onChange={(e) => setVisitorPassData2({ ...visitorPassData2, temporaryQR: e.target.checked })}
+                      className="rounded border-input" />
+                    Generate Temporary QR
+                  </label>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Visitor Pass', visitorPassData2)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Issue Visitor Pass
+                </button>
+                <button onClick={() => setVisitorPassData2({ visitorName: '', purpose: '', hostStudent: '', hostStaff: '', visitDate: '', inTime: '', expectedOutTime: '', idProofType: 'Aadhaar', idProofNumber: '', photo: false, temporaryQR: false })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Card Reissue Form */}
+          {activeForm === 'reissue' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <AlertCircle className="w-5 h-5 text-amber-500" />Card Reissue Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Original Card ID</label>
+                  <input type="text" placeholder="e.g. BOM-ID-2023-00125" value={reissueData2.originalCardId}
+                    onChange={(e) => setReissueData2({ ...reissueData2, originalCardId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={reissueData2.student}
+                    onChange={(e) => setReissueData2({ ...reissueData2, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(reissueData2, setReissueData2)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Reissue Reason *</label>
+                  <select value={reissueData2.reissueReason} onChange={(e) => setReissueData2({ ...reissueData2, reissueReason: e.target.value })} className={inputClass}>
+                    {reissueReasons.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className="flex items-center gap-2 text-sm text-foreground mt-6">
+                    <input type="checkbox" checked={reissueData2.newPhoto}
+                      onChange={(e) => setReissueData2({ ...reissueData2, newPhoto: e.target.checked })}
+                      className="rounded border-input" />
+                    New Photo Required
+                  </label>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Urgency *</label>
+                  <select value={reissueData2.urgency} onChange={(e) => setReissueData2({ ...reissueData2, urgency: e.target.value })} className={inputClass}>
+                    {urgencyOptions.map((u) => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Payment Amount (₹)</label>
+                  <input type="text" placeholder="e.g. 150" value={reissueData2.paymentAmount}
+                    onChange={(e) => setReissueData2({ ...reissueData2, paymentAmount: e.target.value })} className={inputClass} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Card Reissue', reissueData2)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Submit Reissue Request
+                </button>
+                <button onClick={() => setReissueData2({ originalCardId: '', student: '', bspId: '', penNo: '', upparId: '', reissueReason: 'Lost', newPhoto: false, urgency: 'Normal', paymentAmount: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. Parent Pickup Authorization Form */}
+          {activeForm === 'pickupAuth' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <UserCircle className="w-5 h-5 text-purple-500" />Parent Pickup Authorization Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={pickupAuthData.student}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(pickupAuthData, setPickupAuthData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Authorized Person Name *</label>
+                  <input type="text" placeholder="Person authorized for pickup" value={pickupAuthData.authorizedPersonName}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, authorizedPersonName: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Relationship *</label>
+                  <input type="text" placeholder="e.g. Father, Mother, Guardian" value={pickupAuthData.relationship}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, relationship: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Phone *</label>
+                  <input type="text" placeholder="+91 XXXXX XXXXX" value={pickupAuthData.phone}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, phone: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Photo ID</label>
+                  <input type="text" placeholder="Aadhaar/Voter ID number" value={pickupAuthData.photoID}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, photoID: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid From *</label>
+                  <input type="date" value={pickupAuthData.validFrom}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, validFrom: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid To *</label>
+                  <input type="date" value={pickupAuthData.validTo}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, validTo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Alternate Contact</label>
+                  <input type="text" placeholder="+91 XXXXX XXXXX" value={pickupAuthData.alternateContact}
+                    onChange={(e) => setPickupAuthData({ ...pickupAuthData, alternateContact: e.target.value })} className={inputClass} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Pickup Authorization', pickupAuthData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Authorize Pickup
+                </button>
+                <button onClick={() => setPickupAuthData({ student: '', bspId: '', penNo: '', upparId: '', authorizedPersonName: '', relationship: '', phone: '', photoID: '', validFrom: '', validTo: '', alternateContact: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 6. QR Code Generation Form */}
+          {activeForm === 'qrGeneration' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <QrCode className="w-5 h-5 text-cyan-500" />QR Code Generation Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={qrGenData.student}
+                    onChange={(e) => setQrGenData({ ...qrGenData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(qrGenData, setQrGenData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Purpose *</label>
+                  <select value={qrGenData.purpose} onChange={(e) => setQrGenData({ ...qrGenData, purpose: e.target.value })} className={inputClass}>
+                    {qrPurposes.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid From *</label>
+                  <input type="date" value={qrGenData.validFrom}
+                    onChange={(e) => setQrGenData({ ...qrGenData, validFrom: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Valid To *</label>
+                  <input type="date" value={qrGenData.validTo}
+                    onChange={(e) => setQrGenData({ ...qrGenData, validTo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className="flex items-center gap-2 text-sm text-foreground mt-6">
+                    <input type="checkbox" checked={qrGenData.singleUse}
+                      onChange={(e) => setQrGenData({ ...qrGenData, singleUse: e.target.checked })}
+                      className="rounded border-input" />
+                    Single Use QR Code
+                  </label>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('QR Code Generation', qrGenData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <QrCode className="w-4 h-4" />Generate QR Code
+                </button>
+                <button onClick={() => setQrGenData({ student: '', bspId: '', penNo: '', upparId: '', purpose: 'Attendance', validFrom: '', validTo: '', singleUse: false })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
       )}
 
-      {/* ─── Smart Campus Tab ───────────────────────────────── */}
-      {activeTab === 'smart' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Smart Gate Access */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <DoorOpen className="w-4 h-4 text-[#22D3EE]" />
-                Smart Gate Access
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { gate: 'Main Gate - Entry', status: 'Active', scansToday: 842, mode: 'QR + RFID' },
-                  { gate: 'Main Gate - Exit', status: 'Active', scansToday: 398, mode: 'QR + RFID' },
-                  { gate: 'Gate 2 - Staff', status: 'Active', scansToday: 186, mode: 'RFID + Face' },
-                  { gate: 'Gate 3 - Transport', status: 'Active', scansToday: 524, mode: 'QR + RFID' },
-                  { gate: 'Admin Block', status: 'Maintenance', scansToday: 0, mode: 'Face ID' },
-                ].map((gate) => (
-                  <div key={gate.gate} className="p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-foreground">{gate.gate}</p>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                        gate.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                      }`}>{gate.status}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                      <span>Scans: {gate.scansToday}</span>
-                      <span>Mode: {gate.mode}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Biometric & Face Recognition */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Fingerprint className="w-4 h-4 text-[#C8A45C]" />
-                Face & Biometric Readiness
-              </h3>
-              <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-[#0A1628]/5 dark:bg-[#22D3EE]/5 border border-[#0A1628]/10 dark:border-[#22D3EE]/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-foreground">Face Recognition Enrollment</span>
-                    <span className="text-xs font-bold text-[#22D3EE]">78%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '78%' }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className="h-full rounded-full bg-gradient-to-r from-[#0A1628] to-[#22D3EE]"
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">1,987 of 2,547 students enrolled</p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-[#C8A45C]/5 border border-[#C8A45C]/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-foreground">Fingerprint Enrollment</span>
-                    <span className="text-xs font-bold text-[#C8A45C]">45%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '45%' }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className="h-full rounded-full bg-gradient-to-r from-[#C8A45C] to-[#E8D5A0]"
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">1,146 of 2,547 students enrolled</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'Recognition Accuracy', value: '98.5%', icon: Target, color: 'text-emerald-500' },
-                    { label: 'Avg. Scan Time', value: '0.8s', icon: Clock, color: 'text-[#22D3EE]' },
-                    { label: 'False Positives', value: '0.02%', icon: AlertTriangle, color: 'text-amber-500' },
-                    { label: 'Cameras Active', value: '12/15', icon: Camera, color: 'text-purple-500' },
-                  ].map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <div key={item.label} className="p-2.5 rounded-xl border border-border">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <Icon className={`w-3 h-3 ${item.color}`} />
-                          <span className="text-[9px] text-muted-foreground">{item.label}</span>
-                        </div>
-                        <p className="text-sm font-bold text-foreground">{item.value}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Entry/Exit Heatmap Placeholder */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Activity className="w-4 h-4 text-emerald-500" />
-                Campus Entry/Exit Heatmap
-              </h3>
-              <div className="h-48 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-muted/20 mb-3">
-                <div className="text-center">
-                  <MapPin className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">Campus Heatmap Visualization</p>
-                  <p className="text-[10px] text-muted-foreground/70">Integrates with IoT sensor grid</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { zone: 'Main Gate', flow: 'High', color: 'text-red-500' },
-                  { zone: 'Academic Block', flow: 'Medium', color: 'text-amber-500' },
-                  { zone: 'Sports Complex', flow: 'Low', color: 'text-emerald-500' },
-                  { zone: 'Admin Building', flow: 'Low', color: 'text-emerald-500' },
-                ].map((zone) => (
-                  <div key={zone.zone} className="p-2 rounded-lg border border-border">
-                    <p className="text-[10px] text-muted-foreground">{zone.zone}</p>
-                    <p className={`text-xs font-semibold ${zone.color}`}>{zone.flow} Traffic</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+      {/* ═══════════════ REPORTS TAB ═══════════════ */}
+      {activeTab === 'reports' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {reportOptions.map((r) => {
+              const Icon = r.icon
+              return (
+                <button key={r.key} onClick={() => setActiveReport(r.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeReport === r.key ? 'gradient-birla-gold text-birla-blue shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{r.label}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Smart Campus Features Grid */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Sparkles className="w-4 h-4 text-[#C8A45C]" />
-              Smart Campus Features
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                { title: 'Face Recognition Entry', desc: 'AI-powered face recognition at all campus gates with 98.5% accuracy and 0.8s scan time.', status: 'Live', icon: Camera, color: 'bg-emerald-500/10 text-emerald-500' },
-                { title: 'Smart Gate Automation', desc: 'Automated gate control with QR/RFID/Face verification. 5 gates currently active.', status: 'Live', icon: DoorOpen, color: 'bg-emerald-500/10 text-emerald-500' },
-                { title: 'Biometric Attendance', desc: 'Fingerprint + Face dual biometric system for staff and student attendance tracking.', status: 'Partial', icon: Fingerprint, color: 'bg-amber-500/10 text-amber-500' },
-                { title: 'Real-time Location Tracking', desc: 'Indoor positioning system using BLE beacons for student safety and campus navigation.', status: 'Pilot', icon: MapPin, color: 'bg-blue-500/10 text-blue-500' },
-                { title: 'Visitor Management', desc: 'Digital visitor registration with temp QR pass, photo capture, and auto-checkout.', status: 'Live', icon: User, color: 'bg-emerald-500/10 text-emerald-500' },
-                { title: 'Emergency Lockdown', desc: 'One-tap campus lockdown with automatic gate closure, alarm, and parent notification.', status: 'Live', icon: Shield, color: 'bg-emerald-500/10 text-emerald-500' },
-              ].map((feature) => {
-                const Icon = feature.icon
-                return (
-                  <div key={feature.title} className="p-4 rounded-xl border border-border hover:shadow-md transition-all group">
-                    <div className="flex items-start gap-3 mb-2">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${feature.color} flex-shrink-0`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground">{feature.title}</p>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium inline-block mt-0.5 ${
-                          feature.status === 'Live' ? 'bg-emerald-500/10 text-emerald-500' :
-                          feature.status === 'Partial' ? 'bg-amber-500/10 text-amber-500' :
-                          'bg-blue-500/10 text-blue-500'
-                        }`}>{feature.status}</span>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">{feature.desc}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </motion.div>
-        </div>
+          {/* 1. ID Card Issuance Report */}
+          {activeReport === 'idIssuance' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Card Type Count</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Card Type</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Issued</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Active</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Expired</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {idCardIssuance.map((c, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{c.cardType}</td>
+                          <td className="py-2 px-3">{c.issued}</td>
+                          <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">{c.active}</td>
+                          <td className="py-2 px-3 text-red-600 dark:text-red-400">{c.expired}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Issuance Distribution</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={idCardPie} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" nameKey="name" paddingAngle={3} label>
+                        {idCardPie.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 2. QR Scan Activity Report */}
+          {activeReport === 'qrScanActivity' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Daily Scan Count</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Day</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Main Gate</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Gate 2</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Gate 3</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Library</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {qrScanActivity.map((q, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{q.day}</td>
+                          <td className="py-2 px-3">{q.gate1}</td>
+                          <td className="py-2 px-3">{q.gate2}</td>
+                          <td className="py-2 px-3">{q.gate3}</td>
+                          <td className="py-2 px-3">{q.library}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Scan Trend</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={qrScanActivity}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                      <Line type="monotone" dataKey="gate1" stroke="#0A1628" strokeWidth={2} dot={{ r: 3 }} name="Main Gate" />
+                      <Line type="monotone" dataKey="gate2" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3 }} name="Gate 2" />
+                      <Line type="monotone" dataKey="library" stroke="#C8A45C" strokeWidth={2} dot={{ r: 3 }} name="Library" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. Reissue Request Report */}
+          {activeReport === 'reissueReport' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Reason-wise Count</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Reason</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reissueData.map((r, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{r.reason}</td>
+                          <td className="py-2 px-3">{r.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Reissue Distribution</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={reissueData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="reason" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]} name="Count">
+                        {reissueData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Visitor Pass Report */}
+          {activeReport === 'visitorPassReport' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Daily Visitors</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Day</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Visitors</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visitorPassData.map((v, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{v.day}</td>
+                          <td className="py-2 px-3">{v.visitors}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Visitor Trend</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={visitorPassData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="visitors" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="Visitors" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. Smart Campus Access Report */}
+          {activeReport === 'smartCampusAccess' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Gate-wise Entry/Exit Heatmap</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Gate</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Entry</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Exit</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Peak Hour</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Activity Level</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {smartCampusAccess.map((g, i) => {
+                      const intensity = g.entry / 342
+                      return (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{g.gate}</td>
+                          <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">{g.entry}</td>
+                          <td className="py-2 px-3 text-red-600 dark:text-red-400">{g.exit}</td>
+                          <td className="py-2 px-3">{g.peak}</td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-3 rounded-full overflow-hidden" style={{ background: `rgba(34, 211, 238, ${intensity * 0.2})` }}>
+                                <div className="h-full rounded-full" style={{ width: `${intensity * 100}%`, background: `rgba(34, 211, 238, ${0.4 + intensity * 0.6})` }} />
+                              </div>
+                              <span className={`text-[10px] font-medium ${intensity > 0.5 ? 'text-red-600 dark:text-red-400' : intensity > 0.2 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                {intensity > 0.5 ? 'High' : intensity > 0.2 ? 'Medium' : 'Low'}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 6. Student ID Compliance Report */}
+          {activeReport === 'compliance' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Class-wise BSP ID / PEN No / Uppar ID + ID Card Status</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Total</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">ID Card</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Compliance %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentIdCompliance.map((s, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{s.class}</td>
+                          <td className="py-2 px-3">{s.total}</td>
+                          <td className="py-2 px-3 text-birla-cyan">{s.bspId}</td>
+                          <td className="py-2 px-3 text-birla-gold">{s.penNo}</td>
+                          <td className="py-2 px-3 text-purple-500">{s.upparId}</td>
+                          <td className="py-2 px-3">{s.idCard}</td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-14 h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${s.compliance >= 95 ? 'bg-emerald-500' : s.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${s.compliance}%` }} />
+                              </div>
+                              <span>{s.compliance}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">ID Compliance by Class</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={studentIdCompliance}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="class" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis domain={[80, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                      <Bar dataKey="bspId" fill="#22D3EE" name="BSP ID" />
+                      <Bar dataKey="penNo" fill="#C8A45C" name="PEN No" />
+                      <Bar dataKey="upparId" fill="#8B5CF6" name="Uppar ID" />
+                      <Bar dataKey="idCard" fill="#0A1628" name="ID Card" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
       )}
     </motion.div>
   )

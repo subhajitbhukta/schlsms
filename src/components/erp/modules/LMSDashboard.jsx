@@ -1,173 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  GraduationCap, Video, BookOpen, FileText, Brain, Clock, Users,
-  Play, BarChart3, Target, Lightbulb, Sparkles, ChevronRight,
-  Radio, Eye, Star, CheckCircle2, AlertTriangle, Calendar,
-  Library, ArrowUpRight, Layers, Award, Zap, Monitor, Mic,
-  MessageSquare, TrendingUp, Activity, Heart, Bookmark,
-  ClipboardCheck, Globe, Send, Plus
+  GraduationCap, BookOpen, ClipboardList, Video, Upload, Calendar,
+  BarChart3, PieChart as PieChartIcon, Target, Brain, FileText,
+  Plus, X, Clock, CheckCircle2, Users, Zap, Award, Sparkles,
+  Link, FileQuestion, Layers, TrendingUp, ArrowUpRight, Search,
+  Monitor, PlayCircle, Library, Lightbulb, PenTool, UsersRound,
+  Globe, Mic, FlaskConical, MapPin, Tag, Save, Send, Eye,
+  ChevronRight, Activity, Star, MessageSquare, AlertTriangle
 } from 'lucide-react'
 import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell
+  BarChart, Bar, AreaChart, Area, RadarChart, Radar, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
-// ─── Data ────────────────────────────────────────────────────────
-const topStats = [
-  { label: 'Live Classes', value: '8', change: '+3 today', icon: Radio, gradient: 'from-rose-800 to-rose-600', glow: 'shadow-rose-800/20' },
-  { label: 'Active Courses', value: '42', change: '+5 this term', icon: GraduationCap, gradient: 'from-blue-900 to-blue-700', glow: 'shadow-blue-900/20' },
-  { label: 'Assignments Due', value: '156', change: '28 overdue', icon: FileText, gradient: 'from-amber-800 to-amber-600', glow: 'shadow-amber-800/20' },
-  { label: 'Digital Resources', value: '2,400+', change: '+120 this week', icon: Library, gradient: 'from-emerald-800 to-emerald-600', glow: 'shadow-emerald-800/20' },
-]
-
-const liveClasses = [
-  { id: 1, teacher: 'Dr. Priya Menon', subject: 'Mathematics', class: 'X-A', students: 38, topic: 'Quadratic Equations - Discriminant Analysis', time: '10:00 AM', duration: '45 min', status: 'live' },
-  { id: 2, teacher: 'Mr. Rajesh Kumar', subject: 'Physics', class: 'XII-B', students: 32, topic: 'Electromagnetic Induction - Faraday\'s Law', time: '10:00 AM', duration: '50 min', status: 'live' },
-  { id: 3, teacher: 'Ms. Ananya Das', subject: 'English', class: 'IX-A', students: 40, topic: 'Shakespeare - The Merchant of Venice Act III', time: '10:50 AM', duration: '40 min', status: 'starting' },
-  { id: 4, teacher: 'Dr. Suresh Nair', subject: 'Chemistry', class: 'XI-A', students: 35, topic: 'Organic Chemistry - Nomenclature of Alcohols', time: '11:40 AM', duration: '45 min', status: 'scheduled' },
-  { id: 5, teacher: 'Ms. Kavitha Reddy', subject: 'Biology', class: 'X-B', students: 36, topic: 'Genetics - Mendel\'s Laws of Inheritance', time: '12:30 PM', duration: '40 min', status: 'scheduled' },
-  { id: 6, teacher: 'Mr. Arjun Sharma', subject: 'Computer Science', class: 'XII-A', students: 28, topic: 'Data Structures - Binary Trees Traversal', time: '01:20 PM', duration: '50 min', status: 'scheduled' },
-]
-
-const recordedLectures = [
-  { id: 1, subject: 'Mathematics', topic: 'Integration by Parts', teacher: 'Dr. Priya Menon', duration: '42 min', views: 284, thumbnail: '📐' },
-  { id: 2, subject: 'Physics', topic: 'Wave-Particle Duality', teacher: 'Mr. Rajesh Kumar', duration: '38 min', views: 196, thumbnail: '⚡' },
-  { id: 3, subject: 'Chemistry', topic: 'Chemical Bonding', teacher: 'Dr. Suresh Nair', duration: '45 min', views: 312, thumbnail: '⚗️' },
-  { id: 4, subject: 'English', topic: 'Poetry Analysis - Robert Frost', teacher: 'Ms. Ananya Das', duration: '35 min', views: 178, thumbnail: '📝' },
-  { id: 5, subject: 'Biology', topic: 'Cell Division - Meiosis', teacher: 'Ms. Kavitha Reddy', duration: '40 min', views: 245, thumbnail: '🔬' },
-  { id: 6, subject: 'History', topic: 'Indian Independence Movement', teacher: 'Mr. Vikram Singh', duration: '48 min', views: 167, thumbnail: '🏛️' },
-]
-
-const assignments = {
-  pending: [
-    { id: 1, title: 'Quadratic Equations Worksheet', subject: 'Mathematics', class: 'X-A', dueDate: 'Mar 18', submissions: 12, total: 38 },
-    { id: 2, title: 'Lab Report - EM Induction', subject: 'Physics', class: 'XII-B', dueDate: 'Mar 17', submissions: 18, total: 32 },
-    { id: 3, title: 'Essay: Climate Change Impact', subject: 'English', class: 'IX-A', dueDate: 'Mar 19', submissions: 8, total: 40 },
-    { id: 4, title: 'Organic Reactions Map', subject: 'Chemistry', class: 'XI-A', dueDate: 'Mar 16', submissions: 22, total: 35 },
-  ],
-  submitted: [
-    { id: 5, title: 'Trigonometry Problems Set', subject: 'Mathematics', class: 'X-A', submitted: 34, total: 38, avgScore: 78 },
-    { id: 6, title: 'Newton\'s Laws Application', subject: 'Physics', class: 'XII-B', submitted: 30, total: 32, avgScore: 82 },
-    { id: 7, title: 'Letter Writing Practice', subject: 'English', class: 'IX-A', submitted: 37, total: 40, avgScore: 85 },
-  ],
-  graded: [
-    { id: 8, title: 'Algebra Unit Test', subject: 'Mathematics', class: 'X-A', graded: 38, avgScore: 76, highest: 98, lowest: 42 },
-    { id: 9, title: 'Optics Chapter Test', subject: 'Physics', class: 'XII-B', graded: 32, avgScore: 81, highest: 95, lowest: 48 },
-  ],
-}
-
-const activeQuizzes = [
-  { id: 1, title: 'Quadratic Equations Quiz', subject: 'Mathematics', class: 'X-A', questions: 20, duration: '30 min', participants: 35, avgScore: 72, status: 'active' },
-  { id: 2, title: 'Periodic Table Challenge', subject: 'Chemistry', class: 'XI-A', questions: 25, duration: '25 min', participants: 33, avgScore: 68, status: 'active' },
-  { id: 3, title: 'Indian History Quick Fire', subject: 'History', class: 'IX-B', questions: 15, duration: '15 min', participants: 38, avgScore: 81, status: 'completed' },
-  { id: 4, title: 'English Grammar Sprint', subject: 'English', class: 'VIII-A', questions: 30, duration: '20 min', participants: 40, avgScore: 75, status: 'scheduled' },
-]
-
-const skillProgress = [
-  { skill: 'Communication', score: 78, color: '#22D3EE' },
-  { skill: 'Critical Thinking', score: 82, color: '#C8A45C' },
-  { skill: 'Creativity', score: 71, color: '#8B5CF6' },
-  { skill: 'Collaboration', score: 85, color: '#10B981' },
-  { skill: 'Digital Literacy', score: 90, color: '#F59E0B' },
-  { skill: 'Problem Solving', score: 76, color: '#EF4444' },
-]
-
-const bloomsData = [
-  { level: 'Remember', percentage: 92, students: 2345, color: '#1A2D4A' },
-  { level: 'Understand', percentage: 85, students: 2168, color: '#142240' },
-  { level: 'Apply', percentage: 72, students: 1836, color: '#0E4D6E' },
-  { level: 'Analyze', percentage: 58, students: 1479, color: '#C8A45C' },
-  { level: 'Evaluate', percentage: 41, students: 1046, color: '#22D3EE' },
-  { level: 'Create', percentage: 28, students: 714, color: '#8B5CF6' },
-]
-
-const nepCompetencyData = [
-  { subject: 'Language', competency: 85, fullMark: 100 },
-  { subject: 'Mathematics', competency: 78, fullMark: 100 },
-  { subject: 'Science', competency: 82, fullMark: 100 },
-  { subject: 'Social Science', competency: 74, fullMark: 100 },
-  { subject: 'Arts', competency: 68, fullMark: 100 },
-  { subject: 'Physical Ed.', competency: 90, fullMark: 100 },
-  { subject: 'Vocational', competency: 62, fullMark: 100 },
-  { subject: 'Digital', competency: 88, fullMark: 100 },
-]
-
-const digitalLibrary = [
-  { id: 1, title: 'NCERT Mathematics X', type: 'Textbook', subject: 'Mathematics', access: 1245, rating: 4.8, icon: '📘' },
-  { id: 2, title: 'Concepts of Physics', type: 'Reference', subject: 'Physics', access: 892, rating: 4.9, icon: '📗' },
-  { id: 3, title: 'Organic Chemistry', type: 'Textbook', subject: 'Chemistry', access: 756, rating: 4.6, icon: '📙' },
-  { id: 4, title: 'Wren & Martin Grammar', type: 'Reference', subject: 'English', access: 1534, rating: 4.7, icon: '📕' },
-  { id: 5, title: 'India & Contemporary World', type: 'Textbook', subject: 'History', access: 678, rating: 4.5, icon: '📓' },
-  { id: 6, title: 'Coding with Python', type: 'Digital', subject: 'Computer Sc.', access: 567, rating: 4.8, icon: '💻' },
-]
-
-const lessonPlanCalendar = [
-  { day: 'Mon', date: 10, lessons: [
-    { time: '08:00', subject: 'Mathematics', class: 'X-A', topic: 'Quadratic Equations', status: 'completed' },
-    { time: '09:00', subject: 'Physics', class: 'XII-B', topic: 'EM Induction', status: 'completed' },
-    { time: '11:00', subject: 'Chemistry', class: 'XI-A', topic: 'Alcohols', status: 'completed' },
-  ]},
-  { day: 'Tue', date: 11, lessons: [
-    { time: '08:00', subject: 'English', class: 'IX-A', topic: 'Poetry - Frost', status: 'completed' },
-    { time: '10:00', subject: 'Biology', class: 'X-B', topic: 'Genetics', status: 'completed' },
-    { time: '12:00', subject: 'History', class: 'IX-B', topic: 'Independence', status: 'completed' },
-  ]},
-  { day: 'Wed', date: 12, lessons: [
-    { time: '08:00', subject: 'Mathematics', class: 'X-A', topic: 'Progressions', status: 'in-progress' },
-    { time: '09:50', subject: 'Computer Sc.', class: 'XII-A', topic: 'Binary Trees', status: 'upcoming' },
-    { time: '11:40', subject: 'Physics', class: 'XII-B', topic: 'AC Circuits', status: 'upcoming' },
-  ]},
-  { day: 'Thu', date: 13, lessons: [
-    { time: '08:00', subject: 'Chemistry', class: 'XI-A', topic: 'Ethers & Phenols', status: 'upcoming' },
-    { time: '10:00', subject: 'English', class: 'IX-A', topic: 'Letter Writing', status: 'upcoming' },
-  ]},
-  { day: 'Fri', date: 14, lessons: [
-    { time: '08:00', subject: 'Biology', class: 'X-B', topic: 'Evolution', status: 'upcoming' },
-    { time: '09:50', subject: 'Mathematics', class: 'X-A', topic: 'Statistics', status: 'upcoming' },
-  ]},
-]
-
-const learningOutcomes = [
-  { id: 1, outcome: 'Solve quadratic equations using multiple methods', subject: 'Mathematics', class: 'X', blooms: 'Apply', alignment: 92 },
-  { id: 2, outcome: 'Explain electromagnetic induction phenomena', subject: 'Physics', class: 'XII', blooms: 'Understand', alignment: 88 },
-  { id: 3, outcome: 'Analyze literary devices in Shakespearean drama', subject: 'English', class: 'IX', blooms: 'Analyze', alignment: 85 },
-  { id: 4, outcome: 'Design experiments to test chemical properties', subject: 'Chemistry', class: 'XI', blooms: 'Create', alignment: 78 },
-  { id: 5, outcome: 'Evaluate historical events from multiple perspectives', subject: 'History', class: 'IX', blooms: 'Evaluate', alignment: 82 },
-  { id: 6, outcome: 'Construct algorithms for tree traversal', subject: 'Computer Sc.', class: 'XII', blooms: 'Create', alignment: 90 },
-]
-
-const experientialLearning = [
-  { id: 1, title: 'Water Quality Testing', subject: 'Chemistry', type: 'Field Study', class: 'XI-A', status: 'Active', students: 35, startDate: 'Mar 10', outcome: 'Analyze water samples from local sources' },
-  { id: 2, title: 'Community Survey - Demographics', subject: 'Social Science', type: 'Survey', class: 'IX-B', status: 'Planning', students: 40, startDate: 'Mar 15', outcome: 'Collect and interpret demographic data' },
-  { id: 3, title: 'Robotics Challenge', subject: 'Computer Sc.', type: 'Project', class: 'XII-A', status: 'Active', students: 28, startDate: 'Mar 5', outcome: 'Build autonomous navigation robot' },
-  { id: 4, title: 'Math in Architecture', subject: 'Mathematics', type: 'Industry Visit', class: 'X-A', status: 'Completed', students: 38, startDate: 'Feb 28', outcome: 'Apply geometry in real-world structures' },
-]
-
-const aiRecommendations = [
-  { id: 1, type: 'student', title: 'Additional Practice for Quadratic Equations', desc: '12 students in X-A need reinforcement on discriminant analysis. Recommend adaptive worksheets.', icon: Target, color: 'text-rose-500 bg-rose-500/10' },
-  { id: 2, type: 'content', title: 'New Simulation: Wave Interference', desc: 'PhET simulation on wave interference patterns would enhance Physics XII-B understanding.', icon: Lightbulb, color: 'text-amber-500 bg-amber-500/10' },
-  { id: 3, type: 'assessment', title: 'Formative Assessment Alert', desc: 'English IX-A shows 23% dip in comprehension scores. Suggest micro-assessment before unit test.', icon: AlertTriangle, color: 'text-emerald-500 bg-emerald-500/10' },
-  { id: 4, type: 'engagement', title: 'Gamification Opportunity', desc: 'Chemistry XI-A engagement drops after 30 min. Try kahoot-style quiz at midpoint.', icon: Zap, color: 'text-purple-500 bg-purple-500/10' },
-  { id: 5, type: 'resource', title: 'Video Resource Match', desc: 'Khan Academy video on "Organic Reactions" matches 95% with your current lesson plan.', icon: Video, color: 'text-cyan-500 bg-cyan-500/10' },
-]
-
-const engagementTrendData = [
-  { week: 'W1', live: 82, recorded: 64, quiz: 71, assignment: 78 },
-  { week: 'W2', live: 85, recorded: 68, quiz: 73, assignment: 75 },
-  { week: 'W3', live: 79, recorded: 72, quiz: 76, assignment: 80 },
-  { week: 'W4', live: 88, recorded: 70, quiz: 74, assignment: 82 },
-  { week: 'W5', live: 91, recorded: 75, quiz: 79, assignment: 85 },
-  { week: 'W6', live: 87, recorded: 78, quiz: 82, assignment: 83 },
-  { week: 'W7', live: 93, recorded: 80, quiz: 85, assignment: 88 },
-  { week: 'W8', live: 90, recorded: 82, quiz: 88, assignment: 86 },
-]
-
-// ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -177,1073 +27,1139 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
-const CHART_COLORS = ['#1A2D4A', '#22D3EE', '#C8A45C', '#8B5CF6', '#10B981', '#EF4444', '#F59E0B']
+const CHART_COLORS = ['#1A2D4A', '#22D3EE', '#C8A45C', '#8B5CF6', '#10B981', '#EF4444', '#F59E0B', '#EC4899']
+
+const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Computer Science', 'Sanskrit', 'Art']
+const classes = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+const sections = ['A', 'B', 'C', 'D']
+const bloomsLevels = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create']
+const teachers = ['Dr. Priya Menon', 'Mr. Rajesh Kumar', 'Ms. Ananya Iyer', 'Mr. Vikram Singh', 'Ms. Deepa Nair', 'Dr. Suresh Babu']
+
+// Mock student data with BSP ID / PEN No / Uppar ID
+const studentsList = [
+  { id: 'STU001', name: 'Aarav Sharma', bspId: 'BSP2024001', penNo: 'PEN1905001', upparId: 'UPP2024001', class: 'X', section: 'A' },
+  { id: 'STU002', name: 'Diya Patel', bspId: 'BSP2024002', penNo: 'PEN1905002', upparId: 'UPP2024002', class: 'X', section: 'A' },
+  { id: 'STU003', name: 'Arjun Reddy', bspId: 'BSP2024003', penNo: 'PEN1905003', upparId: 'UPP2024003', class: 'X', section: 'A' },
+  { id: 'STU004', name: 'Ananya Gupta', bspId: 'BSP2024004', penNo: 'PEN1905004', upparId: 'UPP2024004', class: 'X', section: 'B' },
+  { id: 'STU005', name: 'Vivaan Joshi', bspId: 'BSP2024005', penNo: 'PEN1905005', upparId: 'UPP2024005', class: 'IX', section: 'A' },
+  { id: 'STU006', name: 'Ishita Nair', bspId: 'BSP2024006', penNo: 'PEN1905006', upparId: 'UPP2024006', class: 'IX', section: 'A' },
+  { id: 'STU007', name: 'Kabir Malhotra', bspId: 'BSP2024007', penNo: 'PEN1905007', upparId: 'UPP2024007', class: 'IX', section: 'B' },
+  { id: 'STU008', name: 'Saanvi Rao', bspId: 'BSP2024008', penNo: 'PEN1905008', upparId: 'UPP2024008', class: 'VIII', section: 'A' },
+]
+
+// Report mock data
+const engagementData = [
+  { week: 'Wk 1', live: 78, recorded: 65, quiz: 55, assignment: 70 },
+  { week: 'Wk 2', live: 82, recorded: 70, quiz: 60, assignment: 72 },
+  { week: 'Wk 3', live: 75, recorded: 68, quiz: 58, assignment: 68 },
+  { week: 'Wk 4', live: 88, recorded: 74, quiz: 65, assignment: 78 },
+  { week: 'Wk 5', live: 85, recorded: 72, quiz: 62, assignment: 75 },
+  { week: 'Wk 6', live: 90, recorded: 78, quiz: 70, assignment: 80 },
+  { week: 'Wk 7', live: 92, recorded: 80, quiz: 72, assignment: 82 },
+  { week: 'Wk 8', live: 95, recorded: 82, quiz: 75, assignment: 85 },
+]
+
+const assignmentCompletionReport = [
+  { class: 'VI-A', total: 45, completed: 40, pending: 5 },
+  { class: 'VII-A', total: 42, completed: 35, pending: 7 },
+  { class: 'VIII-A', total: 40, completed: 36, pending: 4 },
+  { class: 'IX-A', total: 38, completed: 32, pending: 6 },
+  { class: 'X-A', total: 44, completed: 40, pending: 4 },
+  { class: 'X-B', total: 43, completed: 38, pending: 5 },
+]
+
+const quizPerformanceReport = [
+  { quiz: 'Math Ch.5', avgScore: 72, passRate: 78 },
+  { quiz: 'Science Ch.3', avgScore: 68, passRate: 72 },
+  { quiz: 'English Ch.8', avgScore: 82, passRate: 88 },
+  { quiz: 'Hindi Ch.2', avgScore: 65, passRate: 70 },
+  { quiz: 'SST Ch.4', avgScore: 70, passRate: 75 },
+  { quiz: 'Computer Ch.1', avgScore: 85, passRate: 90 },
+]
+
+const passRatePieData = [
+  { name: 'Passed', value: 452, fill: '#10B981' },
+  { name: 'Failed', value: 78, fill: '#EF4444' },
+  { name: 'Absent', value: 30, fill: '#F59E0B' },
+]
+
+const bloomsDistData = [
+  { level: 'Remember', count: 145, pct: 28 },
+  { level: 'Understand', count: 128, pct: 25 },
+  { level: 'Apply', count: 98, pct: 19 },
+  { level: 'Analyze', count: 72, pct: 14 },
+  { level: 'Evaluate', count: 45, pct: 9 },
+  { level: 'Create', count: 28, pct: 5 },
+]
+
+const competencyData = [
+  { subject: 'Mathematics', criticalThinking: 72, problemSolving: 68, communication: 60, creativity: 55, collaboration: 70 },
+  { subject: 'Science', criticalThinking: 78, problemSolving: 75, communication: 65, creativity: 60, collaboration: 72 },
+  { subject: 'English', criticalThinking: 65, problemSolving: 55, communication: 85, creativity: 70, collaboration: 68 },
+  { subject: 'Hindi', criticalThinking: 60, problemSolving: 50, communication: 80, creativity: 65, collaboration: 62 },
+  { subject: 'SST', criticalThinking: 70, problemSolving: 60, communication: 75, creativity: 58, collaboration: 75 },
+]
+
+const digitalLibraryData = [
+  { resource: 'Math Video Ch.5', type: 'Video', access: 452 },
+  { resource: 'Science PPT Ch.3', type: 'Presentation', access: 387 },
+  { resource: 'English Notes Ch.8', type: 'Document', access: 345 },
+  { resource: 'Hindi Audio Ch.2', type: 'Audio', access: 298 },
+  { resource: 'SST Simulation', type: 'Simulation', access: 265 },
+  { resource: 'Computer Lab Guide', type: 'Worksheet', access: 234 },
+]
+
+const lessonPlanCoverage = [
+  { subject: 'Mathematics', planned: 48, completed: 42, pct: 87 },
+  { subject: 'Science', planned: 45, completed: 38, pct: 84 },
+  { subject: 'English', planned: 50, completed: 45, pct: 90 },
+  { subject: 'Hindi', planned: 40, completed: 32, pct: 80 },
+  { subject: 'SST', planned: 42, completed: 36, pct: 86 },
+  { subject: 'Computer', planned: 35, completed: 33, pct: 94 },
+]
+
+const studentProgressData = [
+  { name: 'Aarav Sharma', bspId: 'BSP2024001', penNo: 'PEN1905001', upparId: 'UPP2024001', math: 88, science: 82, english: 90, hindi: 76, sst: 85 },
+  { name: 'Diya Patel', bspId: 'BSP2024002', penNo: 'PEN1905002', upparId: 'UPP2024002', math: 92, science: 88, english: 85, hindi: 80, sst: 82 },
+  { name: 'Arjun Reddy', bspId: 'BSP2024003', penNo: 'PEN1905003', upparId: 'UPP2024003', math: 75, science: 70, english: 82, hindi: 68, sst: 78 },
+  { name: 'Ananya Gupta', bspId: 'BSP2024004', penNo: 'PEN1905004', upparId: 'UPP2024004', math: 95, science: 90, english: 88, hindi: 85, sst: 90 },
+  { name: 'Vivaan Joshi', bspId: 'BSP2024005', penNo: 'PEN1905005', upparId: 'UPP2024005', math: 68, science: 72, english: 75, hindi: 70, sst: 68 },
+  { name: 'Ishita Nair', bspId: 'BSP2024006', penNo: 'PEN1905006', upparId: 'UPP2024006', math: 85, science: 80, english: 92, hindi: 78, sst: 86 },
+]
+
+const experientialData = [
+  { title: 'Water Quality Survey', type: 'Field Study', status: 'Completed', students: 35 },
+  { title: 'Science Lab - Photosynthesis', type: 'Lab Experiment', status: 'Completed', students: 40 },
+  { title: 'Local Governance Visit', type: 'Industry Visit', status: 'In Progress', students: 38 },
+  { title: 'Community Health Survey', type: 'Survey', status: 'Completed', students: 42 },
+  { title: 'Heritage Project', type: 'Project', status: 'Pending', students: 30 },
+  { title: 'Agricultural Field Study', type: 'Field Study', status: 'In Progress', students: 36 },
+]
+
+const experientialPieData = [
+  { name: 'Completed', value: 3, fill: '#10B981' },
+  { name: 'In Progress', value: 2, fill: '#22D3EE' },
+  { name: 'Pending', value: 1, fill: '#F59E0B' },
+]
 
 export default function LMSDashboard() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
-  const [assignmentTab, setAssignmentTab] = useState('pending')
+  const [showForm, setShowForm] = useState(null)
+
+  // Form states
+  const [assignmentForm, setAssignmentForm] = useState({
+    title: '', subject: '', className: '', section: '', dueDate: '', description: '',
+    maxMarks: '', assignmentType: 'Homework', bloomsLevel: 'Remember',
+    competencyMapping: '', attachFiles: false
+  })
+  const [quizForm, setQuizForm] = useState({
+    title: '', subject: '', className: '', duration: '', totalQuestions: '',
+    marksPerQuestion: '', quizType: 'MCQ', difficultyLevel: 'Medium',
+    bloomsLevel: 'Remember', passingPercentage: '', scheduleDate: '', scheduleTime: ''
+  })
+  const [lessonPlanForm, setLessonPlanForm] = useState({
+    subject: '', className: '', topic: '', duration: '',
+    learningObjectives: '', bloomsAlignment: 'Remember',
+    teachingMethod: 'Lecture', resourcesNeeded: '',
+    assessmentMethod: '', homeworkAssignment: '', notes: ''
+  })
+  const [liveClassForm, setLiveClassForm] = useState({
+    subject: '', className: '', teacher: '', date: '', startTime: '',
+    duration: '', topic: '', meetingLink: '', recordingEnabled: false
+  })
+  const [resourceForm, setResourceForm] = useState({
+    title: '', resourceType: 'Textbook', subject: '', className: '',
+    description: '', author: '', publisher: '', accessLevel: 'All', tags: ''
+  })
+  const [competencyMapForm, setCompetencyMapForm] = useState({
+    subject: '', className: '', competency: '', bloomsLevel: 'Remember',
+    learningOutcome: '', assessmentCriteria: '', nepAlignment: false
+  })
+  const [experientialForm, setExperientialForm] = useState({
+    title: '', subject: '', className: '', type: 'Field Study',
+    objective: '', startDate: '', endDate: '', studentsCount: '', outcomeExpected: ''
+  })
+  const [bspIdForm, setBspIdForm] = useState({
+    studentId: '', bspId: '', penNo: '', upparId: ''
+  })
+
+  const tooltipStyle = {
+    backgroundColor: darkMode ? '#1A2D4A' : '#fff',
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
+    borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b'
+  }
+
+  const handleSubmit = (formType) => {
+    setShowForm(null)
+  }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'overview', label: 'Overview', icon: GraduationCap },
     { id: 'classrooms', label: 'Virtual Classrooms', icon: Video },
-    { id: 'assignments', label: 'Assignments', icon: FileText },
-    { id: 'quizzes', label: 'Quiz Engine', icon: Brain },
-    { id: 'skills', label: 'Skills & Bloom\'s', icon: Target },
+    { id: 'assignments', label: 'Assignments', icon: ClipboardList },
+    { id: 'quizzes', label: 'Quizzes', icon: FileQuestion },
+    { id: 'skills', label: "Skills & Bloom's", icon: Brain },
     { id: 'library', label: 'Digital Library', icon: Library },
-    { id: 'planner', label: 'Lesson Planner', icon: Calendar },
+    { id: 'planner', label: 'Lesson Planner', icon: BookOpen },
     { id: 'ai', label: 'AI Insights', icon: Sparkles },
+    { id: 'forms', label: 'Forms', icon: PenTool },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
   ]
 
+  const formsList = [
+    { id: 'assignment', label: 'Assignment Creation', icon: ClipboardList },
+    { id: 'quiz', label: 'Quiz Creation', icon: FileQuestion },
+    { id: 'lessonPlan', label: 'Lesson Plan', icon: BookOpen },
+    { id: 'liveClass', label: 'Live Class Schedule', icon: Video },
+    { id: 'resource', label: 'Digital Resource Upload', icon: Upload },
+    { id: 'competencyMap', label: 'Competency Mapping', icon: Target },
+    { id: 'experiential', label: 'Experiential Learning', icon: FlaskConical },
+    { id: 'bspId', label: 'Student BSP ID', icon: Users },
+  ]
+
+  const reportsList = [
+    { id: 'engagement', label: 'Learning Engagement', icon: TrendingUp },
+    { id: 'assignmentComp', label: 'Assignment Completion', icon: ClipboardList },
+    { id: 'quizPerf', label: 'Quiz Performance', icon: Award },
+    { id: 'bloomsDist', label: "Bloom's Distribution", icon: Brain },
+    { id: 'competency', label: 'Competency Achievement', icon: Target },
+    { id: 'libraryUsage', label: 'Digital Library Usage', icon: Library },
+    { id: 'lessonCoverage', label: 'Lesson Plan Coverage', icon: BookOpen },
+    { id: 'studentProgress', label: 'Student Progress', icon: Users },
+    { id: 'experiential', label: 'Experiential Learning', icon: FlaskConical },
+  ]
+
+  const inputCls = "w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-birla-cyan/30"
+  const labelCls = "block text-xs font-medium text-muted-foreground mb-1"
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* ─── Tab Navigation ──────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <GraduationCap className="w-7 h-7 text-birla-cyan" />LMS Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Birla Open Minds International School &bull; Learning Management System</p>
+        </div>
+      </motion.div>
+
+      {/* Tab Navigation */}
+      <motion.div variants={itemVariants} className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}>
+              <Icon className="w-3.5 h-3.5" />{tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* ─── Overview Tab ────────────────────────────────── */}
+      {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          {/* Top Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {topStats.map((card) => {
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Active Courses', value: '48', change: '+5', icon: BookOpen, color: 'from-blue-900 to-blue-700' },
+              { label: 'Assignments Due', value: '156', change: '+12', icon: ClipboardList, color: 'from-amber-800 to-amber-600' },
+              { label: 'Quizzes Active', value: '24', change: '+3', icon: FileQuestion, color: 'from-purple-800 to-purple-600' },
+              { label: 'Avg Engagement', value: '82%', change: '+4.2%', icon: TrendingUp, color: 'from-emerald-800 to-emerald-600' },
+            ].map((card) => {
               const Icon = card.icon
               return (
-                <motion.div
-                  key={card.label}
-                  variants={itemVariants}
-                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}
-                >
-                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                        <ArrowUpRight className="w-3 h-3" />
-                        {card.change}
-                      </span>
+                <div key={card.label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.color} p-4 text-white shadow-xl`}>
+                  <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <p className="text-2xl font-bold">{card.value}</p>
-                    <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                      <ArrowUpRight className="w-3 h-3" />{card.change}
+                    </span>
                   </div>
-                </motion.div>
+                  <p className="text-xl font-bold">{card.value}</p>
+                  <p className="text-[11px] text-white/70 mt-0.5">{card.label}</p>
+                </div>
               )
             })}
-          </div>
+          </motion.div>
 
-          {/* Engagement Trend + Live Classes Quick */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-birla-cyan" />
-                  Learning Engagement Trend
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                  Last 8 Weeks
-                </span>
-              </div>
-              <div className="h-72">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-birla-cyan" />Engagement Analytics
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">8-week engagement trend</p>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={engagementTrendData}>
+                  <AreaChart data={engagementData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
                     <XAxis dataKey="week" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[50, 100]} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                      formatter={(value) => [`${value}%`, '']}
-                    />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Area type="monotone" dataKey="live" stroke="#EF4444" fill="rgba(239,68,68,0.08)" strokeWidth={2} name="Live Classes" />
-                    <Area type="monotone" dataKey="recorded" stroke="#22D3EE" fill="rgba(34,211,238,0.08)" strokeWidth={2} name="Recorded" />
-                    <Area type="monotone" dataKey="quiz" stroke="#C8A45C" fill="rgba(200,164,92,0.08)" strokeWidth={2} name="Quizzes" />
-                    <Area type="monotone" dataKey="assignment" stroke="#8B5CF6" fill="rgba(139,92,246,0.08)" strokeWidth={2} name="Assignments" />
+                    <Area type="monotone" dataKey="live" stroke="#1A2D4A" fill="rgba(26,45,74,0.15)" strokeWidth={2} name="Live" />
+                    <Area type="monotone" dataKey="recorded" stroke="#22D3EE" fill="rgba(34,211,238,0.1)" strokeWidth={2} name="Recorded" />
+                    <Area type="monotone" dataKey="quiz" stroke="#C8A45C" fill="rgba(200,164,92,0.1)" strokeWidth={2} name="Quiz" />
+                    <Area type="monotone" dataKey="assignment" stroke="#8B5CF6" fill="rgba(139,92,246,0.1)" strokeWidth={2} name="Assignment" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
 
-            {/* Live Now */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-rose-500" />
-                  Live Now
-                </h3>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-rose-500">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-                  </span>
-                  {liveClasses.filter(c => c.status === 'live').length} Active
-                </span>
-              </div>
-              <div className="space-y-3 max-h-72 overflow-y-auto">
-                {liveClasses.filter(c => c.status === 'live' || c.status === 'starting').map((cls) => (
-                  <div key={cls.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                        {cls.status === 'live' ? '● LIVE' : 'Starting Soon'}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{cls.time}</span>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-birla-gold" />Recent Students (UDISE+)
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">Student records with BSP ID / PEN No / Uppar ID</p>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {studentsList.map((s) => (
+                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
+                    <div className="w-9 h-9 rounded-xl bg-birla-cyan/10 flex items-center justify-center text-birla-cyan font-bold text-xs">{s.name.charAt(0)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{s.name}</p>
+                      <p className="text-[10px] text-muted-foreground">Class {s.class}-{s.section} &bull; BSP: {s.bspId}</p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground">{cls.subject} - {cls.class}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{cls.teacher}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <Users className="w-3 h-3" /> {cls.students} students
-                      </span>
-                      <button className="px-2.5 py-1 rounded-lg gradient-birla text-white text-[10px] font-medium flex items-center gap-1 hover:opacity-90 transition-opacity">
-                        <Video className="w-3 h-3" /> Join
-                      </button>
+                    <div className="text-right">
+                      <p className="text-[10px] text-birla-gold">PEN: {s.penNo}</p>
+                      <p className="text-[10px] text-muted-foreground">UPP: {s.upparId}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </motion.div>
           </div>
+        </div>
+      )}
 
-          {/* Bloom's + Competency Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Bloom's Taxonomy */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-birla-gold" />
-                  Bloom&apos;s Taxonomy Alignment
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-birla-gold/10 text-birla-gold font-medium">
-                  NEP 2020
-                </span>
+      {/* Virtual Classrooms Tab */}
+      {activeTab === 'classrooms' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Mathematics - X A', teacher: 'Dr. Priya Menon', time: '9:00 AM', students: 42, status: 'Live', color: 'bg-emerald-500' },
+              { title: 'Science - IX B', teacher: 'Mr. Rajesh Kumar', time: '10:30 AM', students: 38, status: 'Scheduled', color: 'bg-blue-500' },
+              { title: 'English - VIII A', teacher: 'Ms. Ananya Iyer', time: '12:00 PM', students: 40, status: 'Scheduled', color: 'bg-blue-500' },
+              { title: 'Hindi - VII A', teacher: 'Mr. Vikram Singh', time: '2:00 PM', students: 35, status: 'Completed', color: 'bg-gray-400' },
+              { title: 'SST - X B', teacher: 'Ms. Deepa Nair', time: '3:30 PM', students: 44, status: 'Scheduled', color: 'bg-blue-500' },
+              { title: 'Computer - IX A', teacher: 'Dr. Suresh Babu', time: '4:30 PM', students: 36, status: 'Scheduled', color: 'bg-blue-500' },
+            ].map((cls, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium text-white ${cls.color}`}>{cls.status}</span>
+                  <Monitor className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{cls.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{cls.teacher}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{cls.time}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1"><Users className="w-3 h-3" />{cls.students}</span>
+                </div>
               </div>
-              <div className="h-56">
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Assignments Tab */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Quadratic Equations Worksheet', subject: 'Mathematics', class: 'X-A', due: '2025-01-20', submissions: 32, total: 44, blooms: 'Apply' },
+              { title: 'Chemical Reactions Report', subject: 'Science', class: 'IX-B', due: '2025-01-18', submissions: 28, total: 38, blooms: 'Analyze' },
+              { title: 'Shakespeare Essay', subject: 'English', class: 'X-A', due: '2025-01-22', submissions: 40, total: 44, blooms: 'Evaluate' },
+              { title: 'Hindi Kavita Analysis', subject: 'Hindi', class: 'IX-A', due: '2025-01-19', submissions: 25, total: 40, blooms: 'Understand' },
+              { title: 'Indian Map Project', subject: 'SST', class: 'VIII-A', due: '2025-01-25', submissions: 30, total: 42, blooms: 'Create' },
+              { title: 'Python Programming Lab', subject: 'Computer', class: 'XI-A', due: '2025-01-21', submissions: 22, total: 36, blooms: 'Apply' },
+            ].map((a, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-birla-cyan/10 text-birla-cyan">{a.blooms}</span>
+                  <ClipboardList className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{a.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{a.subject} &bull; Class {a.class}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground">Due: {a.due}</span>
+                  <span className="text-xs font-medium text-birla-gold">{a.submissions}/{a.total}</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5">
+                  <div className="bg-birla-cyan h-1.5 rounded-full" style={{ width: `${(a.submissions / a.total) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Quizzes Tab */}
+      {activeTab === 'quizzes' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Algebra Quiz - Ch.5', subject: 'Mathematics', class: 'X', questions: 15, duration: 30, avgScore: 72, passRate: 78 },
+              { title: 'Light & Sound Quiz', subject: 'Science', class: 'IX', questions: 20, duration: 25, avgScore: 68, passRate: 72 },
+              { title: 'Grammar Quiz - Tenses', subject: 'English', class: 'VIII', questions: 25, duration: 20, avgScore: 82, passRate: 88 },
+              { title: 'Bhagwat Quiz', subject: 'Hindi', class: 'VII', questions: 10, duration: 15, avgScore: 65, passRate: 70 },
+              { title: 'Democracy Quiz', subject: 'SST', class: 'X', questions: 20, duration: 25, avgScore: 70, passRate: 75 },
+              { title: 'HTML/CSS Quiz', subject: 'Computer', class: 'IX', questions: 15, duration: 20, avgScore: 85, passRate: 90 },
+            ].map((q, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-500">MCQ</span>
+                  <FileQuestion className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{q.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{q.subject} &bull; Class {q.class}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded-lg bg-muted/50 text-center">
+                    <p className="text-muted-foreground">Questions</p>
+                    <p className="font-semibold text-foreground">{q.questions}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50 text-center">
+                    <p className="text-muted-foreground">Duration</p>
+                    <p className="font-semibold text-foreground">{q.duration}m</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50 text-center">
+                    <p className="text-muted-foreground">Avg Score</p>
+                    <p className="font-semibold text-birla-cyan">{q.avgScore}%</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/50 text-center">
+                    <p className="text-muted-foreground">Pass Rate</p>
+                    <p className="font-semibold text-emerald-500">{q.passRate}%</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Skills & Bloom's Tab */}
+      {activeTab === 'skills' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Brain className="w-4 h-4 text-purple-500" />Bloom's Taxonomy Distribution
+              </h3>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={bloomsData} layout="vertical" barGap={4}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} horizontal={false} />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                    <YAxis type="category" dataKey="level" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={80} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                      formatter={(value, name) => [name === 'percentage' ? `${value}%` : value, name === 'percentage' ? 'Achievement' : 'Students']}
-                    />
-                    <Bar dataKey="percentage" radius={[0, 6, 6, 0]} name="percentage">
-                      {bloomsData.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} />
-                      ))}
+                  <BarChart data={bloomsDistData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis dataKey="level" type="category" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={80} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Questions">
+                      {bloomsDistData.map((_, i) => (<Cell key={i} fill={CHART_COLORS[i]} />))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
-                <span>Lower Order ←</span>
-                <span>→ Higher Order Thinking</span>
-              </div>
-            </motion.div>
-
-            {/* NEP Competency Radar */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Target className="w-4 h-4 text-emerald-500" />
-                  NEP Competency-Based Learning
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                  80.9% Avg
-                </span>
-              </div>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Target className="w-4 h-4 text-birla-gold" />Competency Radar
+              </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={nepCompetencyData}>
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <Radar name="Competency" dataKey="competency" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.15} strokeWidth={2} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                      formatter={(value) => [`${value}%`, 'Competency']}
-                    />
+                  <RadarChart data={competencyData.slice(0, 1).flatMap(d => [
+                    { skill: 'Critical Thinking', value: d.criticalThinking },
+                    { skill: 'Problem Solving', value: d.problemSolving },
+                    { skill: 'Communication', value: d.communication },
+                    { skill: 'Creativity', value: d.creativity },
+                    { skill: 'Collaboration', value: d.collaboration },
+                  ])}>
+                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 10 }} stroke={darkMode ? '#94a3b8' : '#64748b'} />
+                    <PolarRadiusAxis tick={{ fontSize: 9 }} />
+                    <Radar name="Mathematics" dataKey="value" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.2} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
-            </motion.div>
-          </div>
-
-          {/* Quick Recorded + Experiential */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Recent Recordings */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Play className="w-4 h-4 text-purple-500" />
-                Recent Recordings
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {recordedLectures.slice(0, 4).map((rec) => (
-                  <div key={rec.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all group cursor-pointer">
-                    <div className="w-full h-20 rounded-lg gradient-birla flex items-center justify-center mb-2 relative overflow-hidden">
-                      <span className="text-2xl">{rec.thumbnail}</span>
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Play className="w-8 h-8 text-white" />
-                      </div>
-                      <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5" /> {rec.duration}
-                      </span>
-                    </div>
-                    <p className="text-xs font-semibold text-foreground truncate">{rec.topic}</p>
-                    <p className="text-[10px] text-muted-foreground">{rec.subject} &bull; {rec.teacher}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
-                        <Eye className="w-2.5 h-2.5" /> {rec.views}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Experiential Learning */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-cyan-500" />
-                  Experiential Learning
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium">
-                  NEP 2020
-                </span>
-              </div>
-              <div className="space-y-3 max-h-72 overflow-y-auto">
-                {experientialLearning.map((exp) => (
-                  <div key={exp.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        exp.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        exp.status === 'Planning' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {exp.status}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{exp.type}</span>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">{exp.title}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{exp.subject} &bull; {exp.class} &bull; {exp.students} students</p>
-                    <p className="text-[10px] text-muted-foreground mt-1 italic">{exp.outcome}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-muted-foreground">Starts: {exp.startDate}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* AI Recommendations */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-birla-gold" />
-                AI-Powered Recommendations
-              </h3>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-birla-gold/10 text-birla-gold font-medium">
-                {aiRecommendations.length} Insights
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {aiRecommendations.map((rec) => {
-                const Icon = rec.icon
-                return (
-                  <div key={rec.id} className="p-4 rounded-xl border border-border gradient-card-blue hover:shadow-md transition-all group">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.color}`}>
-                        <Icon className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground">{rec.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">{rec.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
 
-      {/* ─── Virtual Classrooms Tab ──────────────────────── */}
-      {activeTab === 'classrooms' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Video className="w-5 h-5 text-birla-cyan" />
-              Virtual Classrooms
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-xs text-rose-500 font-medium">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-                </span>
-                2 Live Now
-              </span>
-            </div>
-          </div>
-
-          {/* Live Classes Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {liveClasses.map((cls) => (
-              <div key={cls.id} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-all group">
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 ${
-                    cls.status === 'live' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    cls.status === 'starting' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    'bg-muted text-muted-foreground'
-                  }`}>
-                    {cls.status === 'live' && (
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                      </span>
-                    )}
-                    {cls.status === 'live' ? 'LIVE' : cls.status === 'starting' ? 'Starting Soon' : 'Scheduled'}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {cls.time}
-                  </span>
+      {/* Digital Library Tab */}
+      {activeTab === 'library' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'NCERT Mathematics X', type: 'Textbook', subject: 'Mathematics', access: 'All', views: 520 },
+              { title: 'Science Lab Video Series', type: 'Video', subject: 'Science', access: 'Class', views: 387 },
+              { title: 'English Grammar Reference', type: 'Reference', subject: 'English', access: 'All', views: 345 },
+              { title: 'Hindi Audio Stories', type: 'Audio', subject: 'Hindi', access: 'Class', views: 298 },
+              { title: 'Solar System Simulation', type: 'Simulation', subject: 'Science', access: 'All', views: 265 },
+              { title: 'Math Worksheet Set A', type: 'Worksheet', subject: 'Mathematics', access: 'Teacher', views: 234 },
+            ].map((r, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-birla-gold/10 text-birla-gold">{r.type}</span>
+                  <Globe className="w-4 h-4 text-muted-foreground" />
                 </div>
-
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl gradient-birla flex items-center justify-center text-white text-sm font-bold">
-                    {cls.subject.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{cls.subject}</p>
-                    <p className="text-[11px] text-muted-foreground">{cls.class}</p>
-                  </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{r.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{r.subject} &bull; Access: {r.access}</p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Eye className="w-3 h-3" />{r.views} views
                 </div>
-
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{cls.topic}</p>
-
-                <div className="flex items-center justify-between mb-3">
-                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Users className="w-3.5 h-3.5" /> {cls.students} students
-                  </span>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Monitor className="w-3 h-3" /> {cls.duration}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-3">
-                  <Mic className="w-3 h-3" /> {cls.teacher}
-                </div>
-
-                <button className={`w-full py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
-                  cls.status === 'live'
-                    ? 'gradient-birla text-white shadow-md hover:opacity-90'
-                    : cls.status === 'starting'
-                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-                      : 'border border-border text-muted-foreground hover:bg-muted'
-                }`}>
-                  {cls.status === 'live' ? <><Video className="w-3.5 h-3.5" /> Join Now</> :
-                   cls.status === 'starting' ? <><Radio className="w-3.5 h-3.5" /> Get Ready</> :
-                   <><Clock className="w-3.5 h-3.5" /> Schedule</>}
-                </button>
               </div>
             ))}
-          </div>
-
-          {/* Recorded Lectures */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Play className="w-4 h-4 text-purple-500" />
-              Recorded Lectures Library
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recordedLectures.map((rec) => (
-                <div key={rec.id} className="flex gap-3 p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all group cursor-pointer">
-                  <div className="w-24 h-20 rounded-lg gradient-birla flex items-center justify-center flex-shrink-0 relative overflow-hidden">
-                    <span className="text-xl">{rec.thumbnail}</span>
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/60 text-white text-[8px]">{rec.duration}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{rec.topic}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{rec.subject}</p>
-                    <p className="text-[10px] text-muted-foreground">{rec.teacher}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
-                        <Eye className="w-2.5 h-2.5" /> {rec.views}
-                      </span>
-                      <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
-                        <Star className="w-2.5 h-2.5" /> 4.{Math.floor(Math.random() * 4) + 5}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       )}
 
-      {/* ─── Assignments Tab ─────────────────────────────── */}
-      {activeTab === 'assignments' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-500" />
-              Assignment Dashboard
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Create Assignment
-            </button>
-          </div>
-
-          {/* Assignment Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Lesson Planner Tab */}
+      {activeTab === 'planner' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { label: 'Pending', value: assignments.pending.length, color: 'from-amber-800 to-amber-600', icon: Clock },
-              { label: 'Submitted', value: assignments.submitted.length, color: 'from-blue-900 to-blue-700', icon: Send },
-              { label: 'Graded', value: assignments.graded.length, color: 'from-emerald-800 to-emerald-600', icon: CheckCircle2 },
-            ].map((stat) => {
-              const Icon = stat.icon
+              { subject: 'Mathematics', topic: 'Quadratic Equations', class: 'X-A', method: 'Activity', blooms: 'Apply', status: 'Completed' },
+              { subject: 'Science', topic: 'Chemical Reactions', class: 'IX-B', method: 'Experiment', blooms: 'Analyze', status: 'In Progress' },
+              { subject: 'English', topic: 'The Merchant of Venice', class: 'X-A', method: 'Discussion', blooms: 'Evaluate', status: 'Completed' },
+              { subject: 'Hindi', topic: 'Kavya Khand', class: 'IX-A', method: 'Lecture', blooms: 'Understand', status: 'Pending' },
+              { subject: 'SST', topic: 'Indian Constitution', class: 'VIII-A', method: 'Group Work', blooms: 'Create', status: 'In Progress' },
+              { subject: 'Computer', topic: 'Data Structures', class: 'XI-A', method: 'Flipped', blooms: 'Apply', status: 'Scheduled' },
+            ].map((lp, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${lp.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : lp.status === 'In Progress' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>{lp.status}</span>
+                  <BookOpen className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{lp.topic}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{lp.subject} &bull; Class {lp.class}</p>
+                <div className="flex gap-2">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-birla-cyan/10 text-birla-cyan">{lp.method}</span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-500">{lp.blooms}</span>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* AI Insights Tab */}
+      {activeTab === 'ai' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[
+              { title: 'At-Risk Students Detected', desc: '12 students showing declining engagement patterns across Mathematics and Science. Recommended: remedial sessions and peer tutoring.', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+              { title: 'Bloom\'s Level Gap', desc: 'Only 5% of questions target "Create" level. Recommend increasing higher-order thinking activities by 15%.', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+              { title: 'Content Recommendation', desc: 'Students in Class IX prefer video content over text. Suggest adding more visual learning resources for Science.', icon: Lightbulb, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+              { title: 'Competency Mapping Alert', desc: 'NEP 2020 competency alignment missing for 3 subjects. Competency-based assessments need updating.', icon: Target, color: 'text-birla-cyan', bg: 'bg-birla-cyan/10' },
+            ].map((insight, i) => {
+              const Icon = insight.icon
               return (
-                <div key={stat.label} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-5 text-white`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Icon className="w-5 h-5" />
+                <div key={i} className="rounded-2xl border border-border bg-card p-5 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl ${insight.bg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`w-5 h-5 ${insight.color}`} />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stat.value}</p>
-                      <p className="text-xs text-white/70">{stat.label} Assignments</p>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">{insight.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{insight.desc}</p>
                     </div>
                   </div>
                 </div>
               )
             })}
-          </div>
-
-          {/* Assignment Tabs */}
-          <div className="flex items-center gap-2">
-            {['pending', 'submitted', 'graded'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setAssignmentTab(tab)}
-                className={`px-4 py-2 rounded-xl text-xs font-medium capitalize transition-all ${
-                  assignmentTab === tab
-                    ? 'gradient-birla text-white shadow-md'
-                    : 'border border-border text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Assignment List */}
-          <div className="space-y-3">
-            <AnimatePresence mode="wait">
-              {assignmentTab === 'pending' && (
-                <motion.div key="pending" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                  {assignments.pending.map((a) => (
-                    <div key={a.id} className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:shadow-sm transition-all">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{a.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{a.subject} &bull; {a.class}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-foreground">{a.submissions}/{a.total}</p>
-                          <p className="text-[9px] text-muted-foreground">Submitted</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-amber-500">{a.dueDate}</p>
-                          <p className="text-[9px] text-muted-foreground">Due Date</p>
-                        </div>
-                        <button className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">View</button>
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-              {assignmentTab === 'submitted' && (
-                <motion.div key="submitted" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                  {assignments.submitted.map((a) => (
-                    <div key={a.id} className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:shadow-sm transition-all">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{a.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{a.subject} &bull; {a.class}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-foreground">{a.submitted}/{a.total}</p>
-                          <p className="text-[9px] text-muted-foreground">Submitted</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-birla-cyan">{a.avgScore}%</p>
-                          <p className="text-[9px] text-muted-foreground">Avg Score</p>
-                        </div>
-                        <button className="px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">Grade</button>
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-              {assignmentTab === 'graded' && (
-                <motion.div key="graded" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                  {assignments.graded.map((a) => (
-                    <div key={a.id} className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:shadow-sm transition-all">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{a.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{a.subject} &bull; {a.class}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-emerald-500">{a.avgScore}%</p>
-                          <p className="text-[9px] text-muted-foreground">Avg</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-foreground">{a.highest}%</p>
-                          <p className="text-[9px] text-muted-foreground">Highest</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-bold text-red-500">{a.lowest}%</p>
-                          <p className="text-[9px] text-muted-foreground">Lowest</p>
-                        </div>
-                        <button className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">Report</button>
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       )}
 
-      {/* ─── Quiz Engine Tab ─────────────────────────────── */}
-      {activeTab === 'quizzes' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Brain className="w-5 h-5 text-purple-500" />
-              Quiz Engine
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Create Quiz
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeQuizzes.map((quiz) => (
-              <div key={quiz.id} className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    quiz.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    quiz.status === 'completed' ? 'bg-muted text-muted-foreground' :
-                    'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                  }`}>
-                    {quiz.status === 'active' ? '● Active' : quiz.status === 'completed' ? 'Completed' : 'Scheduled'}
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Clock className="w-3 h-3" /> {quiz.duration}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-foreground">{quiz.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{quiz.subject} &bull; {quiz.class}</p>
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  <div className="text-center p-2 rounded-lg bg-muted/30">
-                    <p className="text-sm font-bold text-foreground">{quiz.questions}</p>
-                    <p className="text-[9px] text-muted-foreground">Questions</p>
+      {/* Forms Tab */}
+      {activeTab === 'forms' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {formsList.map((form) => {
+              const Icon = form.icon
+              return (
+                <button key={form.id} onClick={() => setShowForm(form.id)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border border-border hover:border-birla-gold/30 hover:shadow-lg transition-all group ${showForm === form.id ? 'border-birla-gold/50 shadow-lg bg-birla-gold/5' : ''}`}>
+                  <div className="w-10 h-10 rounded-xl bg-birla-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-5 h-5 text-birla-blue dark:text-birla-cyan" />
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-muted/30">
-                    <p className="text-sm font-bold text-foreground">{quiz.participants}</p>
-                    <p className="text-[9px] text-muted-foreground">Participants</p>
-                  </div>
-                  <div className="text-center p-2 rounded-lg bg-muted/30">
-                    <p className="text-sm font-bold text-birla-cyan">{quiz.avgScore}%</p>
-                    <p className="text-[9px] text-muted-foreground">Avg Score</p>
-                  </div>
-                </div>
-                <button className={`w-full mt-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                  quiz.status === 'active'
-                    ? 'gradient-birla text-white'
-                    : 'border border-border text-muted-foreground hover:bg-muted'
-                }`}>
-                  {quiz.status === 'active' ? 'Monitor Live' : quiz.status === 'completed' ? 'View Results' : 'Edit Quiz'}
+                  <span className="text-[10px] text-muted-foreground group-hover:text-foreground text-center">{form.label}</span>
                 </button>
-              </div>
-            ))}
-          </div>
+              )
+            })}
+          </motion.div>
 
-          {/* Quiz Performance Chart */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <BarChart3 className="w-4 h-4 text-birla-cyan" />
-              Quiz Performance by Subject
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activeQuizzes.filter(q => q.status !== 'scheduled')}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="subject" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                      borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                    }}
-                  />
-                  <Bar dataKey="avgScore" fill="#22D3EE" radius={[6, 6, 0, 0]} name="Avg Score %" />
-                  <Bar dataKey="participants" fill="#C8A45C" radius={[6, 6, 0, 0]} name="Participants" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </motion.div>
+          {/* Assignment Creation Form */}
+          {showForm === 'assignment' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-birla-cyan" />Assignment Creation Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Title *</label><input type="text" value={assignmentForm.title} onChange={(e) => setAssignmentForm({...assignmentForm, title: e.target.value})} className={inputCls} placeholder="Enter assignment title" /></div>
+                <div><label className={labelCls}>Subject *</label><select value={assignmentForm.subject} onChange={(e) => setAssignmentForm({...assignmentForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={assignmentForm.className} onChange={(e) => setAssignmentForm({...assignmentForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Section</label><select value={assignmentForm.section} onChange={(e) => setAssignmentForm({...assignmentForm, section: e.target.value})} className={inputCls}><option value="">Select Section</option>{sections.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Due Date *</label><input type="date" value={assignmentForm.dueDate} onChange={(e) => setAssignmentForm({...assignmentForm, dueDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Max Marks *</label><input type="number" value={assignmentForm.maxMarks} onChange={(e) => setAssignmentForm({...assignmentForm, maxMarks: e.target.value})} className={inputCls} placeholder="100" /></div>
+                <div><label className={labelCls}>Assignment Type *</label><select value={assignmentForm.assignmentType} onChange={(e) => setAssignmentForm({...assignmentForm, assignmentType: e.target.value})} className={inputCls}><option value="Homework">Homework</option><option value="Project">Project</option><option value="Worksheet">Worksheet</option><option value="Research">Research</option><option value="Practice">Practice</option></select></div>
+                <div><label className={labelCls}>Bloom&apos;s Level *</label><select value={assignmentForm.bloomsLevel} onChange={(e) => setAssignmentForm({...assignmentForm, bloomsLevel: e.target.value})} className={inputCls}>{bloomsLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div><label className={labelCls}>Competency Mapping</label><input type="text" value={assignmentForm.competencyMapping} onChange={(e) => setAssignmentForm({...assignmentForm, competencyMapping: e.target.value})} className={inputCls} placeholder="e.g., Problem Solving, Critical Thinking" /></div>
+                <div className="flex items-center gap-2 pt-5">
+                  <input type="checkbox" checked={assignmentForm.attachFiles} onChange={(e) => setAssignmentForm({...assignmentForm, attachFiles: e.target.checked})} className="w-4 h-4 rounded border-border" />
+                  <label className="text-xs font-medium text-muted-foreground">Attach Files</label>
+                </div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Description</label><textarea value={assignmentForm.description} onChange={(e) => setAssignmentForm({...assignmentForm, description: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="Describe the assignment requirements..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('assignment')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Create Assignment</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Quiz Creation Form */}
+          {showForm === 'quiz' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <FileQuestion className="w-5 h-5 text-purple-500" />Quiz Creation Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Title *</label><input type="text" value={quizForm.title} onChange={(e) => setQuizForm({...quizForm, title: e.target.value})} className={inputCls} placeholder="Enter quiz title" /></div>
+                <div><label className={labelCls}>Subject *</label><select value={quizForm.subject} onChange={(e) => setQuizForm({...quizForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={quizForm.className} onChange={(e) => setQuizForm({...quizForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Duration (mins) *</label><input type="number" value={quizForm.duration} onChange={(e) => setQuizForm({...quizForm, duration: e.target.value})} className={inputCls} placeholder="30" /></div>
+                <div><label className={labelCls}>Total Questions *</label><input type="number" value={quizForm.totalQuestions} onChange={(e) => setQuizForm({...quizForm, totalQuestions: e.target.value})} className={inputCls} placeholder="10" /></div>
+                <div><label className={labelCls}>Marks Per Question *</label><input type="number" value={quizForm.marksPerQuestion} onChange={(e) => setQuizForm({...quizForm, marksPerQuestion: e.target.value})} className={inputCls} placeholder="5" /></div>
+                <div><label className={labelCls}>Quiz Type *</label><select value={quizForm.quizType} onChange={(e) => setQuizForm({...quizForm, quizType: e.target.value})} className={inputCls}><option value="MCQ">MCQ</option><option value="True-False">True/False</option><option value="Short-Answer">Short Answer</option><option value="Mixed">Mixed</option></select></div>
+                <div><label className={labelCls}>Difficulty Level *</label><select value={quizForm.difficultyLevel} onChange={(e) => setQuizForm({...quizForm, difficultyLevel: e.target.value})} className={inputCls}><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select></div>
+                <div><label className={labelCls}>Bloom&apos;s Level *</label><select value={quizForm.bloomsLevel} onChange={(e) => setQuizForm({...quizForm, bloomsLevel: e.target.value})} className={inputCls}>{bloomsLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div><label className={labelCls}>Passing Percentage *</label><input type="number" value={quizForm.passingPercentage} onChange={(e) => setQuizForm({...quizForm, passingPercentage: e.target.value})} className={inputCls} placeholder="40" /></div>
+                <div><label className={labelCls}>Schedule Date</label><input type="date" value={quizForm.scheduleDate} onChange={(e) => setQuizForm({...quizForm, scheduleDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Schedule Time</label><input type="time" value={quizForm.scheduleTime} onChange={(e) => setQuizForm({...quizForm, scheduleTime: e.target.value})} className={inputCls} /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('quiz')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Create Quiz</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Lesson Plan Form */}
+          {showForm === 'lessonPlan' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-emerald-500" />Lesson Plan Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Subject *</label><select value={lessonPlanForm.subject} onChange={(e) => setLessonPlanForm({...lessonPlanForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={lessonPlanForm.className} onChange={(e) => setLessonPlanForm({...lessonPlanForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Topic *</label><input type="text" value={lessonPlanForm.topic} onChange={(e) => setLessonPlanForm({...lessonPlanForm, topic: e.target.value})} className={inputCls} placeholder="Topic name" /></div>
+                <div><label className={labelCls}>Duration (mins) *</label><input type="number" value={lessonPlanForm.duration} onChange={(e) => setLessonPlanForm({...lessonPlanForm, duration: e.target.value})} className={inputCls} placeholder="40" /></div>
+                <div><label className={labelCls}>Bloom&apos;s Alignment *</label><select value={lessonPlanForm.bloomsAlignment} onChange={(e) => setLessonPlanForm({...lessonPlanForm, bloomsAlignment: e.target.value})} className={inputCls}>{bloomsLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div><label className={labelCls}>Teaching Method *</label><select value={lessonPlanForm.teachingMethod} onChange={(e) => setLessonPlanForm({...lessonPlanForm, teachingMethod: e.target.value})} className={inputCls}><option value="Lecture">Lecture</option><option value="Discussion">Discussion</option><option value="Activity">Activity</option><option value="Experiment">Experiment</option><option value="Group Work">Group Work</option><option value="Flipped">Flipped</option></select></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Learning Objectives *</label><textarea value={lessonPlanForm.learningObjectives} onChange={(e) => setLessonPlanForm({...lessonPlanForm, learningObjectives: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="What students will achieve..." /></div>
+                <div><label className={labelCls}>Resources Needed</label><input type="text" value={lessonPlanForm.resourcesNeeded} onChange={(e) => setLessonPlanForm({...lessonPlanForm, resourcesNeeded: e.target.value})} className={inputCls} placeholder="Textbook, projector, etc." /></div>
+                <div><label className={labelCls}>Assessment Method</label><input type="text" value={lessonPlanForm.assessmentMethod} onChange={(e) => setLessonPlanForm({...lessonPlanForm, assessmentMethod: e.target.value})} className={inputCls} placeholder="Quiz, oral test, etc." /></div>
+                <div><label className={labelCls}>Homework Assignment</label><input type="text" value={lessonPlanForm.homeworkAssignment} onChange={(e) => setLessonPlanForm({...lessonPlanForm, homeworkAssignment: e.target.value})} className={inputCls} placeholder="HW details" /></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Notes</label><textarea value={lessonPlanForm.notes} onChange={(e) => setLessonPlanForm({...lessonPlanForm, notes: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Additional notes..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('lessonPlan')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Lesson Plan</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Live Class Schedule Form */}
+          {showForm === 'liveClass' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Video className="w-5 h-5 text-blue-500" />Live Class Schedule Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Subject *</label><select value={liveClassForm.subject} onChange={(e) => setLiveClassForm({...liveClassForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={liveClassForm.className} onChange={(e) => setLiveClassForm({...liveClassForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Teacher *</label><select value={liveClassForm.teacher} onChange={(e) => setLiveClassForm({...liveClassForm, teacher: e.target.value})} className={inputCls}><option value="">Select Teacher</option>{teachers.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                <div><label className={labelCls}>Date *</label><input type="date" value={liveClassForm.date} onChange={(e) => setLiveClassForm({...liveClassForm, date: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Start Time *</label><input type="time" value={liveClassForm.startTime} onChange={(e) => setLiveClassForm({...liveClassForm, startTime: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Duration (mins) *</label><input type="number" value={liveClassForm.duration} onChange={(e) => setLiveClassForm({...liveClassForm, duration: e.target.value})} className={inputCls} placeholder="40" /></div>
+                <div className="md:col-span-2"><label className={labelCls}>Topic *</label><input type="text" value={liveClassForm.topic} onChange={(e) => setLiveClassForm({...liveClassForm, topic: e.target.value})} className={inputCls} placeholder="Class topic" /></div>
+                <div><label className={labelCls}>Meeting Link</label><input type="url" value={liveClassForm.meetingLink} onChange={(e) => setLiveClassForm({...liveClassForm, meetingLink: e.target.value})} className={inputCls} placeholder="https://meet.google.com/..." /></div>
+                <div className="flex items-center gap-2 pt-5">
+                  <input type="checkbox" checked={liveClassForm.recordingEnabled} onChange={(e) => setLiveClassForm({...liveClassForm, recordingEnabled: e.target.checked})} className="w-4 h-4 rounded border-border" />
+                  <label className="text-xs font-medium text-muted-foreground">Recording Enabled</label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('liveClass')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Schedule Class</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Digital Resource Upload Form */}
+          {showForm === 'resource' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-birla-gold" />Digital Resource Upload Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Title *</label><input type="text" value={resourceForm.title} onChange={(e) => setResourceForm({...resourceForm, title: e.target.value})} className={inputCls} placeholder="Resource title" /></div>
+                <div><label className={labelCls}>Resource Type *</label><select value={resourceForm.resourceType} onChange={(e) => setResourceForm({...resourceForm, resourceType: e.target.value})} className={inputCls}><option value="Textbook">Textbook</option><option value="Reference">Reference</option><option value="Video">Video</option><option value="Audio">Audio</option><option value="Simulation">Simulation</option><option value="Worksheet">Worksheet</option></select></div>
+                <div><label className={labelCls}>Subject *</label><select value={resourceForm.subject} onChange={(e) => setResourceForm({...resourceForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={resourceForm.className} onChange={(e) => setResourceForm({...resourceForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Author</label><input type="text" value={resourceForm.author} onChange={(e) => setResourceForm({...resourceForm, author: e.target.value})} className={inputCls} placeholder="Author name" /></div>
+                <div><label className={labelCls}>Publisher</label><input type="text" value={resourceForm.publisher} onChange={(e) => setResourceForm({...resourceForm, publisher: e.target.value})} className={inputCls} placeholder="Publisher name" /></div>
+                <div><label className={labelCls}>Access Level *</label><select value={resourceForm.accessLevel} onChange={(e) => setResourceForm({...resourceForm, accessLevel: e.target.value})} className={inputCls}><option value="All">All</option><option value="Class">Class</option><option value="Teacher">Teacher</option></select></div>
+                <div><label className={labelCls}>Tags</label><input type="text" value={resourceForm.tags} onChange={(e) => setResourceForm({...resourceForm, tags: e.target.value})} className={inputCls} placeholder="Comma-separated tags" /></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Description</label><textarea value={resourceForm.description} onChange={(e) => setResourceForm({...resourceForm, description: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="Describe the resource..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('resource')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Upload Resource</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Competency Mapping Form */}
+          {showForm === 'competencyMap' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Target className="w-5 h-5 text-birla-gold" />Competency Mapping Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Subject *</label><select value={competencyMapForm.subject} onChange={(e) => setCompetencyMapForm({...competencyMapForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={competencyMapForm.className} onChange={(e) => setCompetencyMapForm({...competencyMapForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Competency *</label><input type="text" value={competencyMapForm.competency} onChange={(e) => setCompetencyMapForm({...competencyMapForm, competency: e.target.value})} className={inputCls} placeholder="e.g., Critical Thinking" /></div>
+                <div><label className={labelCls}>Bloom&apos;s Level *</label><select value={competencyMapForm.bloomsLevel} onChange={(e) => setCompetencyMapForm({...competencyMapForm, bloomsLevel: e.target.value})} className={inputCls}>{bloomsLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div className="md:col-span-2"><label className={labelCls}>Learning Outcome *</label><input type="text" value={competencyMapForm.learningOutcome} onChange={(e) => setCompetencyMapForm({...competencyMapForm, learningOutcome: e.target.value})} className={inputCls} placeholder="Expected learning outcome" /></div>
+                <div className="md:col-span-2"><label className={labelCls}>Assessment Criteria</label><textarea value={competencyMapForm.assessmentCriteria} onChange={(e) => setCompetencyMapForm({...competencyMapForm, assessmentCriteria: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="How competency will be assessed..." /></div>
+                <div className="flex items-center gap-2 pt-5">
+                  <input type="checkbox" checked={competencyMapForm.nepAlignment} onChange={(e) => setCompetencyMapForm({...competencyMapForm, nepAlignment: e.target.checked})} className="w-4 h-4 rounded border-border" />
+                  <label className="text-xs font-medium text-muted-foreground">NEP 2020 Alignment</label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('competencyMap')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Mapping</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Experiential Learning Form */}
+          {showForm === 'experiential' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <FlaskConical className="w-5 h-5 text-emerald-500" />Experiential Learning Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Title *</label><input type="text" value={experientialForm.title} onChange={(e) => setExperientialForm({...experientialForm, title: e.target.value})} className={inputCls} placeholder="Activity title" /></div>
+                <div><label className={labelCls}>Subject *</label><select value={experientialForm.subject} onChange={(e) => setExperientialForm({...experientialForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={experientialForm.className} onChange={(e) => setExperientialForm({...experientialForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Type *</label><select value={experientialForm.type} onChange={(e) => setExperientialForm({...experientialForm, type: e.target.value})} className={inputCls}><option value="Field Study">Field Study</option><option value="Survey">Survey</option><option value="Project">Project</option><option value="Industry Visit">Industry Visit</option><option value="Lab Experiment">Lab Experiment</option></select></div>
+                <div><label className={labelCls}>Start Date *</label><input type="date" value={experientialForm.startDate} onChange={(e) => setExperientialForm({...experientialForm, startDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>End Date *</label><input type="date" value={experientialForm.endDate} onChange={(e) => setExperientialForm({...experientialForm, endDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Students Count</label><input type="number" value={experientialForm.studentsCount} onChange={(e) => setExperientialForm({...experientialForm, studentsCount: e.target.value})} className={inputCls} placeholder="40" /></div>
+                <div className="md:col-span-2"><label className={labelCls}>Objective *</label><textarea value={experientialForm.objective} onChange={(e) => setExperientialForm({...experientialForm, objective: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Learning objective..." /></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Expected Outcome</label><textarea value={experientialForm.outcomeExpected} onChange={(e) => setExperientialForm({...experientialForm, outcomeExpected: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Expected learning outcomes..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('experiential')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Activity</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Student BSP ID Form */}
+          {showForm === 'bspId' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Users className="w-5 h-5 text-birla-cyan" />Student BSP ID Form (UDISE+)
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label className={labelCls}>Student ID *</label><select value={bspIdForm.studentId} onChange={(e) => setBspIdForm({...bspIdForm, studentId: e.target.value})} className={inputCls}><option value="">Select Student</option>{studentsList.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}</select></div>
+                <div><label className={labelCls}>BSP ID *</label><input type="text" value={bspIdForm.bspId} onChange={(e) => setBspIdForm({...bspIdForm, bspId: e.target.value})} className={inputCls} placeholder="BSP2024XXX" /></div>
+                <div><label className={labelCls}>PEN No *</label><input type="text" value={bspIdForm.penNo} onChange={(e) => setBspIdForm({...bspIdForm, penNo: e.target.value})} className={inputCls} placeholder="PEN1905XXX" /></div>
+                <div><label className={labelCls}>Uppar ID *</label><input type="text" value={bspIdForm.upparId} onChange={(e) => setBspIdForm({...bspIdForm, upparId: e.target.value})} className={inputCls} placeholder="UPP2024XXX" /></div>
+              </div>
+              <div className="mt-4 p-3 rounded-xl bg-muted/30 border border-border">
+                <h4 className="text-xs font-semibold text-foreground mb-2">Existing BSP ID Records</h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {studentsList.map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-2 rounded-lg bg-background border border-border text-xs">
+                      <span className="font-medium text-foreground">{s.name}</span>
+                      <div className="flex gap-3">
+                        <span className="text-birla-cyan">BSP: {s.bspId}</span>
+                        <span className="text-birla-gold">PEN: {s.penNo}</span>
+                        <span className="text-muted-foreground">UPP: {s.upparId}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('bspId')} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save BSP ID</button>
+              </div>
+            </motion.div>
+          )}
+        </div>
       )}
 
-      {/* ─── Skills & Bloom's Tab ────────────────────────── */}
-      {activeTab === 'skills' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Target className="w-5 h-5 text-birla-gold" />
-            Skill-Based Learning Progress
-          </h3>
-
-          {/* Skill Competency Bars */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Award className="w-4 h-4 text-birla-gold" />
-                Competency Progress
-              </h4>
-              <div className="space-y-4">
-                {skillProgress.map((skill) => (
-                  <div key={skill.skill}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-medium text-foreground">{skill.skill}</span>
-                      <span className="text-xs font-bold" style={{ color: skill.color }}>{skill.score}%</span>
-                    </div>
-                    <div className="h-3 rounded-full bg-muted overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${skill.score}%` }}
-                        transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-                        className="h-full rounded-full"
-                        style={{ background: `linear-gradient(90deg, ${skill.color}88, ${skill.color})` }}
-                      />
-                    </div>
+      {/* Reports Tab */}
+      {activeTab === 'reports' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
+            {reportsList.map((rpt) => {
+              const Icon = rpt.icon
+              return (
+                <button key={rpt.id} onClick={() => setShowForm('rpt_' + rpt.id)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl border border-border hover:border-birla-cyan/30 hover:shadow-lg transition-all group ${showForm === 'rpt_' + rpt.id ? 'border-birla-cyan/50 shadow-lg bg-birla-cyan/5' : ''}`}>
+                  <div className="w-9 h-9 rounded-xl bg-birla-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-4 h-4 text-birla-blue dark:text-birla-cyan" />
                   </div>
-                ))}
-              </div>
-            </motion.div>
+                  <span className="text-[9px] text-muted-foreground group-hover:text-foreground text-center">{rpt.label}</span>
+                </button>
+              )
+            })}
+          </motion.div>
 
-            {/* Bloom's Taxonomy Visualization */}
+          {/* Learning Engagement Report */}
+          {showForm === 'rpt_engagement' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-purple-500" />
-                Bloom&apos;s Taxonomy Alignment
-              </h4>
-              <div className="space-y-2">
-                {bloomsData.map((level, idx) => {
-                  const widthPct = level.percentage
-                  return (
-                    <div key={level.level} className="flex items-center gap-3">
-                      <span className="text-[10px] font-medium text-muted-foreground w-16 text-right">{level.level}</span>
-                      <div className="flex-1 h-8 rounded-lg bg-muted/30 overflow-hidden relative">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${widthPct}%` }}
-                          transition={{ duration: 0.8, delay: idx * 0.1 }}
-                          className="h-full rounded-lg flex items-center justify-end pr-2"
-                          style={{ backgroundColor: level.color }}
-                        >
-                          <span className="text-[10px] font-bold text-white">{widthPct}%</span>
-                        </motion.div>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground w-12">{level.students.toLocaleString()}</span>
-                    </div>
-                  )
-                })}
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><TrendingUp className="w-4 h-4 text-birla-cyan" />Learning Engagement Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Weekly engagement trends across all learning activities</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-birla-blue/5 border border-border text-center"><p className="text-xs text-muted-foreground">Avg Live Attendance</p><p className="text-lg font-bold text-birla-cyan">86%</p></div>
+                <div className="p-3 rounded-xl bg-birla-gold/5 border border-border text-center"><p className="text-xs text-muted-foreground">Avg Recorded Views</p><p className="text-lg font-bold text-birla-gold">74%</p></div>
+                <div className="p-3 rounded-xl bg-purple-500/5 border border-border text-center"><p className="text-xs text-muted-foreground">Avg Quiz Participation</p><p className="text-lg font-bold text-purple-500">65%</p></div>
+                <div className="p-3 rounded-xl bg-emerald-500/5 border border-border text-center"><p className="text-xs text-muted-foreground">Avg Assignment Submission</p><p className="text-lg font-bold text-emerald-500">76%</p></div>
               </div>
-              <div className="mt-3 p-3 rounded-lg bg-muted/30 text-[10px] text-muted-foreground">
-                <span className="font-medium text-foreground">NEP 2020 Focus:</span> Shift from rote learning (Remember/Understand) towards higher-order thinking (Analyze/Evaluate/Create)
-              </div>
-            </motion.div>
-          </div>
-
-          {/* NEP Radar + Learning Outcomes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4 text-emerald-500" />
-                NEP Competency Tracker
-              </h4>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={nepCompetencyData}>
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <Radar name="Current" dataKey="competency" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.15} strokeWidth={2} />
-                    <Radar name="Target" dataKey="fullMark" stroke="#C8A45C" fill="none" strokeWidth={1} strokeDasharray="5 5" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                    />
+                  <AreaChart data={engagementData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="week" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Area type="monotone" dataKey="live" stroke="#1A2D4A" fill="rgba(26,45,74,0.15)" strokeWidth={2} name="Live" />
+                    <Area type="monotone" dataKey="recorded" stroke="#22D3EE" fill="rgba(34,211,238,0.1)" strokeWidth={2} name="Recorded" />
+                    <Area type="monotone" dataKey="quiz" stroke="#C8A45C" fill="rgba(200,164,92,0.1)" strokeWidth={2} name="Quiz" />
+                    <Area type="monotone" dataKey="assignment" stroke="#8B5CF6" fill="rgba(139,92,246,0.1)" strokeWidth={2} name="Assignment" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Assignment Completion Report */}
+          {showForm === 'rpt_assignmentComp' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><ClipboardList className="w-4 h-4 text-birla-gold" />Assignment Completion Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Class-wise assignment completion status</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Class</th><th className="text-center p-2 text-muted-foreground font-medium">Total</th><th className="text-center p-2 text-muted-foreground font-medium">Completed</th><th className="text-center p-2 text-muted-foreground font-medium">Pending</th><th className="text-center p-2 text-muted-foreground font-medium">Rate</th></tr></thead>
+                  <tbody>
+                    {assignmentCompletionReport.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.class}</td><td className="text-center p-2">{r.total}</td><td className="text-center p-2 text-emerald-500">{r.completed}</td><td className="text-center p-2 text-amber-500">{r.pending}</td><td className="text-center p-2 font-semibold">{Math.round(r.completed/r.total*100)}%</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={assignmentCompletionReport}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="class" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="completed" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Completed" />
+                    <Bar dataKey="pending" fill="#C8A45C" radius={[4, 4, 0, 0]} name="Pending" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Quiz Performance Report */}
+          {showForm === 'rpt_quizPerf' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Award className="w-4 h-4 text-purple-500" />Quiz Performance Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Quiz-wise average scores and pass rates</p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={quizPerformanceReport}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="quiz" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="avgScore" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="Avg Score %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={passRatePieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        {passRatePieData.map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Bloom's Distribution Report */}
+          {showForm === 'rpt_bloomsDist' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Brain className="w-4 h-4 text-purple-500" />Bloom&apos;s Taxonomy Distribution Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Question distribution across cognitive levels</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Level</th><th className="text-center p-2 text-muted-foreground font-medium">Count</th><th className="text-center p-2 text-muted-foreground font-medium">Percentage</th></tr></thead>
+                  <tbody>
+                    {bloomsDistData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.level}</td><td className="text-center p-2">{r.count}</td><td className="text-center p-2 font-semibold">{r.pct}%</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={bloomsDistData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis dataKey="level" type="category" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={80} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Questions">
+                      {bloomsDistData.map((_, i) => (<Cell key={i} fill={CHART_COLORS[i]} />))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Competency Achievement Report */}
+          {showForm === 'rpt_competency' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Target className="w-4 h-4 text-birla-gold" />Competency Achievement Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Subject-wise competency levels</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Subject</th><th className="text-center p-2 text-muted-foreground font-medium">Critical Thinking</th><th className="text-center p-2 text-muted-foreground font-medium">Problem Solving</th><th className="text-center p-2 text-muted-foreground font-medium">Communication</th><th className="text-center p-2 text-muted-foreground font-medium">Creativity</th><th className="text-center p-2 text-muted-foreground font-medium">Collaboration</th></tr></thead>
+                  <tbody>
+                    {competencyData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.subject}</td><td className="text-center p-2">{r.criticalThinking}%</td><td className="text-center p-2">{r.problemSolving}%</td><td className="text-center p-2">{r.communication}%</td><td className="text-center p-2">{r.creativity}%</td><td className="text-center p-2">{r.collaboration}%</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={[
+                    { skill: 'Critical Thinking', mathematics: 72, science: 78, english: 65 },
+                    { skill: 'Problem Solving', mathematics: 68, science: 75, english: 55 },
+                    { skill: 'Communication', mathematics: 60, science: 65, english: 85 },
+                    { skill: 'Creativity', mathematics: 55, science: 60, english: 70 },
+                    { skill: 'Collaboration', mathematics: 70, science: 72, english: 68 },
+                  ]}>
+                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 10 }} stroke={darkMode ? '#94a3b8' : '#64748b'} />
+                    <PolarRadiusAxis tick={{ fontSize: 9 }} />
+                    <Radar name="Mathematics" dataKey="mathematics" stroke="#1A2D4A" fill="#1A2D4A" fillOpacity={0.15} />
+                    <Radar name="Science" dataKey="science" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.15} />
+                    <Radar name="English" dataKey="english" stroke="#C8A45C" fill="#C8A45C" fillOpacity={0.15} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Tooltip contentStyle={tooltipStyle} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
+          )}
 
+          {/* Digital Library Usage Report */}
+          {showForm === 'rpt_libraryUsage' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-birla-cyan" />
-                Learning Outcomes Mapping
-              </h4>
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {learningOutcomes.map((lo) => (
-                  <div key={lo.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-birla-cyan/10 text-birla-cyan">
-                        {lo.blooms}
-                      </span>
-                      <span className="text-[10px] font-medium text-foreground">{lo.alignment}% aligned</span>
-                    </div>
-                    <p className="text-xs font-medium text-foreground">{lo.outcome}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{lo.subject} &bull; Class {lo.class}</p>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-2">
-                      <div
-                        className="h-full rounded-full gradient-birla-cyan"
-                        style={{ width: `${lo.alignment}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Library className="w-4 h-4 text-birla-cyan" />Digital Library Usage Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Resource access patterns and top resources</p>
+              <div className="h-64 mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={digitalLibraryData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="resource" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="access" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Access Count">
+                      {digitalLibraryData.map((_, i) => (<Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Resource</th><th className="text-center p-2 text-muted-foreground font-medium">Type</th><th className="text-center p-2 text-muted-foreground font-medium">Access Count</th></tr></thead>
+                  <tbody>
+                    {digitalLibraryData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.resource}</td><td className="text-center p-2">{r.type}</td><td className="text-center p-2 font-semibold text-birla-cyan">{r.access}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </motion.div>
-          </div>
-        </motion.div>
-      )}
+          )}
 
-      {/* ─── Digital Library Tab ─────────────────────────── */}
-      {activeTab === 'library' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Library className="w-5 h-5 text-emerald-500" />
-              Digital Library
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Add Resource
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {digitalLibrary.map((book) => (
-              <div key={book.id} className="rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-all group">
-                <div className="flex items-start gap-3">
-                  <div className="w-14 h-18 rounded-lg gradient-birla flex items-center justify-center text-2xl flex-shrink-0">
-                    {book.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground line-clamp-2">{book.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{book.subject}</p>
-                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                      book.type === 'Textbook' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                      book.type === 'Reference' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
-                      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                    }`}>
-                      {book.type}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <Eye className="w-3 h-3" /> {book.access.toLocaleString()}
-                    </span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-amber-500">
-                      <Star className="w-3 h-3 fill-amber-500" /> {book.rating}
-                    </span>
-                  </div>
-                  <button className="px-3 py-1 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors group-hover:border-birla-gold/30">
-                    <Bookmark className="w-3 h-3 inline mr-1" /> Save
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Lesson Planner Tab ──────────────────────────── */}
-      {activeTab === 'planner' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-birla-gold" />
-              Lesson Planning Calendar
-            </h3>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Week of March 10 - 14, 2026</span>
-            </div>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {lessonPlanCalendar.map((day) => (
-              <div key={day.day} className="rounded-2xl border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-sm font-bold text-foreground">{day.day}</p>
-                    <p className="text-xs text-muted-foreground">Mar {day.date}</p>
-                  </div>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-                    day.lessons.some(l => l.status === 'in-progress')
-                      ? 'gradient-birla text-white'
-                      : day.lessons.every(l => l.status === 'completed')
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {day.date}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {day.lessons.map((lesson, idx) => (
-                    <div key={idx} className={`p-2.5 rounded-lg border ${
-                      lesson.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/5' :
-                      lesson.status === 'in-progress' ? 'border-birla-cyan/30 bg-birla-cyan/5' :
-                      'border-border bg-muted/20'
-                    }`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[9px] text-muted-foreground">{lesson.time}</span>
-                        {lesson.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                        {lesson.status === 'in-progress' && (
-                          <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500"></span>
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] font-semibold text-foreground">{lesson.subject}</p>
-                      <p className="text-[9px] text-muted-foreground">{lesson.class} &bull; {lesson.topic}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Learning Outcomes Mapping */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <BookOpen className="w-4 h-4 text-birla-cyan" />
-              Learning Outcomes Mapping
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {learningOutcomes.map((lo) => (
-                <div key={lo.id} className="p-3 rounded-xl border border-border gradient-card-blue">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-birla-cyan/10 text-birla-cyan">{lo.blooms}</span>
-                    <span className="text-[10px] font-bold text-foreground">{lo.alignment}%</span>
-                  </div>
-                  <p className="text-xs font-medium text-foreground">{lo.outcome}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{lo.subject} &bull; Class {lo.class}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── AI Insights Tab ─────────────────────────────── */}
-      {activeTab === 'ai' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-birla-gold" />
-            AI-Powered Insights & Recommendations
-          </h3>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* AI Recommendations */}
+          {/* Lesson Plan Coverage Report */}
+          {showForm === 'rpt_lessonCoverage' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-amber-500" />
-                Smart Recommendations
-              </h4>
-              <div className="space-y-3">
-                {aiRecommendations.map((rec) => {
-                  const Icon = rec.icon
-                  return (
-                    <div key={rec.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                      <div className="flex items-start gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.color}`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-foreground">{rec.title}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{rec.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><BookOpen className="w-4 h-4 text-emerald-500" />Lesson Plan Coverage Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Subject-wise lesson plan completion status</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Subject</th><th className="text-center p-2 text-muted-foreground font-medium">Planned</th><th className="text-center p-2 text-muted-foreground font-medium">Completed</th><th className="text-center p-2 text-muted-foreground font-medium">Completion</th></tr></thead>
+                  <tbody>
+                    {lessonPlanCoverage.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.subject}</td>
+                        <td className="text-center p-2">{r.planned}</td>
+                        <td className="text-center p-2">{r.completed}</td>
+                        <td className="text-center p-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-muted rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: r.pct + '%' }} /></div>
+                            <span className="font-semibold w-10 text-right">{r.pct}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={lessonPlanCoverage}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="subject" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="planned" fill="#C8A45C" radius={[4, 4, 0, 0]} name="Planned" />
+                    <Bar dataKey="completed" fill="#10B981" radius={[4, 4, 0, 0]} name="Completed" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
+          )}
 
-            {/* Engagement Analytics */}
-            <motion.div variants={itemVariants} className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  Engagement Prediction
-                </h4>
-                <div className="h-52">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={engagementTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                      <XAxis dataKey="week" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[50, 100]} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                          border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                          borderRadius: '12px', fontSize: '11px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                        }}
-                        formatter={(value) => [`${value}%`, '']}
-                      />
-                      <Area type="monotone" dataKey="live" stroke="#EF4444" fill="rgba(239,68,68,0.08)" strokeWidth={2} name="Live" />
-                      <Area type="monotone" dataKey="assignment" stroke="#22D3EE" fill="rgba(34,211,238,0.08)" strokeWidth={2} name="Assignment" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Quick AI Stats */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'At-Risk Students', value: '23', icon: AlertTriangle, color: 'text-rose-500 bg-rose-500/10' },
-                  { label: 'Content Gaps', value: '7', icon: BookOpen, color: 'text-amber-500 bg-amber-500/10' },
-                  { label: 'High Achievers', value: '186', icon: Award, color: 'text-emerald-500 bg-emerald-500/10' },
-                  { label: 'AI Suggestions', value: '15', icon: Sparkles, color: 'text-purple-500 bg-purple-500/10' },
-                ].map((stat) => {
-                  const Icon = stat.icon
-                  return (
-                    <div key={stat.label} className="rounded-xl border border-border bg-card p-3 flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stat.color}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{stat.value}</p>
-                        <p className="text-[9px] text-muted-foreground">{stat.label}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Experiential Learning + Learning Outcomes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Student Progress Report */}
+          {showForm === 'rpt_studentProgress' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-cyan-500" />
-                Experiential Learning Workflow
-              </h4>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {experientialLearning.map((exp) => (
-                  <div key={exp.id} className="p-3 rounded-xl border border-border gradient-card-blue">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-semibold text-foreground">{exp.title}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                        exp.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        exp.status === 'Planning' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {exp.status}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{exp.subject} &bull; {exp.type} &bull; {exp.class}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 italic">{exp.outcome}</p>
-                  </div>
-                ))}
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Users className="w-4 h-4 text-birla-cyan" />Student Progress Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Individual student performance with UDISE+ identifiers</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Name</th><th className="text-center p-2 text-muted-foreground font-medium">BSP ID</th><th className="text-center p-2 text-muted-foreground font-medium">PEN No</th><th className="text-center p-2 text-muted-foreground font-medium">Uppar ID</th><th className="text-center p-2 text-muted-foreground font-medium">Math</th><th className="text-center p-2 text-muted-foreground font-medium">Science</th><th className="text-center p-2 text-muted-foreground font-medium">English</th><th className="text-center p-2 text-muted-foreground font-medium">Hindi</th><th className="text-center p-2 text-muted-foreground font-medium">SST</th><th className="text-center p-2 text-muted-foreground font-medium">Avg</th></tr></thead>
+                  <tbody>
+                    {studentProgressData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.name}</td>
+                        <td className="text-center p-2 text-birla-cyan">{r.bspId}</td>
+                        <td className="text-center p-2 text-birla-gold">{r.penNo}</td>
+                        <td className="text-center p-2 text-muted-foreground">{r.upparId}</td>
+                        <td className="text-center p-2">{r.math}</td>
+                        <td className="text-center p-2">{r.science}</td>
+                        <td className="text-center p-2">{r.english}</td>
+                        <td className="text-center p-2">{r.hindi}</td>
+                        <td className="text-center p-2">{r.sst}</td>
+                        <td className="text-center p-2 font-bold text-foreground">{Math.round((r.math + r.science + r.english + r.hindi + r.sst) / 5)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64 mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={studentProgressData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="math" fill="#1A2D4A" name="Math" />
+                    <Bar dataKey="science" fill="#22D3EE" name="Science" />
+                    <Bar dataKey="english" fill="#C8A45C" name="English" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
+          )}
 
+          {/* Experiential Learning Report */}
+          {showForm === 'rpt_experiential' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-rose-500" />
-                AI Content Suggestions
-              </h4>
-              <div className="space-y-3">
-                {[
-                  { title: 'Interactive Quiz on Quadratic Equations', match: 96, type: 'Assessment' },
-                  { title: 'PhET Simulation: Wave Interference', match: 94, type: 'Simulation' },
-                  { title: 'Khan Academy: Organic Chemistry', match: 91, type: 'Video' },
-                  { title: 'GeoGebra Activity: 3D Geometry', match: 88, type: 'Interactive' },
-                  { title: 'National Geographic: Ecosystem Study', match: 85, type: 'Resource' },
-                ].map((suggestion, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:bg-muted/20 transition-colors cursor-pointer">
-                    <div className="w-10 h-10 rounded-lg gradient-birla flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                      {suggestion.match}%
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate">{suggestion.title}</p>
-                      <p className="text-[9px] text-muted-foreground">{suggestion.type} &bull; {suggestion.match}% match</p>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                  </div>
-                ))}
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><FlaskConical className="w-4 h-4 text-emerald-500" />Experiential Learning Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Activity status and completion overview</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Title</th><th className="text-center p-2 text-muted-foreground font-medium">Type</th><th className="text-center p-2 text-muted-foreground font-medium">Status</th><th className="text-center p-2 text-muted-foreground font-medium">Students</th></tr></thead>
+                  <tbody>
+                    {experientialData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.title}</td>
+                        <td className="text-center p-2">{r.type}</td>
+                        <td className="text-center p-2"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${r.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : r.status === 'In Progress' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>{r.status}</span></td>
+                        <td className="text-center p-2">{r.students}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={experientialPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {experientialPieData.map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
-          </div>
-        </motion.div>
+          )}
+        </div>
       )}
     </motion.div>
   )

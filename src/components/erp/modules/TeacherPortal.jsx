@@ -1,190 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  Users, BookOpen, Calendar, Clock, CheckCircle2, XCircle,
-  FileText, ClipboardCheck, BarChart3, Brain, MessageSquare,
-  GraduationCap, Plus, ChevronRight, Send, Edit, Eye,
-  Download, Search, Filter, Star, AlertTriangle, TrendingUp,
-  Target, Sparkles, Award, PenTool, Zap, Sliders, Hash,
-  UserCheck, UserX, Timer, ThumbsUp, Lightbulb, Mic,
-  Monitor, BookMarked, Grid3X3, HelpCircle
+  BookOpen, ClipboardList, Users, Calendar, Clock, BarChart3, PieChart as PieChartIcon,
+  Target, Brain, FileText, Plus, X, CheckCircle2, Zap, Award, Sparkles,
+  TrendingUp, ArrowUpRight, Search, Phone, Mail, MessageSquare, PenTool,
+  Save, Send, Eye, ChevronRight, Activity, Star, UserCheck, Bell,
+  GraduationCap, Monitor, Settings, FileQuestion, Upload, Lightbulb,
+  AlertTriangle, Mic, FlaskConical, MapPin, Tag, Edit, ChatBubbleLeft,
+  HandMetal, Presentation, ChalkboardTeacher
 } from 'lucide-react'
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, RadarChart, Radar,
-  PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell
+  BarChart, Bar, AreaChart, Area, RadarChart, Radar, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
-// ─── Data ────────────────────────────────────────────────────────
-const attendanceStudents = [
-  { id: 1, name: 'Aarav Sharma', roll: 1, present: true, percentage: 94 },
-  { id: 2, name: 'Priya Gupta', roll: 2, present: true, percentage: 98 },
-  { id: 3, name: 'Arjun Reddy', roll: 3, present: false, percentage: 91 },
-  { id: 4, name: 'Ananya Iyer', roll: 4, present: true, percentage: 96 },
-  { id: 5, name: 'Rohan Patel', roll: 5, present: true, percentage: 88 },
-  { id: 6, name: 'Ishita Banerjee', roll: 6, present: true, percentage: 95 },
-  { id: 7, name: 'Vivaan Kumar', roll: 7, present: false, percentage: 92 },
-  { id: 8, name: 'Meera Nair', roll: 8, present: true, percentage: 97 },
-  { id: 9, name: 'Aditya Singh', roll: 9, present: true, percentage: 78 },
-  { id: 10, name: 'Kavya Joshi', roll: 10, present: true, percentage: 99 },
-  { id: 11, name: 'Rahul Verma', roll: 11, present: true, percentage: 93 },
-  { id: 12, name: 'Sneha Dasgupta', roll: 12, present: false, percentage: 89 },
-  { id: 13, name: 'Vikram Malhotra', roll: 13, present: true, percentage: 96 },
-  { id: 14, name: 'Nisha Agarwal', roll: 14, present: true, percentage: 94 },
-  { id: 15, name: 'Deepak Raj', roll: 15, present: true, percentage: 90 },
-  { id: 16, name: 'Pooja Krishnan', roll: 16, present: true, percentage: 95 },
-  { id: 17, name: 'Saurabh Pandey', roll: 17, present: false, percentage: 85 },
-  { id: 18, name: 'Tanvi Mehta', roll: 18, present: true, percentage: 97 },
-  { id: 19, name: 'Kunal Shukla', roll: 19, present: true, percentage: 91 },
-  { id: 20, name: 'Ritika Sharma', roll: 20, present: true, percentage: 93 },
-]
-
-const timetableData = [
-  { day: 'Monday', periods: [
-    { slot: '1', time: '08:00-08:45', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '2', time: '08:45-09:30', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '3', time: '09:30-09:50', subject: 'Break', class: '', room: '' },
-    { slot: '4', time: '09:50-10:35', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '5', time: '10:35-11:20', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '6', time: '11:20-12:05', subject: 'Free', class: '', room: '' },
-    { slot: '7', time: '12:45-13:30', subject: 'Mathematics', class: 'IX-A', room: 'Room 305' },
-    { slot: '8', time: '13:30-14:15', subject: 'Remedial', class: 'X-A', room: 'Room 201' },
-  ]},
-  { day: 'Tuesday', periods: [
-    { slot: '1', time: '08:00-08:45', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '2', time: '08:45-09:30', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '3', time: '09:30-09:50', subject: 'Break', class: '', room: '' },
-    { slot: '4', time: '09:50-10:35', subject: 'Mathematics', class: 'IX-A', room: 'Room 305' },
-    { slot: '5', time: '10:35-11:20', subject: 'Free', class: '', room: '' },
-    { slot: '6', time: '11:20-12:05', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '7', time: '12:45-13:30', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '8', time: '13:30-14:15', subject: 'Club Activity', class: 'Math Club', room: 'Auditorium' },
-  ]},
-  { day: 'Wednesday', periods: [
-    { slot: '1', time: '08:00-08:45', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '2', time: '08:45-09:30', subject: 'Free', class: '', room: '' },
-    { slot: '3', time: '09:30-09:50', subject: 'Break', class: '', room: '' },
-    { slot: '4', time: '09:50-10:35', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '5', time: '10:35-11:20', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '6', time: '11:20-12:05', subject: 'Mathematics', class: 'IX-A', room: 'Room 305' },
-    { slot: '7', time: '12:45-13:30', subject: 'Free', class: '', room: '' },
-    { slot: '8', time: '13:30-14:15', subject: 'PTM Prep', class: '', room: 'Staff Room' },
-  ]},
-  { day: 'Thursday', periods: [
-    { slot: '1', time: '08:00-08:45', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '2', time: '08:45-09:30', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '3', time: '09:30-09:50', subject: 'Break', class: '', room: '' },
-    { slot: '4', time: '09:50-10:35', subject: 'Free', class: '', room: '' },
-    { slot: '5', time: '10:35-11:20', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '6', time: '11:20-12:05', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '7', time: '12:45-13:30', subject: 'Mathematics', class: 'IX-A', room: 'Room 305' },
-    { slot: '8', time: '13:30-14:15', subject: 'Free', class: '', room: '' },
-  ]},
-  { day: 'Friday', periods: [
-    { slot: '1', time: '08:00-08:45', subject: 'Mathematics', class: 'IX-A', room: 'Room 305' },
-    { slot: '2', time: '08:45-09:30', subject: 'Physics', class: 'XII-B', room: 'Lab 3' },
-    { slot: '3', time: '09:30-09:50', subject: 'Break', class: '', room: '' },
-    { slot: '4', time: '09:50-10:35', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
-    { slot: '5', time: '10:35-11:20', subject: 'Free', class: '', room: '' },
-    { slot: '6', time: '11:20-12:05', subject: 'Remedial', class: 'IX-A', room: 'Room 305' },
-    { slot: '7', time: '12:45-13:30', subject: 'Free', class: '', room: '' },
-    { slot: '8', time: '13:30-14:15', subject: 'Staff Meeting', class: '', room: 'Conference' },
-  ]},
-]
-
-const lessonUnits = [
-  { id: 1, unit: 'Algebra', chapters: ['Quadratic Equations', 'Arithmetic Progressions', 'Polynomials'] },
-  { id: 2, unit: 'Geometry', chapters: ['Triangles', 'Circles', 'Constructions'] },
-  { id: 3, unit: 'Trigonometry', chapters: ['Introduction to Trigonometry', 'Applications of Trigonometry'] },
-  { id: 4, unit: 'Statistics & Probability', chapters: ['Statistics', 'Probability'] },
-  { id: 5, unit: 'Number Systems', chapters: ['Real Numbers'] },
-]
-
-const studentEvaluationData = [
-  { id: 1, name: 'Aarav Sharma', roll: 1, fa1: 78, fa2: 82, sa1: 85, sa2: 0, total: 0, grade: '' },
-  { id: 2, name: 'Priya Gupta', roll: 2, fa1: 92, fa2: 95, sa1: 88, sa2: 0, total: 0, grade: '' },
-  { id: 3, name: 'Arjun Reddy', roll: 3, fa1: 65, fa2: 70, sa1: 72, sa2: 0, total: 0, grade: '' },
-  { id: 4, name: 'Ananya Iyer', roll: 4, fa1: 88, fa2: 91, sa1: 85, sa2: 0, total: 0, grade: '' },
-  { id: 5, name: 'Rohan Patel', roll: 5, fa1: 55, fa2: 60, sa1: 58, sa2: 0, total: 0, grade: '' },
-  { id: 6, name: 'Ishita Banerjee', roll: 6, fa1: 85, fa2: 88, sa1: 90, sa2: 0, total: 0, grade: '' },
-  { id: 7, name: 'Vivaan Kumar', roll: 7, fa1: 72, fa2: 75, sa1: 78, sa2: 0, total: 0, grade: '' },
-  { id: 8, name: 'Meera Nair', roll: 8, fa1: 95, fa2: 93, sa1: 91, sa2: 0, total: 0, grade: '' },
-  { id: 9, name: 'Aditya Singh', roll: 9, fa1: 48, fa2: 52, sa1: 55, sa2: 0, total: 0, grade: '' },
-  { id: 10, name: 'Kavya Joshi', roll: 10, fa1: 90, fa2: 92, sa1: 94, sa2: 0, total: 0, grade: '' },
-]
-
-const cbseGrading = [
-  { range: '91-100', grade: 'A1', point: 10, performance: 'Outstanding' },
-  { range: '81-90', grade: 'A2', point: 9, performance: 'Excellent' },
-  { range: '71-80', grade: 'B1', point: 8, performance: 'Very Good' },
-  { range: '61-70', grade: 'B2', point: 7, performance: 'Good' },
-  { range: '51-60', grade: 'C1', point: 6, performance: 'Above Average' },
-  { range: '41-50', grade: 'C2', point: 5, performance: 'Average' },
-  { range: '33-40', grade: 'D', point: 4, performance: 'Below Average' },
-  { range: '21-32', grade: 'E1', point: 0, performance: 'Needs Improvement' },
-  { range: '0-20', grade: 'E2', point: 0, performance: 'Unsatisfactory' },
-]
-
-const engagementAnalyticsData = [
-  { month: 'Sep', participation: 72, homework: 85, quiz: 68, attendance: 94 },
-  { month: 'Oct', participation: 78, homework: 82, quiz: 72, attendance: 95 },
-  { month: 'Nov', participation: 75, homework: 88, quiz: 75, attendance: 93 },
-  { month: 'Dec', participation: 82, homework: 90, quiz: 78, attendance: 96 },
-  { month: 'Jan', participation: 85, homework: 87, quiz: 82, attendance: 94 },
-  { month: 'Feb', participation: 88, homework: 92, quiz: 85, attendance: 97 },
-]
-
-const subjectRadarData = [
-  { subject: 'Participation', score: 85 },
-  { subject: 'Homework', score: 88 },
-  { subject: 'Quiz Perf.', score: 82 },
-  { subject: 'Attendance', score: 96 },
-  { subject: 'Engagement', score: 78 },
-  { subject: 'Creativity', score: 72 },
-]
-
-const classDistributionData = [
-  { name: 'A1 (91-100)', value: 8, color: '#10B981' },
-  { name: 'A2 (81-90)', value: 12, color: '#22D3EE' },
-  { name: 'B1 (71-80)', value: 10, color: '#C8A45C' },
-  { name: 'B2 (61-70)', value: 5, color: '#8B5CF6' },
-  { name: 'C1 (51-60)', value: 2, color: '#F59E0B' },
-  { name: 'Below 50', value: 1, color: '#EF4444' },
-]
-
-const messages = [
-  { id: 1, from: 'Principal Sharma', subject: 'Annual Day Preparation', time: '10:30 AM', unread: true, preview: 'All teachers are requested to prepare their class items for Annual Day...' },
-  { id: 2, from: 'Mrs. Gupta (Parent)', subject: 'Priya\'s Leave Application', time: '09:15 AM', unread: true, preview: 'Respected Ma\'am, Priya will be absent on March 18 due to...' },
-  { id: 3, from: 'HOD Mathematics', subject: 'Unit Test Schedule Change', time: 'Yesterday', unread: false, preview: 'The unit test scheduled for March 20 has been moved to March 22...' },
-  { id: 4, from: 'Admin Office', subject: 'Salary Slip - February 2026', time: 'Yesterday', unread: false, preview: 'Your salary slip for the month of February 2026 has been generated...' },
-  { id: 5, from: 'Mr. Kumar (Parent)', subject: 'Arjun\'s Progress Report Query', time: '2 days ago', unread: false, preview: 'I wanted to discuss Arjun\'s recent performance in Physics...' },
-]
-
-const rubricCriteria = [
-  { id: 1, criterion: 'Content Knowledge', weight: 30, levels: ['Incomplete understanding', 'Basic understanding', 'Good understanding', 'Thorough understanding', 'Expert understanding'] },
-  { id: 2, criterion: 'Critical Thinking', weight: 25, levels: ['No analysis', 'Limited analysis', 'Adequate analysis', 'Strong analysis', 'Exceptional analysis'] },
-  { id: 3, criterion: 'Organization', weight: 20, levels: ['Disorganized', 'Somewhat organized', 'Well organized', 'Very well organized', 'Exemplary organization'] },
-  { id: 4, criterion: 'Presentation', weight: 15, levels: ['Poor delivery', 'Adequate delivery', 'Good delivery', 'Very good delivery', 'Outstanding delivery'] },
-  { id: 5, criterion: 'Creativity', weight: 10, levels: ['No originality', 'Minimal originality', 'Some originality', 'Good originality', 'Exceptional originality'] },
-]
-
-const aiSuggestions = [
-  { id: 1, type: 'question', title: 'Discussion Questions for Quadratic Equations', items: ['How does the discriminant predict the nature of roots?', 'What real-world scenarios use quadratic relationships?', 'Can a quadratic equation have exactly one solution?'], icon: HelpCircle, color: 'text-blue-500 bg-blue-500/10' },
-  { id: 2, type: 'activity', title: 'Classroom Activities', items: ['Peer teaching: Students explain concepts to partners', 'Math lab: Graphing quadratic functions using technology', 'Real-world project: Modeling projectile motion'], icon: Lightbulb, color: 'text-amber-500 bg-amber-500/10' },
-  { id: 3, type: 'assessment', title: 'Quick Assessment Ideas', items: ['Exit ticket: Solve x² - 5x + 6 = 0 using two methods', 'Think-pair-share: Discriminant analysis', 'Mini quiz: 5 MCQs on quadratic formulas'], icon: Target, color: 'text-emerald-500 bg-emerald-500/10' },
-]
-
-const resourceItems = [
-  { id: 1, title: 'NCERT Chapter 4: Quadratic Equations', type: 'Textbook', size: '2.4 MB' },
-  { id: 2, title: 'Visualizing Quadratics - GeoGebra', type: 'Interactive', size: 'Online' },
-  { id: 3, title: 'Practice Worksheet - Discriminant', type: 'Worksheet', size: '156 KB' },
-  { id: 4, title: 'Video: Real-world Quadratics', type: 'Video', size: '45 MB' },
-]
-
-// ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -194,1273 +27,1132 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+const CHART_COLORS = ['#1A2D4A', '#22D3EE', '#C8A45C', '#8B5CF6', '#10B981', '#EF4444', '#F59E0B', '#EC4899']
+
+const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Computer Science', 'Sanskrit', 'Art']
+const classes = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+const sections = ['A', 'B', 'C', 'D']
+const bloomsLevels = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create']
+const periods = ['1', '2', '3', '4', '5', '6', '7', '8']
+
+// Mock student data with BSP ID / PEN No / Uppar ID
+const studentsList = [
+  { id: 'STU001', name: 'Aarav Sharma', bspId: 'BSP2024001', penNo: 'PEN1905001', upparId: 'UPP2024001', class: 'X', section: 'A' },
+  { id: 'STU002', name: 'Diya Patel', bspId: 'BSP2024002', penNo: 'PEN1905002', upparId: 'UPP2024002', class: 'X', section: 'A' },
+  { id: 'STU003', name: 'Arjun Reddy', bspId: 'BSP2024003', penNo: 'PEN1905003', upparId: 'UPP2024003', class: 'X', section: 'A' },
+  { id: 'STU004', name: 'Ananya Gupta', bspId: 'BSP2024004', penNo: 'PEN1905004', upparId: 'UPP2024004', class: 'X', section: 'B' },
+  { id: 'STU005', name: 'Vivaan Joshi', bspId: 'BSP2024005', penNo: 'PEN1905005', upparId: 'UPP2024005', class: 'IX', section: 'A' },
+  { id: 'STU006', name: 'Ishita Nair', bspId: 'BSP2024006', penNo: 'PEN1905006', upparId: 'UPP2024006', class: 'IX', section: 'A' },
+  { id: 'STU007', name: 'Kabir Malhotra', bspId: 'BSP2024007', penNo: 'PEN1905007', upparId: 'UPP2024007', class: 'IX', section: 'B' },
+  { id: 'STU008', name: 'Saanvi Rao', bspId: 'BSP2024008', penNo: 'PEN1905008', upparId: 'UPP2024008', class: 'VIII', section: 'A' },
+]
+
+// Report data
+const attendanceReportData = [
+  { date: 'Mon', present: 42, absent: 3, late: 2 },
+  { date: 'Tue', present: 40, absent: 5, late: 2 },
+  { date: 'Wed', present: 44, absent: 2, late: 1 },
+  { date: 'Thu', present: 41, absent: 4, late: 2 },
+  { date: 'Fri', present: 43, absent: 3, late: 1 },
+  { date: 'Sat', present: 38, absent: 6, late: 3 },
+]
+
+const assignmentStatusData = [
+  { class: 'VI-A', submitted: 35, pending: 8, graded: 30 },
+  { class: 'VII-A', submitted: 32, pending: 10, graded: 28 },
+  { class: 'VIII-A', submitted: 38, pending: 4, graded: 35 },
+  { class: 'IX-A', submitted: 30, pending: 8, graded: 26 },
+  { class: 'X-A', submitted: 40, pending: 4, graded: 38 },
+  { class: 'X-B', submitted: 38, pending: 5, graded: 35 },
+]
+
+const studentPerformanceData = [
+  { name: 'Aarav Sharma', bspId: 'BSP2024001', penNo: 'PEN1905001', upparId: 'UPP2024001', math: 88, science: 82, english: 90, hindi: 76, sst: 85 },
+  { name: 'Diya Patel', bspId: 'BSP2024002', penNo: 'PEN1905002', upparId: 'UPP2024002', math: 92, science: 88, english: 85, hindi: 80, sst: 82 },
+  { name: 'Arjun Reddy', bspId: 'BSP2024003', penNo: 'PEN1905003', upparId: 'UPP2024003', math: 75, science: 70, english: 82, hindi: 68, sst: 78 },
+  { name: 'Ananya Gupta', bspId: 'BSP2024004', penNo: 'PEN1905004', upparId: 'UPP2024004', math: 95, science: 90, english: 88, hindi: 85, sst: 90 },
+  { name: 'Vivaan Joshi', bspId: 'BSP2024005', penNo: 'PEN1905005', upparId: 'UPP2024005', math: 68, science: 72, english: 75, hindi: 70, sst: 68 },
+  { name: 'Ishita Nair', bspId: 'BSP2024006', penNo: 'PEN1905006', upparId: 'UPP2024006', math: 85, science: 80, english: 92, hindi: 78, sst: 86 },
+]
+
+const assessmentAnalysisData = [
+  { test: 'Unit Test 1', avg: 72, highest: 95, lowest: 35, passed: 38, failed: 7 },
+  { test: 'Unit Test 2', avg: 68, highest: 92, lowest: 30, passed: 35, failed: 10 },
+  { test: 'Periodic Test 1', avg: 75, highest: 98, lowest: 40, passed: 40, failed: 5 },
+  { test: 'Mid Term', avg: 70, highest: 96, lowest: 32, passed: 36, failed: 9 },
+  { test: 'Periodic Test 2', avg: 78, highest: 99, lowest: 42, passed: 42, failed: 3 },
+]
+
+const competencyProgressData = [
+  { student: 'Aarav Sharma', bspId: 'BSP2024001', criticalThinking: 72, problemSolving: 68, communication: 80, creativity: 65, collaboration: 75 },
+  { student: 'Diya Patel', bspId: 'BSP2024002', criticalThinking: 85, problemSolving: 80, communication: 78, creativity: 72, collaboration: 82 },
+  { student: 'Arjun Reddy', bspId: 'BSP2024003', criticalThinking: 60, problemSolving: 55, communication: 70, creativity: 58, collaboration: 65 },
+  { student: 'Ananya Gupta', bspId: 'BSP2024004', criticalThinking: 90, problemSolving: 88, communication: 85, creativity: 82, collaboration: 88 },
+]
+
+const classComparisonData = [
+  { class: 'X-A', math: 82, science: 78, english: 85, hindi: 72, sst: 80 },
+  { class: 'X-B', math: 78, science: 75, english: 82, hindi: 70, sst: 76 },
+  { class: 'IX-A', math: 76, science: 72, english: 80, hindi: 68, sst: 74 },
+  { class: 'IX-B', math: 72, science: 70, english: 78, hindi: 65, sst: 72 },
+]
+
+const communicationLogData = [
+  { date: '2025-01-15', student: 'Aarav Sharma', parent: 'Mr. Ramesh Sharma', type: 'Phone', subject: 'Attendance Concern', status: 'Completed' },
+  { date: '2025-01-14', student: 'Diya Patel', parent: 'Mrs. Meera Patel', type: 'Email', subject: 'Academic Progress', status: 'Completed' },
+  { date: '2025-01-13', student: 'Arjun Reddy', parent: 'Mr. Suresh Reddy', type: 'Meeting', subject: 'Behavior Discussion', status: 'Follow-up' },
+  { date: '2025-01-12', student: 'Ananya Gupta', parent: 'Mrs. Sunita Gupta', type: 'Note', subject: 'Outstanding Performance', status: 'Completed' },
+  { date: '2025-01-10', student: 'Vivaan Joshi', parent: 'Mr. Amit Joshi', type: 'Phone', subject: 'Fee Payment Reminder', status: 'Pending' },
+  { date: '2025-01-09', student: 'Ishita Nair', parent: 'Mrs. Lata Nair', type: 'Meeting', subject: 'Subject Selection', status: 'Completed' },
+]
+
+const teacherEffectivenessData = [
+  { teacher: 'Dr. Priya Menon', class: 'X-A', avgScore: 82, feedback: 4.5 },
+  { teacher: 'Mr. Rajesh Kumar', class: 'IX-B', avgScore: 76, feedback: 4.2 },
+  { teacher: 'Ms. Ananya Iyer', class: 'VIII-A', avgScore: 80, feedback: 4.6 },
+  { teacher: 'Mr. Vikram Singh', class: 'VII-A', avgScore: 74, feedback: 3.9 },
+  { teacher: 'Ms. Deepa Nair', class: 'X-B', avgScore: 78, feedback: 4.3 },
+  { teacher: 'Dr. Suresh Babu', class: 'XI-A', avgScore: 84, feedback: 4.7 },
+]
+
 export default function TeacherPortal() {
   const { darkMode } = useAppStore()
-  const [activeTab, setActiveTab] = useState('attendance')
-  const [selectedClass, setSelectedClass] = useState('X-A')
-  const [attendanceData, setAttendanceData] = useState(
-    attendanceStudents.reduce((acc, s) => ({ ...acc, [s.id]: s.present }), {})
-  )
-  const [selectedUnit, setSelectedUnit] = useState('Algebra')
-  const [selectedChapter, setSelectedChapter] = useState('Quadratic Equations')
-  const [evaluationData, setEvaluationData] = useState(studentEvaluationData)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [showForm, setShowForm] = useState(null)
+
+  // Form states
+  const [attendanceForm, setAttendanceForm] = useState({
+    className: '', date: '', students: studentsList.map(s => ({
+      id: s.id, name: s.name, bspId: s.bspId, penNo: s.penNo, upparId: s.upparId,
+      status: 'Present', remarks: ''
+    }))
+  })
+  const [lessonPlanForm, setLessonPlanForm] = useState({
+    date: '', period: '', subject: '', className: '', topic: '',
+    objectives: '', teachingMethod: 'Lecture', resources: '',
+    homework: '', assessmentType: '', notes: ''
+  })
   const [assignmentForm, setAssignmentForm] = useState({
-    title: '', subject: 'Mathematics', class: 'X-A', dueDate: '', rubricType: 'custom'
+    title: '', subject: '', className: '', dueDate: '', description: '',
+    maxMarks: '', type: 'Homework', bloomsLevel: 'Remember'
+  })
+  const [evaluationForm, setEvaluationForm] = useState({
+    studentId: '', subject: '', assessmentType: 'Unit Test',
+    marks: '', maxMarks: '', competencyLevel: 'Beginner', remarks: ''
+  })
+  const [rubricForm, setRubricForm] = useState({
+    studentId: '', subject: '', rubricName: '',
+    criteria: [{ name: '', maxMarks: '', score: '' }],
+    comments: ''
+  })
+  const [reportCardForm, setReportCardForm] = useState({
+    className: '', term: 'Term 1',
+    students: [], includeScholastic: true, includeCoScholastic: true, includeCompetency: true
+  })
+  const [communicationForm, setCommunicationForm] = useState({
+    studentId: '', parentName: '', communicationType: 'Phone',
+    subject: '', details: '', followUpDate: '', priority: 'Medium'
+  })
+  const [aiTeachingForm, setAiTeachingForm] = useState({
+    requestType: 'Lesson Ideas', subject: '', className: '',
+    topic: '', studentNeeds: ''
   })
 
-  const tabs = [
-    { id: 'attendance', label: 'Smart Attendance', icon: UserCheck },
-    { id: 'timetable', label: 'Timetable', icon: Calendar },
-    { id: 'planner', label: 'Lesson Planner', icon: BookOpen },
-    { id: 'assignments', label: 'Assignments', icon: FileText },
-    { id: 'evaluation', label: 'Evaluation', icon: PenTool },
-    { id: 'reports', label: 'Report Cards', icon: Award },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'assistant', label: 'AI Assistant', icon: Brain },
-    { id: 'communication', label: 'Messages', icon: MessageSquare },
-    { id: 'rubric', label: 'Rubrics', icon: Sliders },
-  ]
-
-  const presentCount = Object.values(attendanceData).filter(Boolean).length
-  const absentCount = Object.values(attendanceData).filter(v => !v).length
-  const attendancePercent = Math.round((presentCount / attendanceStudents.length) * 100)
-
-  const getCBSEGrade = (marks) => {
-    if (marks >= 91) return 'A1'
-    if (marks >= 81) return 'A2'
-    if (marks >= 71) return 'B1'
-    if (marks >= 61) return 'B2'
-    if (marks >= 51) return 'C1'
-    if (marks >= 41) return 'C2'
-    if (marks >= 33) return 'D'
-    if (marks >= 21) return 'E1'
-    return 'E2'
+  const tooltipStyle = {
+    backgroundColor: darkMode ? '#1A2D4A' : '#fff',
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
+    borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b'
   }
 
+  const handleSubmit = (formType) => {
+    setShowForm(null)
+  }
+
+  const addRubricCriteria = () => {
+    setRubricForm(prev => ({
+      ...prev,
+      criteria: [...prev.criteria, { name: '', maxMarks: '', score: '' }]
+    }))
+  }
+
+  const removeRubricCriteria = (idx) => {
+    setRubricForm(prev => ({
+      ...prev,
+      criteria: prev.criteria.filter((_, i) => i !== idx)
+    }))
+  }
+
+  const updateRubricCriteria = (idx, field, value) => {
+    setRubricForm(prev => ({
+      ...prev,
+      criteria: prev.criteria.map((c, i) => i === idx ? { ...c, [field]: value } : c)
+    }))
+  }
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: GraduationCap },
+    { id: 'attendance', label: 'Attendance', icon: UserCheck },
+    { id: 'timetable', label: 'Timetable', icon: Calendar },
+    { id: 'planner', label: 'Lesson Planner', icon: BookOpen },
+    { id: 'assignments', label: 'Assignments', icon: ClipboardList },
+    { id: 'evaluation', label: 'Evaluation', icon: Award },
+    { id: 'communication', label: 'Communication', icon: MessageSquare },
+    { id: 'forms', label: 'Forms', icon: PenTool },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+  ]
+
+  const formsList = [
+    { id: 'attendance', label: 'Smart Attendance', icon: UserCheck },
+    { id: 'lessonPlan', label: 'Lesson Plan', icon: BookOpen },
+    { id: 'assignment', label: 'Assignment Creation', icon: ClipboardList },
+    { id: 'evaluation', label: 'Student Evaluation', icon: Award },
+    { id: 'rubric', label: 'Rubric Assessment', icon: Target },
+    { id: 'reportCard', label: 'Report Card Generation', icon: FileText },
+    { id: 'communication', label: 'Parent Communication', icon: Phone },
+    { id: 'aiTeaching', label: 'AI Teaching Request', icon: Sparkles },
+  ]
+
+  const reportsList = [
+    { id: 'classAttendance', label: 'Class Attendance', icon: UserCheck },
+    { id: 'assignmentStatus', label: 'Assignment Status', icon: ClipboardList },
+    { id: 'studentPerformance', label: 'Student Performance', icon: Users },
+    { id: 'assessmentAnalysis', label: 'Assessment Analysis', icon: Award },
+    { id: 'competencyProgress', label: 'Competency Progress', icon: Target },
+    { id: 'classComparison', label: 'Class Comparison', icon: BarChart3 },
+    { id: 'communicationLog', label: 'Communication Log', icon: MessageSquare },
+    { id: 'teacherEffectiveness', label: 'Teacher Effectiveness', icon: Star },
+  ]
+
+  const inputCls = "w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-birla-cyan/30"
+  const labelCls = "block text-xs font-medium text-muted-foreground mb-1"
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* ─── Tab Navigation ──────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <BookOpen className="w-7 h-7 text-birla-gold" />Teacher Portal
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Dr. Priya Menon &bull; Birla Open Minds International School</p>
+        </div>
+      </motion.div>
+
+      {/* Tab Navigation */}
+      <motion.div variants={itemVariants} className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === tab.id ? 'gradient-birla-gold text-birla-blue shadow-md' : 'text-muted-foreground hover:text-foreground'}`}>
+              <Icon className="w-3.5 h-3.5" />{tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* ─── Smart Attendance ──────────────────────────────── */}
-      {activeTab === 'attendance' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-emerald-500" />
-              Smart Attendance
-            </h3>
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-              >
-                {['X-A', 'X-B', 'IX-A', 'IX-B', 'XII-A', 'XII-B', 'XI-A'].map((cls) => (
-                  <option key={cls} value={cls}>Class {cls}</option>
-                ))}
-              </select>
-              <select className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                <option>Today - March 12, 2026</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Attendance Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Students', value: attendanceStudents.length, icon: Users, color: 'from-blue-900 to-blue-700' },
-              { label: 'Present', value: presentCount, icon: UserCheck, color: 'from-emerald-800 to-emerald-600' },
-              { label: 'Absent', value: absentCount, icon: UserX, color: 'from-rose-800 to-rose-600' },
-              { label: 'Attendance %', value: `${attendancePercent}%`, icon: TrendingUp, color: 'from-amber-800 to-amber-600' },
-            ].map((stat) => {
-              const Icon = stat.icon
+              { label: 'My Classes', value: '6', change: '+1', icon: Users, color: 'from-blue-900 to-blue-700' },
+              { label: 'Assignments Due', value: '12', change: '+3', icon: ClipboardList, color: 'from-amber-800 to-amber-600' },
+              { label: 'Avg Attendance', value: '92%', change: '+2.1%', icon: UserCheck, color: 'from-emerald-800 to-emerald-600' },
+              { label: 'Class Avg Score', value: '76%', change: '+3.5%', icon: TrendingUp, color: 'from-purple-800 to-purple-600' },
+            ].map((card) => {
+              const Icon = card.icon
               return (
-                <div key={stat.label} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-4 text-white`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                <div key={card.label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.color} p-4 text-white shadow-xl`}>
+                  <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
                       <Icon className="w-4 h-4" />
                     </div>
-                    <div>
-                      <p className="text-xl font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-white/70">{stat.label}</p>
-                    </div>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                      <ArrowUpRight className="w-3 h-3" />{card.change}
+                    </span>
                   </div>
+                  <p className="text-xl font-bold">{card.value}</p>
+                  <p className="text-[11px] text-white/70 mt-0.5">{card.label}</p>
                 </div>
               )
             })}
-          </div>
-
-          {/* Student Grid */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-foreground">Student Attendance Grid</h4>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    const allPresent = {}
-                    attendanceStudents.forEach(s => { allPresent[s.id] = true })
-                    setAttendanceData(allPresent)
-                  }}
-                  className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium hover:bg-emerald-500/20 transition-colors"
-                >
-                  Mark All Present
-                </button>
-                <button
-                  onClick={() => {
-                    const allAbsent = {}
-                    attendanceStudents.forEach(s => { allAbsent[s.id] = false })
-                    setAttendanceData(allAbsent)
-                  }}
-                  className="px-3 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-medium hover:bg-rose-500/20 transition-colors"
-                >
-                  Mark All Absent
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
-              {attendanceStudents.map((student) => (
-                <div
-                  key={student.id}
-                  className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                    attendanceData[student.id]
-                      ? 'border-emerald-500/30 bg-emerald-500/5'
-                      : 'border-rose-500/30 bg-rose-500/5'
-                  }`}
-                  onClick={() => setAttendanceData(prev => ({ ...prev, [student.id]: !prev[student.id] }))}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                      attendanceData[student.id]
-                        ? 'gradient-birla text-white'
-                        : 'bg-rose-500/20 text-rose-600 dark:text-rose-400'
-                    }`}>
-                      {student.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold text-foreground truncate">{student.name}</p>
-                      <p className="text-[9px] text-muted-foreground">Roll #{student.roll}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[9px] font-medium ${
-                      attendanceData[student.id] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                    }`}>
-                      {attendanceData[student.id] ? 'Present' : 'Absent'}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground">{student.percentage}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-birla text-white text-xs font-medium">
-            <Send className="w-3.5 h-3.5" /> Submit Attendance
-          </button>
-        </motion.div>
-      )}
-
-      {/* ─── Timetable Management ───────────────────────────── */}
-      {activeTab === 'timetable' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-birla-gold" />
-              Weekly Timetable
-            </h3>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-birla-gold/10 text-birla-gold font-medium">
-              Dr. Priya Menon
-            </span>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-            <div className="min-w-[900px]">
-              {/* Header */}
-              <div className="grid grid-cols-6 border-b border-border bg-muted/30">
-                <div className="p-3 text-xs font-semibold text-muted-foreground">Period</div>
-                {timetableData.map((day) => (
-                  <div key={day.day} className="p-3 text-xs font-semibold text-foreground text-center">{day.day}</div>
-                ))}
-              </div>
-              {/* Periods */}
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((periodIdx) => (
-                <div key={periodIdx} className="grid grid-cols-6 border-b border-border/50 last:border-0">
-                  <div className="p-3 text-[10px] text-muted-foreground flex flex-col justify-center">
-                    <span className="font-semibold text-foreground">P{timetableData[0].periods[periodIdx].slot}</span>
-                    <span>{timetableData[0].periods[periodIdx].time}</span>
-                  </div>
-                  {timetableData.map((day) => {
-                    const period = day.periods[periodIdx]
-                    const isBreak = period.subject === 'Break'
-                    const isFree = period.subject === 'Free'
-                    return (
-                      <div key={day.day} className={`p-2 text-center ${isBreak ? 'bg-muted/50' : ''}`}>
-                        {isBreak ? (
-                          <span className="text-[10px] text-muted-foreground font-medium">☕ Break</span>
-                        ) : isFree ? (
-                          <span className="text-[10px] text-muted-foreground">—</span>
-                        ) : (
-                          <div className={`rounded-lg p-2 ${
-                            period.subject === 'Mathematics'
-                              ? 'bg-blue-500/10 border border-blue-500/20'
-                              : period.subject === 'Physics'
-                                ? 'bg-purple-500/10 border border-purple-500/20'
-                                : 'bg-amber-500/10 border border-amber-500/20'
-                          }`}>
-                            <p className="text-[11px] font-semibold text-foreground">{period.subject}</p>
-                            <p className="text-[9px] text-muted-foreground">{period.class}</p>
-                            <p className="text-[8px] text-muted-foreground mt-0.5">{period.room}</p>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Weekly Load Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { subject: 'Mathematics', periods: 14, hours: '10h 30m', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-              { subject: 'Physics', periods: 8, hours: '6h 00m', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-              { subject: 'Free Periods', periods: 6, hours: '4h 30m', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-            ].map((item) => (
-              <div key={item.subject} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.color}`}>
-                  <Timer className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">{item.periods} periods</p>
-                  <p className="text-[10px] text-muted-foreground">{item.subject} &bull; {item.hours}/week</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Lesson Planner ──────────────────────────────────── */}
-      {activeTab === 'planner' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-birla-cyan" />
-            Lesson Planner
-          </h3>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Lesson Plan Form */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Edit className="w-4 h-4 text-birla-gold" />
-                Create Lesson Plan
-              </h4>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Subject</label>
-                    <select className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                      <option>Mathematics</option>
-                      <option>Physics</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Class</label>
-                    <select className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                      <option>X-A</option>
-                      <option>IX-A</option>
-                      <option>XII-B</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Unit</label>
-                    <select
-                      value={selectedUnit}
-                      onChange={(e) => setSelectedUnit(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    >
-                      {lessonUnits.map((u) => (
-                        <option key={u.id} value={u.unit}>{u.unit}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Chapter</label>
-                    <select
-                      value={selectedChapter}
-                      onChange={(e) => setSelectedChapter(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    >
-                      {lessonUnits.find(u => u.unit === selectedUnit)?.chapters.map((ch) => (
-                        <option key={ch} value={ch}>{ch}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Learning Objectives</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Students will be able to..."
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    defaultValue="1. Solve quadratic equations using factorization method&#10;2. Apply quadratic formula to find roots&#10;3. Analyze nature of roots using discriminant"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Teaching Methodology</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Lecture', 'Discussion', 'Group Work', 'Lab Activity', 'Flipped Classroom', 'Project-Based'].map((method) => (
-                      <button key={method} className="px-3 py-1 rounded-full border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                        {method}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Bloom&apos;s Taxonomy Level</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'].map((level) => (
-                      <button key={level} className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
-                        level === 'Apply' ? 'gradient-birla text-white' : 'border border-border text-muted-foreground hover:bg-muted'
-                      }`}>
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Resources</label>
-                  <div className="space-y-2">
-                    {resourceItems.map((res) => (
-                      <div key={res.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
-                        <BookMarked className="w-4 h-4 text-birla-cyan flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">{res.title}</p>
-                          <p className="text-[9px] text-muted-foreground">{res.type} &bull; {res.size}</p>
-                        </div>
-                        <Eye className="w-3.5 h-3.5 text-muted-foreground cursor-pointer hover:text-foreground" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-birla text-white text-xs font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Save Lesson Plan
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Saved Plans */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-purple-500" />
-                Recent Lesson Plans
-              </h4>
-              <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                {[
-                  { title: 'Quadratic Equations - Intro', date: 'Mar 10', subject: 'Mathematics', class: 'X-A', status: 'Taught' },
-                  { title: 'Quadratic Formula', date: 'Mar 11', subject: 'Mathematics', class: 'X-A', status: 'Taught' },
-                  { title: 'EM Induction - Faraday', date: 'Mar 11', subject: 'Physics', class: 'XII-B', status: 'Taught' },
-                  { title: 'Discriminant Analysis', date: 'Mar 12', subject: 'Mathematics', class: 'X-A', status: 'Today' },
-                  { title: 'AC Circuits', date: 'Mar 13', subject: 'Physics', class: 'XII-B', status: 'Upcoming' },
-                  { title: 'Arithmetic Progressions', date: 'Mar 14', subject: 'Mathematics', class: 'X-A', status: 'Upcoming' },
-                ].map((plan, idx) => (
-                  <div key={idx} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                        plan.status === 'Today' ? 'bg-birla-cyan/10 text-birla-cyan' :
-                        plan.status === 'Taught' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                      }`}>
-                        {plan.status}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground">{plan.date}</span>
-                    </div>
-                    <p className="text-xs font-semibold text-foreground">{plan.title}</p>
-                    <p className="text-[9px] text-muted-foreground">{plan.subject} &bull; {plan.class}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Assignment Creation ─────────────────────────────── */}
-      {activeTab === 'assignments' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-500" />
-            Assignment Creation & Management
-          </h3>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Creation Form */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-500" />
-                Create Assignment
-              </h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Title</label>
-                  <input
-                    type="text"
-                    placeholder="Enter assignment title..."
-                    value={assignmentForm.title}
-                    onChange={(e) => setAssignmentForm(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Subject</label>
-                    <select
-                      value={assignmentForm.subject}
-                      onChange={(e) => setAssignmentForm(prev => ({ ...prev, subject: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    >
-                      <option>Mathematics</option>
-                      <option>Physics</option>
-                      <option>Chemistry</option>
-                      <option>English</option>
-                      <option>Biology</option>
-                    </select>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4 text-birla-gold" />Today&apos;s Schedule
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { period: '1', time: '8:00 - 8:40', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
+                  { period: '2', time: '8:45 - 9:25', subject: 'Mathematics', class: 'X-B', room: 'Room 202' },
+                  { period: '3', time: '9:30 - 10:10', subject: 'Mathematics', class: 'IX-A', room: 'Room 105' },
+                  { period: '5', time: '11:00 - 11:40', subject: 'Mathematics', class: 'X-A', room: 'Room 201' },
+                  { period: '7', time: '1:00 - 1:40', subject: 'Mathematics', class: 'IX-B', room: 'Room 106' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
+                    <div className="w-9 h-9 rounded-xl gradient-birla flex items-center justify-center text-white font-bold text-xs">P{s.period}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground">{s.subject} - Class {s.class}</p>
+                      <p className="text-[10px] text-muted-foreground">{s.time} &bull; {s.room}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Class</label>
-                    <select
-                      value={assignmentForm.class}
-                      onChange={(e) => setAssignmentForm(prev => ({ ...prev, class: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    >
-                      <option>X-A</option>
-                      <option>IX-A</option>
-                      <option>XII-B</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Due Date</label>
-                    <input
-                      type="date"
-                      value={assignmentForm.dueDate}
-                      onChange={(e) => setAssignmentForm(prev => ({ ...prev, dueDate: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Max Marks</label>
-                    <input
-                      type="number"
-                      defaultValue={50}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Instructions</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Enter assignment instructions..."
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                  />
-                </div>
-
-                {/* Rubric Builder */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Rubric Builder</label>
-                  <div className="space-y-2">
-                    {[
-                      { criterion: 'Content Accuracy', weight: 40 },
-                      { criterion: 'Presentation', weight: 25 },
-                      { criterion: 'Critical Analysis', weight: 20 },
-                      { criterion: 'Timeliness', weight: 15 },
-                    ].map((rubric, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 rounded-lg border border-border">
-                        <Hash className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                        <span className="text-xs text-foreground flex-1">{rubric.criterion}</span>
-                        <span className="text-[10px] text-muted-foreground">{rubric.weight}%</span>
-                        <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full gradient-birla-cyan" style={{ width: `${rubric.weight}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-birla text-white text-xs font-medium">
-                  <Send className="w-3.5 h-3.5" /> Publish Assignment
-                </button>
+                ))}
               </div>
             </motion.div>
 
-            {/* Active Assignments */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4 text-blue-500" />
-                Active Assignments
-              </h4>
-              <div className="space-y-3 max-h-[550px] overflow-y-auto">
-                {[
-                  { title: 'Quadratic Equations Worksheet', subject: 'Mathematics', class: 'X-A', due: 'Mar 18', submitted: 12, total: 38, status: 'active' },
-                  { title: 'Lab Report - EM Induction', subject: 'Physics', class: 'XII-B', due: 'Mar 17', submitted: 18, total: 32, status: 'active' },
-                  { title: 'Essay: Climate Change', subject: 'English', class: 'IX-A', due: 'Mar 19', submitted: 8, total: 40, status: 'active' },
-                  { title: 'Organic Reactions Map', subject: 'Chemistry', class: 'XI-A', due: 'Mar 16', submitted: 30, total: 35, status: 'overdue' },
-                  { title: 'Trigonometry Problems Set', subject: 'Mathematics', class: 'X-A', due: 'Mar 10', submitted: 36, total: 38, status: 'completed' },
-                ].map((a, idx) => (
-                  <div key={idx} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                        a.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        a.status === 'overdue' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {a.status}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground">Due: {a.due}</span>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+                <Users className="w-4 h-4 text-birla-cyan" />My Students (UDISE+)
+              </h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {studentsList.map((s) => (
+                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
+                    <div className="w-9 h-9 rounded-xl bg-birla-gold/10 flex items-center justify-center text-birla-gold font-bold text-xs">{s.name.charAt(0)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{s.name}</p>
+                      <p className="text-[10px] text-muted-foreground">Class {s.class}-{s.section} &bull; BSP: {s.bspId}</p>
                     </div>
-                    <p className="text-xs font-semibold text-foreground">{a.title}</p>
-                    <p className="text-[10px] text-muted-foreground">{a.subject} &bull; {a.class}</p>
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[9px] text-muted-foreground">Submissions</span>
-                        <span className="text-[10px] font-medium text-foreground">{a.submitted}/{a.total}</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full gradient-birla-cyan"
-                          style={{ width: `${(a.submitted / a.total) * 100}%` }}
-                        />
-                      </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-birla-gold">PEN: {s.penNo}</p>
+                      <p className="text-[10px] text-muted-foreground">UPP: {s.upparId}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </motion.div>
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* ─── Student Evaluation ───────────────────────────────── */}
-      {activeTab === 'evaluation' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <PenTool className="w-5 h-5 text-birla-cyan" />
-              Student Evaluation
+      {/* Attendance Tab */}
+      {activeTab === 'attendance' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <UserCheck className="w-4 h-4 text-emerald-500" />Smart Attendance
             </h3>
-            <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                <option>Mathematics - X-A</option>
-                <option>Physics - XII-B</option>
-              </select>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                <Download className="w-3.5 h-3.5" /> Export
-              </button>
+            <p className="text-xs text-muted-foreground mb-4">Mark attendance with BSP ID / PEN No / Uppar ID</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div><label className={labelCls}>Class</label><select value={attendanceForm.className} onChange={(e) => setAttendanceForm({...attendanceForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+              <div><label className={labelCls}>Date</label><input type="date" value={attendanceForm.date} onChange={(e) => setAttendanceForm({...attendanceForm, date: e.target.value})} className={inputCls} /></div>
+              <div className="flex items-end"><button className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Load Students</button></div>
             </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Roll</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Student Name</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">FA 1</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">FA 2</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">SA 1</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">SA 2</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Total</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Grade</th>
-                  </tr>
-                </thead>
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Student</th><th className="text-center p-2 text-muted-foreground font-medium">BSP ID</th><th className="text-center p-2 text-muted-foreground font-medium">PEN No</th><th className="text-center p-2 text-muted-foreground font-medium">Uppar ID</th><th className="text-center p-2 text-muted-foreground font-medium">Status</th><th className="text-left p-2 text-muted-foreground font-medium">Remarks</th></tr></thead>
                 <tbody>
-                  {evaluationData.map((student) => {
-                    const total = student.fa1 + student.fa2 + student.sa1 + student.sa2
-                    const avgMarks = total / (student.sa2 > 0 ? 4 : 3)
-                    const grade = getCBSEGrade(Math.round(avgMarks))
-                    return (
-                      <tr key={student.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 text-xs text-muted-foreground">{student.roll}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full gradient-birla-gold flex items-center justify-center text-[10px] font-bold text-birla-blue flex-shrink-0">
-                              {student.name.charAt(0)}
-                            </div>
-                            <span className="text-sm text-foreground">{student.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <input
-                            type="number"
-                            value={student.fa1}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0
-                              setEvaluationData(prev => prev.map(s => s.id === student.id ? { ...s, fa1: val } : s))
+                  {attendanceForm.students.map((s, i) => (
+                    <tr key={s.id} className="border-b border-border hover:bg-muted/30">
+                      <td className="p-2 font-medium text-foreground">{s.name}</td>
+                      <td className="text-center p-2 text-birla-cyan">{s.bspId}</td>
+                      <td className="text-center p-2 text-birla-gold">{s.penNo}</td>
+                      <td className="text-center p-2 text-muted-foreground">{s.upparId}</td>
+                      <td className="text-center p-2">
+                        <div className="flex justify-center gap-1">
+                          {['Present', 'Absent', 'Late', 'Half-Day'].map(st => (
+                            <button key={st} onClick={() => {
+                              const newStudents = [...attendanceForm.students]
+                              newStudents[i] = { ...newStudents[i], status: st }
+                              setAttendanceForm({ ...attendanceForm, students: newStudents })
                             }}
-                            className="w-14 px-2 py-1 rounded border border-input bg-background text-xs text-center text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <input
-                            type="number"
-                            value={student.fa2}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0
-                              setEvaluationData(prev => prev.map(s => s.id === student.id ? { ...s, fa2: val } : s))
-                            }}
-                            className="w-14 px-2 py-1 rounded border border-input bg-background text-xs text-center text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <input
-                            type="number"
-                            value={student.sa1}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0
-                              setEvaluationData(prev => prev.map(s => s.id === student.id ? { ...s, sa1: val } : s))
-                            }}
-                            className="w-14 px-2 py-1 rounded border border-input bg-background text-xs text-center text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <input
-                            type="number"
-                            value={student.sa2 || ''}
-                            placeholder="—"
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0
-                              setEvaluationData(prev => prev.map(s => s.id === student.id ? { ...s, sa2: val } : s))
-                            }}
-                            className="w-14 px-2 py-1 rounded border border-input bg-background text-xs text-center text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-center text-sm font-bold text-foreground">
-                          {total}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            grade.startsWith('A') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                            grade.startsWith('B') ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                            grade.startsWith('C') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                            'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                          }`}>
-                            {grade}
-                          </span>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                              className={`px-2 py-0.5 rounded text-[10px] font-medium ${s.status === st ? (st === 'Present' ? 'bg-emerald-500/10 text-emerald-500' : st === 'Absent' ? 'bg-red-500/10 text-red-500' : st === 'Late' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500') : 'bg-muted/50 text-muted-foreground'}`}>{st}</button>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-2"><input type="text" value={s.remarks} onChange={(e) => {
+                        const newStudents = [...attendanceForm.students]
+                        newStudents[i] = { ...newStudents[i], remarks: e.target.value }
+                        setAttendanceForm({ ...attendanceForm, students: newStudents })
+                      }} className="w-full px-2 py-1 rounded-lg border border-border bg-background text-xs" placeholder="Remarks" /></td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-          </div>
-        </motion.div>
+            <div className="flex justify-end mt-4">
+              <button onClick={() => handleSubmit('attendance')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Attendance</button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
-      {/* ─── Report Card Generation ───────────────────────────── */}
-      {activeTab === 'reports' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Award className="w-5 h-5 text-birla-gold" />
-              Report Card Generation
+      {/* Timetable Tab */}
+      {activeTab === 'timetable' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <Calendar className="w-4 h-4 text-birla-gold" />Weekly Timetable
             </h3>
-            <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                <option>Class X-A</option>
-                <option>Class IX-A</option>
-              </select>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                <Download className="w-3.5 h-3.5" /> Generate All
-              </button>
-            </div>
-          </div>
-
-          {/* CBSE Grading Pattern */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Star className="w-4 h-4 text-birla-gold" />
-                CBSE Grading Pattern (IX-X)
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                      <th className="text-left px-3 py-2 text-[10px] font-semibold text-muted-foreground">Marks</th>
-                      <th className="text-center px-3 py-2 text-[10px] font-semibold text-muted-foreground">Grade</th>
-                      <th className="text-center px-3 py-2 text-[10px] font-semibold text-muted-foreground">Point</th>
-                      <th className="text-left px-3 py-2 text-[10px] font-semibold text-muted-foreground">Performance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cbseGrading.map((g, idx) => (
-                      <tr key={idx} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                        <td className="px-3 py-2 text-xs text-foreground">{g.range}</td>
-                        <td className="px-3 py-2 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            g.grade.startsWith('A') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                            g.grade.startsWith('B') ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                            g.grade.startsWith('C') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                            'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                          }`}>
-                            {g.grade}
-                          </span>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-border">
+                  <th className="p-2 text-muted-foreground font-medium">Period</th>
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
+                    <th key={d} className="p-2 text-muted-foreground font-medium text-center">{d}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    { period: '1', time: '8:00-8:40', slots: ['Math X-A', 'Math IX-A', 'Math X-B', 'Math IX-B', 'Math X-A', 'Math IX-A'] },
+                    { period: '2', time: '8:45-9:25', slots: ['Math X-B', 'Math X-A', 'Math IX-A', 'Math X-A', 'Math IX-B', 'Math X-B'] },
+                    { period: '3', time: '9:30-10:10', slots: ['Math IX-A', 'Math IX-B', 'Math X-A', 'Math IX-B', 'Math X-B', 'Math IX-A'] },
+                    { period: '4', time: '10:15-10:55', slots: ['Break', 'Break', 'Break', 'Break', 'Break', 'Break'] },
+                    { period: '5', time: '11:00-11:40', slots: ['Math X-A', 'Math IX-B', 'Math X-B', 'Math IX-A', 'Math X-A', 'Free'] },
+                    { period: '6', time: '11:45-12:25', slots: ['Math IX-B', 'Math X-B', 'Math IX-B', 'Math X-B', 'Math IX-A', 'Free'] },
+                    { period: '7', time: '1:00-1:40', slots: ['Math IX-B', 'Free', 'Math IX-A', 'Free', 'Free', 'Free'] },
+                    { period: '8', time: '1:45-2:25', slots: ['Free', 'Free', 'Free', 'Free', 'Free', 'Free'] },
+                  ].map(row => (
+                    <tr key={row.period} className="border-b border-border hover:bg-muted/30">
+                      <td className="p-2"><div className="font-medium text-foreground">P{row.period}</div><div className="text-[10px] text-muted-foreground">{row.time}</div></td>
+                      {row.slots.map((slot, si) => (
+                        <td key={si} className="p-1.5 text-center">
+                          <span className={`inline-block px-2 py-1 rounded-lg text-[10px] font-medium ${slot === 'Break' ? 'bg-amber-500/10 text-amber-500' : slot === 'Free' ? 'bg-muted/30 text-muted-foreground' : 'bg-birla-cyan/10 text-birla-cyan'}`}>{slot}</span>
                         </td>
-                        <td className="px-3 py-2 text-center text-xs font-medium text-foreground">{g.point}</td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">{g.performance}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Lesson Planner Tab */}
+      {activeTab === 'planner' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { subject: 'Mathematics', topic: 'Quadratic Equations', class: 'X-A', method: 'Activity', blooms: 'Apply', date: '2025-01-20' },
+              { subject: 'Mathematics', topic: 'Statistics', class: 'IX-A', method: 'Discussion', blooms: 'Understand', date: '2025-01-21' },
+              { subject: 'Mathematics', topic: 'Trigonometry', class: 'X-B', method: 'Lecture', blooms: 'Remember', date: '2025-01-22' },
+              { subject: 'Mathematics', topic: 'Probability', class: 'IX-B', method: 'Experiment', blooms: 'Analyze', date: '2025-01-23' },
+              { subject: 'Mathematics', topic: 'Number Systems', class: 'X-A', method: 'Group Work', blooms: 'Create', date: '2025-01-24' },
+              { subject: 'Mathematics', topic: 'Algebraic Expressions', class: 'IX-A', method: 'Flipped', blooms: 'Evaluate', date: '2025-01-25' },
+            ].map((lp, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-birla-gold/10 text-birla-gold">{lp.date}</span>
+                  <BookOpen className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">{lp.topic}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{lp.subject} &bull; Class {lp.class}</p>
+                <div className="flex gap-2">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-birla-cyan/10 text-birla-cyan">{lp.method}</span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/10 text-purple-500">{lp.blooms}</span>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Assignments Tab */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Quadratic Equations Worksheet', subject: 'Mathematics', class: 'X-A', due: '2025-01-20', submissions: 32, total: 44 },
+              { title: 'Statistics Project', subject: 'Mathematics', class: 'IX-A', due: '2025-01-22', submissions: 28, total: 40 },
+              { title: 'Trigonometry Practice Set', subject: 'Mathematics', class: 'X-B', due: '2025-01-25', submissions: 35, total: 43 },
+              { title: 'Probability Assignment', subject: 'Mathematics', class: 'IX-B', due: '2025-01-18', submissions: 30, total: 38 },
+              { title: 'Algebra Revision', subject: 'Mathematics', class: 'X-A', due: '2025-01-28', submissions: 20, total: 44 },
+              { title: 'Number System MCQ', subject: 'Mathematics', class: 'IX-A', due: '2025-01-19', submissions: 36, total: 40 },
+            ].map((a, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 hover:shadow-lg transition-shadow">
+                <h4 className="text-sm font-semibold text-foreground mb-1">{a.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{a.subject} &bull; Class {a.class}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground">Due: {a.due}</span>
+                  <span className="text-xs font-medium text-birla-gold">{a.submissions}/{a.total}</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5">
+                  <div className="bg-birla-gold h-1.5 rounded-full" style={{ width: `${(a.submissions / a.total) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Evaluation Tab */}
+      {activeTab === 'evaluation' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3"><Award className="w-4 h-4 text-birla-gold" />Recent Evaluations</h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {[
+                  { student: 'Aarav Sharma', bspId: 'BSP2024001', type: 'Unit Test', subject: 'Math', marks: 42, max: 50 },
+                  { student: 'Diya Patel', bspId: 'BSP2024002', type: 'Assignment', subject: 'Math', marks: 28, max: 30 },
+                  { student: 'Arjun Reddy', bspId: 'BSP2024003', type: 'Periodic Test', subject: 'Math', marks: 65, max: 80 },
+                  { student: 'Ananya Gupta', bspId: 'BSP2024004', type: 'Unit Test', subject: 'Math', marks: 48, max: 50 },
+                  { student: 'Vivaan Joshi', bspId: 'BSP2024005', type: 'Project', subject: 'Math', marks: 18, max: 25 },
+                ].map((e, i) => (
+                  <div key={i} className="flex items-center justify-between p-2.5 rounded-xl border border-border hover:bg-muted/30">
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{e.student}</p>
+                      <p className="text-[10px] text-muted-foreground">{e.bspId} &bull; {e.type} &bull; {e.subject}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-foreground">{e.marks}/{e.max}</p>
+                      <p className="text-[10px] text-birla-gold">{Math.round(e.marks/e.max*100)}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3"><Target className="w-4 h-4 text-birla-cyan" />Competency Overview</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={[
+                    { skill: 'Critical Thinking', value: 75 },
+                    { skill: 'Problem Solving', value: 70 },
+                    { skill: 'Communication', value: 82 },
+                    { skill: 'Creativity', value: 65 },
+                    { skill: 'Collaboration', value: 78 },
+                  ]}>
+                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 10 }} stroke={darkMode ? '#94a3b8' : '#64748b'} />
+                    <PolarRadiusAxis tick={{ fontSize: 9 }} />
+                    <Radar name="Class X-A" dataKey="value" stroke="#C8A45C" fill="#C8A45C" fillOpacity={0.2} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Communication Tab */}
+      {activeTab === 'communication' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3"><MessageSquare className="w-4 h-4 text-birla-cyan" />Communication History</h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {communicationLogData.map((c, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.type === 'Phone' ? 'bg-emerald-500/10' : c.type === 'Email' ? 'bg-blue-500/10' : c.type === 'Meeting' ? 'bg-purple-500/10' : 'bg-amber-500/10'}`}>
+                    {c.type === 'Phone' ? <Phone className="w-4 h-4 text-emerald-500" /> : c.type === 'Email' ? <Mail className="w-4 h-4 text-blue-500" /> : c.type === 'Meeting' ? <Users className="w-4 h-4 text-purple-500" /> : <FileText className="w-4 h-4 text-amber-500" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground">{c.subject}</p>
+                    <p className="text-[10px] text-muted-foreground">{c.student} &bull; {c.parent} &bull; {c.type}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-muted-foreground">{c.date}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${c.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : c.status === 'Follow-up' ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>{c.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Forms Tab */}
+      {activeTab === 'forms' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {formsList.map((form) => {
+              const Icon = form.icon
+              return (
+                <button key={form.id} onClick={() => setShowForm(form.id)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border border-border hover:border-birla-gold/30 hover:shadow-lg transition-all group ${showForm === form.id ? 'border-birla-gold/50 shadow-lg bg-birla-gold/5' : ''}`}>
+                  <div className="w-10 h-10 rounded-xl bg-birla-gold/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-5 h-5 text-birla-gold" />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground group-hover:text-foreground text-center">{form.label}</span>
+                </button>
+              )
+            })}
+          </motion.div>
+
+          {/* Smart Attendance Form */}
+          {showForm === 'attendance' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><UserCheck className="w-5 h-5 text-emerald-500" />Smart Attendance Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div><label className={labelCls}>Class *</label><select value={attendanceForm.className} onChange={(e) => setAttendanceForm({...attendanceForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Date *</label><input type="date" value={attendanceForm.date} onChange={(e) => setAttendanceForm({...attendanceForm, date: e.target.value})} className={inputCls} /></div>
+              </div>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Student</th><th className="text-center p-2 text-muted-foreground font-medium">BSP ID</th><th className="text-center p-2 text-muted-foreground font-medium">PEN No</th><th className="text-center p-2 text-muted-foreground font-medium">Uppar ID</th><th className="text-center p-2 text-muted-foreground font-medium">Attendance</th><th className="text-left p-2 text-muted-foreground font-medium">Remarks</th></tr></thead>
+                  <tbody>
+                    {attendanceForm.students.map((s, i) => (
+                      <tr key={s.id} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{s.name}</td>
+                        <td className="text-center p-2 text-birla-cyan">{s.bspId}</td>
+                        <td className="text-center p-2 text-birla-gold">{s.penNo}</td>
+                        <td className="text-center p-2 text-muted-foreground">{s.upparId}</td>
+                        <td className="text-center p-2">
+                          <div className="flex justify-center gap-1">
+                            {['Present', 'Absent', 'Late', 'Half-Day'].map(st => (
+                              <button key={st} onClick={() => {
+                                const ns = [...attendanceForm.students]; ns[i] = { ...ns[i], status: st }; setAttendanceForm({ ...attendanceForm, students: ns })
+                              }} className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${s.status === st ? (st === 'Present' ? 'bg-emerald-500/10 text-emerald-500' : st === 'Absent' ? 'bg-red-500/10 text-red-500' : st === 'Late' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500') : 'bg-muted/50 text-muted-foreground'}`}>{st}</button>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="p-2"><input type="text" value={s.remarks} onChange={(e) => { const ns = [...attendanceForm.students]; ns[i] = { ...ns[i], remarks: e.target.value }; setAttendanceForm({ ...attendanceForm, students: ns }) }} className="w-full px-2 py-1 rounded-lg border border-border bg-background text-xs" placeholder="Remarks" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('attendance')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Attendance</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Lesson Plan Form */}
+          {showForm === 'lessonPlan' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><BookOpen className="w-5 h-5 text-emerald-500" />Lesson Plan Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Date *</label><input type="date" value={lessonPlanForm.date} onChange={(e) => setLessonPlanForm({...lessonPlanForm, date: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Period *</label><select value={lessonPlanForm.period} onChange={(e) => setLessonPlanForm({...lessonPlanForm, period: e.target.value})} className={inputCls}><option value="">Select Period</option>{periods.map(p => <option key={p} value={p}>Period {p}</option>)}</select></div>
+                <div><label className={labelCls}>Subject *</label><select value={lessonPlanForm.subject} onChange={(e) => setLessonPlanForm({...lessonPlanForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={lessonPlanForm.className} onChange={(e) => setLessonPlanForm({...lessonPlanForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Topic *</label><input type="text" value={lessonPlanForm.topic} onChange={(e) => setLessonPlanForm({...lessonPlanForm, topic: e.target.value})} className={inputCls} placeholder="Topic name" /></div>
+                <div><label className={labelCls}>Teaching Method *</label><select value={lessonPlanForm.teachingMethod} onChange={(e) => setLessonPlanForm({...lessonPlanForm, teachingMethod: e.target.value})} className={inputCls}><option value="Lecture">Lecture</option><option value="Discussion">Discussion</option><option value="Activity">Activity</option><option value="Experiment">Experiment</option><option value="Group Work">Group Work</option><option value="Flipped">Flipped</option></select></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Objectives *</label><textarea value={lessonPlanForm.objectives} onChange={(e) => setLessonPlanForm({...lessonPlanForm, objectives: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Learning objectives..." /></div>
+                <div><label className={labelCls}>Resources</label><input type="text" value={lessonPlanForm.resources} onChange={(e) => setLessonPlanForm({...lessonPlanForm, resources: e.target.value})} className={inputCls} placeholder="Required resources" /></div>
+                <div><label className={labelCls}>Homework</label><input type="text" value={lessonPlanForm.homework} onChange={(e) => setLessonPlanForm({...lessonPlanForm, homework: e.target.value})} className={inputCls} placeholder="Homework assignment" /></div>
+                <div><label className={labelCls}>Assessment Type</label><input type="text" value={lessonPlanForm.assessmentType} onChange={(e) => setLessonPlanForm({...lessonPlanForm, assessmentType: e.target.value})} className={inputCls} placeholder="Quiz, oral, etc." /></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Notes</label><textarea value={lessonPlanForm.notes} onChange={(e) => setLessonPlanForm({...lessonPlanForm, notes: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Additional notes..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('lessonPlan')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Lesson Plan</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Assignment Creation Form */}
+          {showForm === 'assignment' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><ClipboardList className="w-5 h-5 text-birla-cyan" />Assignment Creation Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div><label className={labelCls}>Title *</label><input type="text" value={assignmentForm.title} onChange={(e) => setAssignmentForm({...assignmentForm, title: e.target.value})} className={inputCls} placeholder="Enter assignment title" /></div>
+                <div><label className={labelCls}>Subject *</label><select value={assignmentForm.subject} onChange={(e) => setAssignmentForm({...assignmentForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={assignmentForm.className} onChange={(e) => setAssignmentForm({...assignmentForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Due Date *</label><input type="date" value={assignmentForm.dueDate} onChange={(e) => setAssignmentForm({...assignmentForm, dueDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Max Marks *</label><input type="number" value={assignmentForm.maxMarks} onChange={(e) => setAssignmentForm({...assignmentForm, maxMarks: e.target.value})} className={inputCls} placeholder="100" /></div>
+                <div><label className={labelCls}>Type *</label><select value={assignmentForm.type} onChange={(e) => setAssignmentForm({...assignmentForm, type: e.target.value})} className={inputCls}><option value="Homework">Homework</option><option value="Project">Project</option><option value="Worksheet">Worksheet</option><option value="Research">Research</option><option value="Practice">Practice</option></select></div>
+                <div><label className={labelCls}>Bloom&apos;s Level *</label><select value={assignmentForm.bloomsLevel} onChange={(e) => setAssignmentForm({...assignmentForm, bloomsLevel: e.target.value})} className={inputCls}>{bloomsLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Description</label><textarea value={assignmentForm.description} onChange={(e) => setAssignmentForm({...assignmentForm, description: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="Assignment details..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('assignment')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Create Assignment</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Student Evaluation Form */}
+          {showForm === 'evaluation' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Award className="w-5 h-5 text-birla-gold" />Student Evaluation Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelCls}>Student *</label>
+                  <select value={evaluationForm.studentId} onChange={(e) => setEvaluationForm({...evaluationForm, studentId: e.target.value})} className={inputCls}>
+                    <option value="">Select Student</option>
+                    {studentsList.map(s => <option key={s.id} value={s.id}>{s.name} (BSP: {s.bspId} | PEN: {s.penNo} | UPP: {s.upparId})</option>)}
+                  </select>
+                  {evaluationForm.studentId && (
+                    <p className="text-[10px] text-birla-cyan mt-1">
+                      BSP: {studentsList.find(s => s.id === evaluationForm.studentId)?.bspId} | PEN: {studentsList.find(s => s.id === evaluationForm.studentId)?.penNo} | UPP: {studentsList.find(s => s.id === evaluationForm.studentId)?.upparId}
+                    </p>
+                  )}
+                </div>
+                <div><label className={labelCls}>Subject *</label><select value={evaluationForm.subject} onChange={(e) => setEvaluationForm({...evaluationForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Assessment Type *</label><select value={evaluationForm.assessmentType} onChange={(e) => setEvaluationForm({...evaluationForm, assessmentType: e.target.value})} className={inputCls}><option value="Unit Test">Unit Test</option><option value="Periodic Test">Periodic Test</option><option value="Assignment">Assignment</option><option value="Project">Project</option><option value="Practical">Practical</option><option value="Oral">Oral</option></select></div>
+                <div><label className={labelCls}>Marks Obtained *</label><input type="number" value={evaluationForm.marks} onChange={(e) => setEvaluationForm({...evaluationForm, marks: e.target.value})} className={inputCls} placeholder="Obtained marks" /></div>
+                <div><label className={labelCls}>Max Marks *</label><input type="number" value={evaluationForm.maxMarks} onChange={(e) => setEvaluationForm({...evaluationForm, maxMarks: e.target.value})} className={inputCls} placeholder="Maximum marks" /></div>
+                <div><label className={labelCls}>Competency Level *</label><select value={evaluationForm.competencyLevel} onChange={(e) => setEvaluationForm({...evaluationForm, competencyLevel: e.target.value})} className={inputCls}><option value="Beginner">Beginner</option><option value="Developing">Developing</option><option value="Proficient">Proficient</option><option value="Advanced">Advanced</option></select></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Remarks</label><textarea value={evaluationForm.remarks} onChange={(e) => setEvaluationForm({...evaluationForm, remarks: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Evaluation remarks..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('evaluation')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Evaluation</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Rubric Assessment Form */}
+          {showForm === 'rubric' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Target className="w-5 h-5 text-purple-500" />Rubric Assessment Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className={labelCls}>Student *</label>
+                  <select value={rubricForm.studentId} onChange={(e) => setRubricForm({...rubricForm, studentId: e.target.value})} className={inputCls}>
+                    <option value="">Select Student</option>
+                    {studentsList.map(s => <option key={s.id} value={s.id}>{s.name} (BSP: {s.bspId})</option>)}
+                  </select>
+                </div>
+                <div><label className={labelCls}>Subject *</label><select value={rubricForm.subject} onChange={(e) => setRubricForm({...rubricForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Rubric Name *</label><input type="text" value={rubricForm.rubricName} onChange={(e) => setRubricForm({...rubricForm, rubricName: e.target.value})} className={inputCls} placeholder="e.g., Project Rubric" /></div>
+              </div>
+              <div className="border-t border-border pt-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-foreground">Criteria</h4>
+                  <button onClick={addRubricCriteria} className="flex items-center gap-1 px-3 py-1.5 rounded-lg gradient-birla-gold text-birla-blue text-xs font-medium hover:shadow-md transition-all"><Plus className="w-3 h-3" />Add Criteria</button>
+                </div>
+                <div className="space-y-3">
+                  {rubricForm.criteria.map((c, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/20">
+                      <span className="text-xs font-semibold text-foreground w-6">{idx + 1}.</span>
+                      <input type="text" value={c.name} onChange={(e) => updateRubricCriteria(idx, 'name', e.target.value)} className="flex-1 px-2 py-1.5 rounded-lg border border-border bg-background text-xs" placeholder="Criteria name" />
+                      <input type="number" value={c.maxMarks} onChange={(e) => updateRubricCriteria(idx, 'maxMarks', e.target.value)} className="w-20 px-2 py-1.5 rounded-lg border border-border bg-background text-xs" placeholder="Max" />
+                      <input type="number" value={c.score} onChange={(e) => updateRubricCriteria(idx, 'score', e.target.value)} className="w-20 px-2 py-1.5 rounded-lg border border-border bg-background text-xs" placeholder="Score" />
+                      {rubricForm.criteria.length > 1 && (
+                        <button onClick={() => removeRubricCriteria(idx)} className="text-red-500 hover:text-red-700"><X className="w-4 h-4" /></button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-end gap-2 mt-3 p-2 rounded-lg bg-birla-gold/5 border border-birla-gold/20">
+                  <span className="text-xs font-medium text-muted-foreground">Total:</span>
+                  <span className="text-sm font-bold text-birla-gold">
+                    {rubricForm.criteria.reduce((sum, c) => sum + (Number(c.score) || 0), 0)} / {rubricForm.criteria.reduce((sum, c) => sum + (Number(c.maxMarks) || 0), 0)}
+                  </span>
+                </div>
+              </div>
+              <div><label className={labelCls}>Comments</label><textarea value={rubricForm.comments} onChange={(e) => setRubricForm({...rubricForm, comments: e.target.value})} rows={2} className={inputCls + ' resize-none'} placeholder="Overall comments..." /></div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('rubric')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Rubric</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report Card Generation Form */}
+          {showForm === 'reportCard' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><FileText className="w-5 h-5 text-birla-cyan" />Report Card Generation Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div><label className={labelCls}>Class *</label><select value={reportCardForm.className} onChange={(e) => setReportCardForm({...reportCardForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Term *</label><select value={reportCardForm.term} onChange={(e) => setReportCardForm({...reportCardForm, term: e.target.value})} className={inputCls}><option value="Term 1">Term 1</option><option value="Term 2">Term 2</option><option value="Annual">Annual</option></select></div>
+              </div>
+              <div className="space-y-2 mb-4">
+                <label className={labelCls}>Select Students</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 rounded-xl border border-border bg-muted/20">
+                  {studentsList.map(s => (
+                    <label key={s.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/30 cursor-pointer">
+                      <input type="checkbox" checked={reportCardForm.students.includes(s.id)} onChange={(e) => {
+                        const students = e.target.checked ? [...reportCardForm.students, s.id] : reportCardForm.students.filter(id => id !== s.id)
+                        setReportCardForm({...reportCardForm, students})
+                      }} className="w-4 h-4 rounded border-border" />
+                      <div>
+                        <span className="text-xs font-medium text-foreground">{s.name}</span>
+                        <span className="text-[10px] text-muted-foreground ml-2">BSP: {s.bspId}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={reportCardForm.includeScholastic} onChange={(e) => setReportCardForm({...reportCardForm, includeScholastic: e.target.checked})} className="w-4 h-4 rounded border-border" /><span className="text-xs font-medium text-muted-foreground">Include Scholastic</span></label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={reportCardForm.includeCoScholastic} onChange={(e) => setReportCardForm({...reportCardForm, includeCoScholastic: e.target.checked})} className="w-4 h-4 rounded border-border" /><span className="text-xs font-medium text-muted-foreground">Include Co-Scholastic</span></label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={reportCardForm.includeCompetency} onChange={(e) => setReportCardForm({...reportCardForm, includeCompetency: e.target.checked})} className="w-4 h-4 rounded border-border" /><span className="text-xs font-medium text-muted-foreground">Include Competency</span></label>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('reportCard')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Generate Report Cards</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Parent Communication Form */}
+          {showForm === 'communication' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Phone className="w-5 h-5 text-birla-cyan" />Parent Communication Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelCls}>Student *</label>
+                  <select value={communicationForm.studentId} onChange={(e) => {
+                    const student = studentsList.find(s => s.id === e.target.value)
+                    setCommunicationForm({...communicationForm, studentId: e.target.value, parentName: student ? `Parent of ${student.name}` : ''})
+                  }} className={inputCls}>
+                    <option value="">Select Student</option>
+                    {studentsList.map(s => <option key={s.id} value={s.id}>{s.name} (BSP: {s.bspId})</option>)}
+                  </select>
+                </div>
+                <div><label className={labelCls}>Parent Name (Auto)</label><input type="text" value={communicationForm.parentName} onChange={(e) => setCommunicationForm({...communicationForm, parentName: e.target.value})} className={inputCls} placeholder="Auto-filled" /></div>
+                <div><label className={labelCls}>Communication Type *</label><select value={communicationForm.communicationType} onChange={(e) => setCommunicationForm({...communicationForm, communicationType: e.target.value})} className={inputCls}><option value="Phone">Phone</option><option value="Email">Email</option><option value="Meeting">Meeting</option><option value="Note">Note</option></select></div>
+                <div><label className={labelCls}>Subject *</label><input type="text" value={communicationForm.subject} onChange={(e) => setCommunicationForm({...communicationForm, subject: e.target.value})} className={inputCls} placeholder="Communication subject" /></div>
+                <div><label className={labelCls}>Follow-up Date</label><input type="date" value={communicationForm.followUpDate} onChange={(e) => setCommunicationForm({...communicationForm, followUpDate: e.target.value})} className={inputCls} /></div>
+                <div><label className={labelCls}>Priority *</label><select value={communicationForm.priority} onChange={(e) => setCommunicationForm({...communicationForm, priority: e.target.value})} className={inputCls}><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option><option value="Urgent">Urgent</option></select></div>
+                <div className="md:col-span-2 lg:col-span-3"><label className={labelCls}>Details *</label><textarea value={communicationForm.details} onChange={(e) => setCommunicationForm({...communicationForm, details: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="Communication details..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('communication')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all">Save Communication</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* AI Teaching Request Form */}
+          {showForm === 'aiTeaching' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2"><Sparkles className="w-5 h-5 text-purple-500" />AI Teaching Request Form</h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label className={labelCls}>Request Type *</label><select value={aiTeachingForm.requestType} onChange={(e) => setAiTeachingForm({...aiTeachingForm, requestType: e.target.value})} className={inputCls}><option value="Lesson Ideas">Lesson Ideas</option><option value="Assessment Questions">Assessment Questions</option><option value="Differentiation">Differentiation</option><option value="Remedial Plan">Remedial Plan</option><option value="Enrichment">Enrichment</option></select></div>
+                <div><label className={labelCls}>Subject *</label><select value={aiTeachingForm.subject} onChange={(e) => setAiTeachingForm({...aiTeachingForm, subject: e.target.value})} className={inputCls}><option value="">Select Subject</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <div><label className={labelCls}>Class *</label><select value={aiTeachingForm.className} onChange={(e) => setAiTeachingForm({...aiTeachingForm, className: e.target.value})} className={inputCls}><option value="">Select Class</option>{classes.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className={labelCls}>Topic</label><input type="text" value={aiTeachingForm.topic} onChange={(e) => setAiTeachingForm({...aiTeachingForm, topic: e.target.value})} className={inputCls} placeholder="Specific topic" /></div>
+                <div className="md:col-span-2"><label className={labelCls}>Student Needs</label><textarea value={aiTeachingForm.studentNeeds} onChange={(e) => setAiTeachingForm({...aiTeachingForm, studentNeeds: e.target.value})} rows={3} className={inputCls + ' resize-none'} placeholder="Describe specific student needs, learning gaps, or challenges..." /></div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={() => handleSubmit('aiTeaching')} className="px-4 py-2 rounded-xl gradient-birla-gold text-birla-blue text-sm font-medium hover:shadow-lg transition-all flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" />Generate AI Suggestions</button>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Reports Tab */}
+      {activeTab === 'reports' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {reportsList.map((rpt) => {
+              const Icon = rpt.icon
+              return (
+                <button key={rpt.id} onClick={() => setShowForm('rpt_' + rpt.id)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl border border-border hover:border-birla-gold/30 hover:shadow-lg transition-all group ${showForm === 'rpt_' + rpt.id ? 'border-birla-gold/50 shadow-lg bg-birla-gold/5' : ''}`}>
+                  <div className="w-9 h-9 rounded-xl bg-birla-gold/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-4 h-4 text-birla-gold" />
+                  </div>
+                  <span className="text-[9px] text-muted-foreground group-hover:text-foreground text-center">{rpt.label}</span>
+                </button>
+              )
+            })}
+          </motion.div>
+
+          {/* Class Attendance Report */}
+          {showForm === 'rpt_classAttendance' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><UserCheck className="w-4 h-4 text-emerald-500" />Class Attendance Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Daily attendance summary</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Day</th><th className="text-center p-2 text-muted-foreground font-medium">Present</th><th className="text-center p-2 text-muted-foreground font-medium">Absent</th><th className="text-center p-2 text-muted-foreground font-medium">Late</th><th className="text-center p-2 text-muted-foreground font-medium">Attendance %</th></tr></thead>
+                  <tbody>
+                    {attendanceReportData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.date}</td><td className="text-center p-2 text-emerald-500">{r.present}</td><td className="text-center p-2 text-red-500">{r.absent}</td><td className="text-center p-2 text-amber-500">{r.late}</td><td className="text-center p-2 font-semibold">{Math.round(r.present / (r.present + r.absent + r.late) * 100)}%</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={attendanceReportData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Line type="monotone" dataKey="present" stroke="#10B981" strokeWidth={2} name="Present" />
+                    <Line type="monotone" dataKey="absent" stroke="#EF4444" strokeWidth={2} name="Absent" />
+                    <Line type="monotone" dataKey="late" stroke="#F59E0B" strokeWidth={2} name="Late" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Assignment Status Report */}
+          {showForm === 'rpt_assignmentStatus' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><ClipboardList className="w-4 h-4 text-birla-gold" />Assignment Status Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Class-wise assignment submission status</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Class</th><th className="text-center p-2 text-muted-foreground font-medium">Submitted</th><th className="text-center p-2 text-muted-foreground font-medium">Pending</th><th className="text-center p-2 text-muted-foreground font-medium">Graded</th></tr></thead>
+                  <tbody>
+                    {assignmentStatusData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30"><td className="p-2 font-medium text-foreground">{r.class}</td><td className="text-center p-2 text-emerald-500">{r.submitted}</td><td className="text-center p-2 text-amber-500">{r.pending}</td><td className="text-center p-2 text-birla-cyan">{r.graded}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={assignmentStatusData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="class" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="submitted" stackId="a" fill="#10B981" name="Submitted" />
+                    <Bar dataKey="pending" stackId="a" fill="#F59E0B" name="Pending" />
+                    <Bar dataKey="graded" stackId="a" fill="#22D3EE" name="Graded" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Student Performance Report */}
+          {showForm === 'rpt_studentPerformance' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Users className="w-4 h-4 text-birla-cyan" />Student Performance Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Individual student performance with UDISE+ identifiers</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Name</th><th className="text-center p-2 text-muted-foreground font-medium">BSP ID</th><th className="text-center p-2 text-muted-foreground font-medium">PEN No</th><th className="text-center p-2 text-muted-foreground font-medium">Uppar ID</th><th className="text-center p-2 text-muted-foreground font-medium">Math</th><th className="text-center p-2 text-muted-foreground font-medium">Science</th><th className="text-center p-2 text-muted-foreground font-medium">English</th><th className="text-center p-2 text-muted-foreground font-medium">Hindi</th><th className="text-center p-2 text-muted-foreground font-medium">SST</th><th className="text-center p-2 text-muted-foreground font-medium">Avg</th></tr></thead>
+                  <tbody>
+                    {studentPerformanceData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.name}</td>
+                        <td className="text-center p-2 text-birla-cyan">{r.bspId}</td>
+                        <td className="text-center p-2 text-birla-gold">{r.penNo}</td>
+                        <td className="text-center p-2 text-muted-foreground">{r.upparId}</td>
+                        <td className="text-center p-2">{r.math}</td>
+                        <td className="text-center p-2">{r.science}</td>
+                        <td className="text-center p-2">{r.english}</td>
+                        <td className="text-center p-2">{r.hindi}</td>
+                        <td className="text-center p-2">{r.sst}</td>
+                        <td className="text-center p-2 font-bold text-foreground">{Math.round((r.math + r.science + r.english + r.hindi + r.sst) / 5)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={studentPerformanceData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="math" fill="#1A2D4A" name="Math" />
+                    <Bar dataKey="science" fill="#22D3EE" name="Science" />
+                    <Bar dataKey="english" fill="#C8A45C" name="English" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Assessment Analysis Report */}
+          {showForm === 'rpt_assessmentAnalysis' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Award className="w-4 h-4 text-purple-500" />Assessment Analysis Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Test-wise performance analysis</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Test</th><th className="text-center p-2 text-muted-foreground font-medium">Avg</th><th className="text-center p-2 text-muted-foreground font-medium">Highest</th><th className="text-center p-2 text-muted-foreground font-medium">Lowest</th><th className="text-center p-2 text-muted-foreground font-medium">Passed</th><th className="text-center p-2 text-muted-foreground font-medium">Failed</th><th className="text-center p-2 text-muted-foreground font-medium">Range</th></tr></thead>
+                  <tbody>
+                    {assessmentAnalysisData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.test}</td>
+                        <td className="text-center p-2 font-semibold">{r.avg}%</td>
+                        <td className="text-center p-2 text-emerald-500">{r.highest}%</td>
+                        <td className="text-center p-2 text-red-500">{r.lowest}%</td>
+                        <td className="text-center p-2">{r.passed}</td>
+                        <td className="text-center p-2 text-red-500">{r.failed}</td>
+                        <td className="text-center p-2">
+                          <div className="flex items-center gap-1 justify-center">
+                            <div className="w-16 bg-muted rounded-full h-1.5"><div className="bg-gradient-to-r from-red-500 via-amber-500 to-emerald-500 h-1.5 rounded-full" style={{ width: '100%' }} /></div>
+                            <span className="text-[10px]">{r.highest - r.lowest}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={assessmentAnalysisData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="test" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="avg" fill="#8B5CF6" name="Avg %" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="highest" fill="#10B981" name="Highest %" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="lowest" fill="#EF4444" name="Lowest %" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Competency Progress Report */}
+          {showForm === 'rpt_competencyProgress' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Target className="w-4 h-4 text-birla-gold" />Competency Progress Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Student competency levels across key skills</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Student</th><th className="text-center p-2 text-muted-foreground font-medium">BSP ID</th><th className="text-center p-2 text-muted-foreground font-medium">Critical Thinking</th><th className="text-center p-2 text-muted-foreground font-medium">Problem Solving</th><th className="text-center p-2 text-muted-foreground font-medium">Communication</th><th className="text-center p-2 text-muted-foreground font-medium">Creativity</th><th className="text-center p-2 text-muted-foreground font-medium">Collaboration</th></tr></thead>
+                  <tbody>
+                    {competencyProgressData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.student}</td>
+                        <td className="text-center p-2 text-birla-cyan">{r.bspId}</td>
+                        <td className="text-center p-2">{r.criticalThinking}%</td>
+                        <td className="text-center p-2">{r.problemSolving}%</td>
+                        <td className="text-center p-2">{r.communication}%</td>
+                        <td className="text-center p-2">{r.creativity}%</td>
+                        <td className="text-center p-2">{r.collaboration}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={[
+                    { skill: 'Critical Thinking', student1: 72, student2: 85, student3: 60, student4: 90 },
+                    { skill: 'Problem Solving', student1: 68, student2: 80, student3: 55, student4: 88 },
+                    { skill: 'Communication', student1: 80, student2: 78, student3: 70, student4: 85 },
+                    { skill: 'Creativity', student1: 65, student2: 72, student3: 58, student4: 82 },
+                    { skill: 'Collaboration', student1: 75, student2: 82, student3: 65, student4: 88 },
+                  ]}>
+                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 10 }} stroke={darkMode ? '#94a3b8' : '#64748b'} />
+                    <PolarRadiusAxis tick={{ fontSize: 9 }} />
+                    <Radar name="Aarav" dataKey="student1" stroke="#1A2D4A" fill="#1A2D4A" fillOpacity={0.1} />
+                    <Radar name="Diya" dataKey="student2" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.1} />
+                    <Radar name="Arjun" dataKey="student3" stroke="#C8A45C" fill="#C8A45C" fillOpacity={0.1} />
+                    <Radar name="Ananya" dataKey="student4" stroke="#10B981" fill="#10B981" fillOpacity={0.1} />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Class Comparison Report */}
+          {showForm === 'rpt_classComparison' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><BarChart3 className="w-4 h-4 text-birla-cyan" />Class Comparison Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Cross-class performance comparison</p>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={classComparisonData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="class" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="math" fill="#1A2D4A" name="Math" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="science" fill="#22D3EE" name="Science" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="english" fill="#C8A45C" name="English" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="hindi" fill="#8B5CF6" name="Hindi" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="sst" fill="#10B981" name="SST" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Parent Communication Log Report */}
+          {showForm === 'rpt_communicationLog' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><MessageSquare className="w-4 h-4 text-birla-gold" />Parent Communication Log Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Complete communication history with parents</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Date</th><th className="text-left p-2 text-muted-foreground font-medium">Student</th><th className="text-left p-2 text-muted-foreground font-medium">Parent</th><th className="text-center p-2 text-muted-foreground font-medium">Type</th><th className="text-left p-2 text-muted-foreground font-medium">Subject</th><th className="text-center p-2 text-muted-foreground font-medium">Status</th></tr></thead>
+                  <tbody>
+                    {communicationLogData.map((c, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 text-muted-foreground">{c.date}</td>
+                        <td className="p-2 font-medium text-foreground">{c.student}</td>
+                        <td className="p-2 text-muted-foreground">{c.parent}</td>
+                        <td className="text-center p-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${c.type === 'Phone' ? 'bg-emerald-500/10 text-emerald-500' : c.type === 'Email' ? 'bg-blue-500/10 text-blue-500' : c.type === 'Meeting' ? 'bg-purple-500/10 text-purple-500' : 'bg-amber-500/10 text-amber-500'}`}>{c.type}</span>
+                        </td>
+                        <td className="p-2">{c.subject}</td>
+                        <td className="text-center p-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${c.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : c.status === 'Follow-up' ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>{c.status}</span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </motion.div>
+          )}
 
-            {/* Class Distribution */}
+          {/* Teacher Effectiveness Report */}
+          {showForm === 'rpt_teacherEffectiveness' && (
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-birla-cyan" />
-                Grade Distribution - Class X-A
-              </h4>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={classDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {classDistributionData.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1"><Star className="w-4 h-4 text-birla-gold" />Teacher Effectiveness Report</h3>
+              <p className="text-xs text-muted-foreground mb-3">Class average scores and feedback ratings</p>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Teacher</th><th className="text-center p-2 text-muted-foreground font-medium">Class</th><th className="text-center p-2 text-muted-foreground font-medium">Avg Score</th><th className="text-center p-2 text-muted-foreground font-medium">Feedback (★)</th></tr></thead>
+                  <tbody>
+                    {teacherEffectivenessData.map((r, i) => (
+                      <tr key={i} className="border-b border-border hover:bg-muted/30">
+                        <td className="p-2 font-medium text-foreground">{r.teacher}</td>
+                        <td className="text-center p-2">{r.class}</td>
+                        <td className="text-center p-2 font-semibold text-birla-cyan">{r.avgScore}%</td>
+                        <td className="text-center p-2"><span className="text-birla-gold font-semibold">{r.feedback}</span> / 5.0</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                {classDistributionData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-1.5 text-[9px]">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="text-muted-foreground truncate">{item.name}</span>
-                    <span className="font-medium text-foreground ml-auto">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Student Report Cards List */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-purple-500" />
-              Student Report Cards
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {evaluationData.slice(0, 8).map((student) => {
-                const avg = Math.round((student.fa1 + student.fa2 + student.sa1) / 3)
-                const grade = getCBSEGrade(avg)
-                return (
-                  <div key={student.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-full gradient-birla-gold flex items-center justify-center text-[10px] font-bold text-birla-blue">
-                        {student.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">{student.name}</p>
-                        <p className="text-[9px] text-muted-foreground">Roll #{student.roll}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Avg: {avg}%</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        grade.startsWith('A') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        grade.startsWith('B') ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                        grade.startsWith('C') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                        'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                      }`}>
-                        {grade}
-                      </span>
-                    </div>
-                    <button className="w-full mt-2 py-1.5 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors flex items-center justify-center gap-1">
-                      <Download className="w-3 h-3" /> Download
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Classroom Engagement Analytics ────────────────────── */}
-      {activeTab === 'analytics' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-birla-cyan" />
-            Classroom Engagement Analytics
-          </h3>
-
-          {/* Analytics Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            {[
-              { label: 'Avg Participation', value: '85%', icon: ThumbsUp, color: 'from-emerald-800 to-emerald-600' },
-              { label: 'Homework Completion', value: '92%', icon: CheckCircle2, color: 'from-blue-900 to-blue-700' },
-              { label: 'Quiz Performance', value: '82%', icon: Target, color: 'from-amber-800 to-amber-600' },
-              { label: 'Attendance Rate', value: '96%', icon: UserCheck, color: 'from-purple-800 to-purple-600' },
-            ].map((stat) => {
-              const Icon = stat.icon
-              return (
-                <div key={stat.label} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-4 text-white`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-white/70">{stat.label}</p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Engagement Trend */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                Engagement Trend
-              </h4>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={engagementAnalyticsData}>
+                  <BarChart data={teacherEffectivenessData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[60, 100]} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                      formatter={(value) => [`${value}%`, '']}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Line type="monotone" dataKey="participation" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Participation" />
-                    <Line type="monotone" dataKey="homework" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3 }} name="Homework" />
-                    <Line type="monotone" dataKey="quiz" stroke="#C8A45C" strokeWidth={2} dot={{ r: 3 }} name="Quiz" />
-                    <Line type="monotone" dataKey="attendance" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} name="Attendance" />
-                  </LineChart>
+                    <XAxis dataKey="teacher" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="avgScore" fill="#22D3EE" name="Avg Score %" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="feedback" fill="#C8A45C" name="Feedback ★" radius={[4, 4, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
-
-            {/* Subject Radar */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Target className="w-4 h-4 text-birla-gold" />
-                Multi-Dimensional Engagement
-              </h4>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={subjectRadarData}>
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <Radar name="Current" dataKey="score" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.15} strokeWidth={2} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                        borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                      }}
-                      formatter={(value) => [`${value}%`, 'Score']}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Bar Chart - Monthly Comparison */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-purple-500" />
-              Monthly Performance Comparison
-            </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={engagementAnalyticsData} barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[60, 100]} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                      borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                    }}
-                    formatter={(value) => [`${value}%`, '']}
-                  />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="participation" fill="#10B981" radius={[3, 3, 0, 0]} name="Participation" />
-                  <Bar dataKey="homework" fill="#22D3EE" radius={[3, 3, 0, 0]} name="Homework" />
-                  <Bar dataKey="quiz" fill="#C8A45C" radius={[3, 3, 0, 0]} name="Quiz" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ─── AI Teaching Assistant ─────────────────────────────── */}
-      {activeTab === 'assistant' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-500" />
-            AI Teaching Assistant
-          </h3>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {aiSuggestions.map((suggestion) => {
-              const Icon = suggestion.icon
-              return (
-                <motion.div key={suggestion.id} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${suggestion.color}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <h4 className="text-sm font-semibold text-foreground">{suggestion.title}</h4>
-                  </div>
-                  <div className="space-y-2">
-                    {suggestion.items.map((item, idx) => (
-                      <div key={idx} className="p-2.5 rounded-lg border border-border gradient-card-blue hover:shadow-sm transition-all cursor-pointer">
-                        <p className="text-xs text-foreground">{item}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <button className="w-full mt-3 py-2 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors flex items-center justify-center gap-1">
-                    <Sparkles className="w-3 h-3 text-birla-gold" /> Generate More
-                  </button>
-                </motion.div>
-              )
-            })}
-          </div>
-
-          {/* AI Quick Actions */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
-              Quick AI Actions
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: 'Generate Quiz', icon: Brain, color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-                { label: 'Summarize Chapter', icon: BookOpen, color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-                { label: 'Create Worksheet', icon: FileText, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-                { label: 'Suggest Activities', icon: Lightbulb, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-                { label: 'Differentiate Content', icon: Sliders, color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
-                { label: 'Analyze Performance', icon: BarChart3, color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400' },
-                { label: 'Parent Feedback', icon: MessageSquare, color: 'bg-birla-gold/10 text-birla-gold' },
-                { label: 'Lesson Ideas', icon: Sparkles, color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-              ].map((action) => {
-                const Icon = action.icon
-                return (
-                  <button key={action.label} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:border-birla-gold/30 hover:shadow-md transition-all group">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Communication Center ──────────────────────────────── */}
-      {activeTab === 'communication' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-blue-500" />
-              Communication Center
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Compose
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Message List */}
-            <motion.div variants={itemVariants} className="lg:col-span-1 rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search messages..."
-                    className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-input bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1 max-h-[500px] overflow-y-auto">
-                {messages.map((msg) => (
-                  <div key={msg.id} className={`p-3 rounded-xl cursor-pointer transition-all hover:bg-muted/30 ${msg.unread ? 'bg-muted/20 border border-birla-gold/20' : ''}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-semibold text-foreground">{msg.from}</span>
-                      <span className="text-[9px] text-muted-foreground">{msg.time}</span>
-                    </div>
-                    <p className="text-[11px] font-medium text-foreground">{msg.subject}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{msg.preview}</p>
-                    {msg.unread && <span className="inline-block mt-1 w-1.5 h-1.5 rounded-full bg-birla-cyan" />}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Message Detail */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Annual Day Preparation</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">From: Principal Sharma &bull; 10:30 AM</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                    <Send className="w-4 h-4" />
-                  </button>
-                  <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="text-sm text-foreground leading-relaxed space-y-3">
-                <p>Dear Dr. Menon,</p>
-                <p>All teachers are requested to prepare their class items for Annual Day Celebration scheduled on April 5, 2026. Each class should present a cultural program of 8-10 minutes duration.</p>
-                <p>Please submit your class program details by March 20, 2026. The rehearsal schedule will be shared after the initial review.</p>
-                <p>Key points to remember:</p>
-                <ul className="list-disc list-inside text-xs space-y-1 text-muted-foreground">
-                  <li>Theme: &ldquo;Unity in Diversity&rdquo;</li>
-                  <li>Maximum 15 students per performance</li>
-                  <li>Props and costumes budget: ₹5,000 per class</li>
-                  <li>Music tracks to be submitted in MP3 format</li>
-                </ul>
-                <p>Best regards,<br />Principal Sharma</p>
-              </div>
-
-              {/* Reply */}
-              <div className="mt-4 pt-4 border-t border-border">
-                <textarea
-                  rows={3}
-                  placeholder="Type your reply..."
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40"
-                />
-                <div className="flex items-center justify-end gap-2 mt-2">
-                  <button className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">Save Draft</button>
-                  <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                    <Send className="w-3 h-3" /> Send Reply
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ─── Rubric-Based Assessment ────────────────────────────── */}
-      {activeTab === 'rubric' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-birla-gold" />
-              Rubric-Based Assessment Tool
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Create Rubric
-            </button>
-          </div>
-
-          {/* Rubric Table */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground w-36">Criterion (Weight)</th>
-                    <th className="text-center px-3 py-3 text-[10px] font-semibold text-rose-500">1 - Beginning</th>
-                    <th className="text-center px-3 py-3 text-[10px] font-semibold text-amber-500">2 - Developing</th>
-                    <th className="text-center px-3 py-3 text-[10px] font-semibold text-blue-500">3 - Proficient</th>
-                    <th className="text-center px-3 py-3 text-[10px] font-semibold text-emerald-500">4 - Advanced</th>
-                    <th className="text-center px-3 py-3 text-[10px] font-semibold text-purple-500">5 - Expert</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rubricCriteria.map((criterion) => (
-                    <tr key={criterion.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3">
-                        <p className="text-xs font-semibold text-foreground">{criterion.criterion}</p>
-                        <p className="text-[9px] text-muted-foreground">Weight: {criterion.weight}%</p>
-                      </td>
-                      {criterion.levels.map((level, idx) => (
-                        <td key={idx} className="px-3 py-3 text-center">
-                          <span className="text-[10px] text-muted-foreground leading-tight">{level}</span>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Rubric Assessment for Student */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <PenTool className="w-4 h-4 text-birla-cyan" />
-                Assess Student
-              </h4>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Select Student</label>
-                  <select className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                    {evaluationData.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name} (Roll #{s.roll})</option>
-                    ))}
-                  </select>
-                </div>
-                {rubricCriteria.map((criterion) => (
-                  <div key={criterion.id} className="p-3 rounded-xl border border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-foreground">{criterion.criterion}</span>
-                      <span className="text-[9px] text-muted-foreground">{criterion.weight}%</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <button
-                          key={level}
-                          className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
-                            level === 3
-                              ? 'gradient-birla text-white'
-                              : 'border border-border text-muted-foreground hover:bg-muted'
-                          }`}
-                        >
-                          {level}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg gradient-birla text-white text-xs font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Submit Assessment
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Rubric Stats */}
-            <motion.div variants={itemVariants} className="space-y-4">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-birla-cyan" />
-                  Criterion Weight Distribution
-                </h4>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={rubricCriteria} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} horizontal={false} />
-                      <XAxis type="number" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                      <YAxis type="category" dataKey="criterion" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={110} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-                          border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-                          borderRadius: '12px', fontSize: '11px', color: darkMode ? '#e2e8f0' : '#1e293b',
-                        }}
-                        formatter={(value) => [`${value}%`, 'Weight']}
-                      />
-                      <Bar dataKey="weight" fill="#C8A45C" radius={[0, 6, 6, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Grid3X3 className="w-4 h-4 text-purple-500" />
-                  Assessment Summary
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Rubrics Created', value: '12', color: 'text-blue-500 bg-blue-500/10' },
-                    { label: 'Assessments Done', value: '186', color: 'text-emerald-500 bg-emerald-500/10' },
-                    { label: 'Avg Score', value: '3.6/5', color: 'text-amber-500 bg-amber-500/10' },
-                    { label: 'Pending', value: '24', color: 'text-rose-500 bg-rose-500/10' },
-                  ].map((stat) => (
-                    <div key={stat.label} className="p-3 rounded-xl border border-border flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stat.color}`}>
-                        <Star className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{stat.value}</p>
-                        <p className="text-[9px] text-muted-foreground">{stat.label}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
+          )}
+        </div>
       )}
     </motion.div>
   )

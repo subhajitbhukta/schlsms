@@ -3,139 +3,20 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  BookOpen, Calendar, Clock, CheckCircle2, XCircle,
-  FileText, BarChart3, Brain, GraduationCap, Award,
-  Star, TrendingUp, Target, Sparkles, PenTool, Zap,
-  Timer, Lightbulb, ChevronRight, AlertTriangle,
-  StickyNote, Trophy, Flame, Medal, Shield, BadgeCheck,
-  BookMarked, ClipboardCheck, Activity, MessageCircle,
-  ArrowUpRight, CircleDot, Users, Play, Pause
+  UserCheck, ClipboardList, FileQuestion, MessageSquare, StickyNote,
+  Trophy, Calendar, BarChart3, TrendingUp, Brain, Target,
+  Plus, X, Clock, Award, ArrowUpRight, BookOpen, Sparkles,
+  Palette, Zap, Activity, Send, CheckCircle2, Star, Shield,
+  FileText, PieChart as PieChartIcon, GraduationCap, AlertCircle,
+  Upload, PenLine, Heart, Megaphone
 } from 'lucide-react'
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart,
-  Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell
+  BarChart, Bar, AreaChart, Area, RadarChart, Radar, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
-// ─── Data ────────────────────────────────────────────────────────
-const todayTimetable = [
-  { id: 1, time: '08:00 - 08:45', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 201', status: 'completed' },
-  { id: 2, time: '08:45 - 09:30', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 201', status: 'completed' },
-  { id: 3, time: '09:30 - 09:50', subject: 'Break', teacher: '', room: '', status: 'completed' },
-  { id: 4, time: '09:50 - 10:35', subject: 'English', teacher: 'Mrs. Kavitha Rao', room: 'Room 201', status: 'completed' },
-  { id: 5, time: '10:35 - 11:20', subject: 'Science', teacher: 'Mr. Suresh Babu', room: 'Lab 3', status: 'in-progress' },
-  { id: 6, time: '11:20 - 12:05', subject: 'Social Science', teacher: 'Mrs. Lakshmi Nair', room: 'Room 201', status: 'upcoming' },
-  { id: 7, time: '12:05 - 12:45', subject: 'Lunch Break', teacher: '', room: '', status: 'upcoming' },
-  { id: 8, time: '12:45 - 13:30', subject: 'Hindi', teacher: 'Mr. Raghav Pandey', room: 'Room 305', status: 'upcoming' },
-  { id: 9, time: '13:30 - 14:15', subject: 'Computer Science', teacher: 'Ms. Anjali Deshmukh', room: 'IT Lab', status: 'upcoming' },
-]
-
-const homeworkData = [
-  { id: 1, subject: 'Mathematics', title: 'Solve Quadratic Equations - Ex 4.3 (Q1-Q10)', dueDate: '2026-03-14', status: 'pending', priority: 'high' },
-  { id: 2, subject: 'English', title: 'Write an Essay on "Digital India"', dueDate: '2026-03-15', status: 'pending', priority: 'medium' },
-  { id: 3, subject: 'Science', title: 'Lab Report: Chemical Reactions & Equations', dueDate: '2026-03-13', status: 'submitted', priority: 'high' },
-  { id: 4, subject: 'Social Science', title: 'Map Work - Resources of India', dueDate: '2026-03-12', status: 'late', priority: 'low' },
-  { id: 5, subject: 'Hindi', title: 'Path - Sanchayan Chapter 3 Summary', dueDate: '2026-03-16', status: 'pending', priority: 'medium' },
-  { id: 6, subject: 'Computer Science', title: 'Python Program - Bubble Sort Algorithm', dueDate: '2026-03-17', status: 'pending', priority: 'high' },
-  { id: 7, subject: 'Mathematics', title: 'Arithmetic Progressions Worksheet', dueDate: '2026-03-10', status: 'submitted', priority: 'medium' },
-  { id: 8, subject: 'Science', title: 'Diagram - Structure of Human Heart', dueDate: '2026-03-11', status: 'submitted', priority: 'low' },
-]
-
-const performanceTrendData = [
-  { term: 'FA1', Mathematics: 82, English: 78, Science: 85, SocialScience: 72, Hindi: 88, ComputerScience: 91 },
-  { term: 'FA2', Mathematics: 85, English: 80, Science: 83, SocialScience: 75, Hindi: 90, ComputerScience: 93 },
-  { term: 'SA1', Mathematics: 88, English: 82, Science: 87, SocialScience: 78, Hindi: 86, ComputerScience: 95 },
-  { term: 'FA3', Mathematics: 90, English: 85, Science: 89, SocialScience: 80, Hindi: 92, ComputerScience: 94 },
-  { term: 'FA4', Mathematics: 92, English: 87, Science: 91, SocialScience: 82, Hindi: 94, ComputerScience: 96 },
-  { term: 'SA2', Mathematics: 94, English: 89, Science: 93, SocialScience: 85, Hindi: 95, ComputerScience: 97 },
-]
-
-const attendanceMonthData = [
-  { day: 1, status: 'present' }, { day: 2, status: 'present' }, { day: 3, status: 'present' },
-  { day: 4, status: 'present' }, { day: 5, status: 'present' }, { day: 6, status: 'weekend' },
-  { day: 7, status: 'weekend' }, { day: 8, status: 'present' }, { day: 9, status: 'late' },
-  { day: 10, status: 'present' }, { day: 11, status: 'present' }, { day: 12, status: 'absent' },
-  { day: 13, status: 'weekend' }, { day: 14, status: 'weekend' }, { day: 15, status: 'present' },
-  { day: 16, status: 'present' }, { day: 17, status: 'present' }, { day: 18, status: 'present' },
-  { day: 19, status: 'late' }, { day: 20, status: 'present' }, { day: 21, status: 'weekend' },
-  { day: 22, status: 'weekend' }, { day: 23, status: 'present' }, { day: 24, status: 'present' },
-  { day: 25, status: 'present' }, { day: 26, status: 'present' }, { day: 27, status: 'weekend' },
-  { day: 28, status: 'weekend' }, { day: 29, status: 'present' }, { day: 30, status: 'present' },
-  { day: 31, status: 'present' },
-]
-
-const subjectProgressData = [
-  { subject: 'Mathematics', progress: 88, color: '#3B82F6' },
-  { subject: 'English', progress: 82, color: '#8B5CF6' },
-  { subject: 'Science', progress: 91, color: '#10B981' },
-  { subject: 'Social Science', progress: 75, color: '#F59E0B' },
-  { subject: 'Hindi', progress: 94, color: '#EF4444' },
-  { subject: 'Computer Sci.', progress: 96, color: '#22D3EE' },
-]
-
-const achievementsData = [
-  { id: 1, name: 'Math Wizard', description: 'Scored 90%+ in 3 consecutive Math exams', icon: '🧙‍♂️', earned: true, earnedDate: 'Feb 2026', category: 'Academic' },
-  { id: 2, name: 'Science Explorer', description: 'Completed 10+ science lab experiments', icon: '🔬', earned: true, earnedDate: 'Jan 2026', category: 'Academic' },
-  { id: 3, name: 'Book Worm', description: 'Read 25+ books from school library', icon: '📚', earned: true, earnedDate: 'Dec 2025', category: 'Reading' },
-  { id: 4, name: 'Perfect Attendance', description: '100% attendance for a full month', icon: '🎯', earned: true, earnedDate: 'Nov 2025', category: 'Attendance' },
-  { id: 5, name: 'Quiz Champion', description: 'Won 3+ inter-school quiz competitions', icon: '🏆', earned: true, earnedDate: 'Mar 2026', category: 'Competition' },
-  { id: 6, name: 'Code Ninja', description: 'Built 5+ projects in Computer Science', icon: '💻', earned: true, earnedDate: 'Feb 2026', category: 'Technical' },
-  { id: 7, name: 'Debate Master', description: 'Participated in 5+ debate competitions', icon: '🎤', earned: false, earnedDate: null, category: 'Communication' },
-  { id: 8, name: 'Sports Star', description: 'Represented school in district sports', icon: '⚽', earned: false, earnedDate: null, category: 'Sports' },
-  { id: 9, name: 'Creative Genius', description: 'Won art or creative writing competition', icon: '🎨', earned: true, earnedDate: 'Jan 2026', category: 'Creative' },
-  { id: 10, name: 'Team Leader', description: 'Led 3+ group projects successfully', icon: '👑', earned: true, earnedDate: 'Dec 2025', category: 'Leadership' },
-  { id: 11, name: 'Eco Warrior', description: 'Participated in 5+ environment initiatives', icon: '🌿', earned: false, earnedDate: null, category: 'Social' },
-  { id: 12, name: 'Polyglot', description: 'Proficient in 3+ languages', icon: '🗣️', earned: true, earnedDate: 'Mar 2026', category: 'Language' },
-]
-
-const aiRecommendations = [
-  { id: 1, type: 'weak-area', title: 'Focus on Social Science', description: 'Your Social Science scores have been consistently lower. Try dedicating 30 mins daily to map work and historical timelines.', priority: 'high', icon: Target, color: 'text-rose-500 bg-rose-500/10' },
-  { id: 2, type: 'improvement', title: 'English Essay Writing', description: 'Practice structured essay writing with PEEL method (Point, Evidence, Explain, Link) to improve your English scores.', priority: 'medium', icon: TrendingUp, color: 'text-amber-500 bg-amber-500/10' },
-  { id: 3, type: 'strength', title: 'Keep Up Mathematics!', description: 'Your Math performance has shown a steady upward trend. Continue with daily practice and consider helping peers.', priority: 'low', icon: Star, color: 'text-emerald-500 bg-emerald-500/10' },
-  { id: 4, type: 'study-tip', title: 'Active Recall Technique', description: 'Instead of re-reading, try active recall for Science. Close the book and write down everything you remember about a topic.', priority: 'medium', icon: Lightbulb, color: 'text-purple-500 bg-purple-500/10' },
-  { id: 5, type: 'schedule', title: 'Optimize Study Hours', description: 'Your peak performance time seems to be 6-8 PM. Schedule difficult subjects like Math and Science during this window.', priority: 'low', icon: Clock, color: 'text-birla-cyan bg-birla-cyan/10' },
-]
-
-const digitalNotes = [
-  { id: 1, subject: 'Mathematics', title: 'Quadratic Equations - Key Formulas', date: '12 Mar 2026', preview: 'Discriminant D = b²-4ac. If D>0 → 2 real roots, D=0 → equal roots, D<0 → no real roots...' },
-  { id: 2, subject: 'Science', title: 'Chemical Reactions - Types & Examples', date: '11 Mar 2026', preview: 'Combination: 2H₂+O₂→2H₂O, Decomposition: 2H₂O→2H₂+O₂, Displacement: Fe+CuSO₄→FeSO₄+Cu...' },
-  { id: 3, subject: 'English', title: 'The Midnight Visitor - Character Sketch', date: '10 Mar 2026', preview: 'Ausable - clever, quick-witted, overweight secret agent. Contrasts typical spy image. Uses intelligence over brawn...' },
-  { id: 4, subject: 'Social Science', title: 'Globalisation & Indian Economy', date: '09 Mar 2026', preview: 'MNCs set up production where: 1) Close to markets 2) Skilled labour available 3) Low cost of production...' },
-  { id: 5, subject: 'Hindi', title: 'Sanchayan - Badi Amma Notes', date: '08 Mar 2026', preview: 'बड़ी अम्मा - दया प्रकाश सिन्हा। प्रमुख विचार - वृद्धावस्था में सम्मान की अपेक्षा...' },
-  { id: 6, subject: 'Computer Science', title: 'Python - List & Dictionary Methods', date: '07 Mar 2026', preview: 'List: append(), extend(), insert(), remove(), pop(), sort(), reverse(). Dict: keys(), values(), items(), get()...' },
-]
-
-const examPrepData = [
-  { id: 1, subject: 'Mathematics', date: '20 Mar 2026', syllabus: 'Quadratic Equations, Arithmetic Progressions', coverage: 78, tips: 'Practice NCERT Exemplar problems. Focus on word problems and application-based questions.', chapters: 2 },
-  { id: 2, subject: 'Science', date: '22 Mar 2026', syllabus: 'Chemical Reactions, Acids Bases & Salts, Life Processes', coverage: 65, tips: 'Revise chemical equations and diagrams. Practice lab-based questions for Life Processes.', chapters: 3 },
-  { id: 3, subject: 'English', date: '24 Mar 2026', syllabus: 'First Flight (Ch 1-6), Footprints (Ch 1-4)', coverage: 82, tips: 'Practice letter writing formats. Revise character sketches and theme-based answers.', chapters: 10 },
-  { id: 4, subject: 'Social Science', date: '26 Mar 2026', syllabus: 'History Ch 1-3, Geography Ch 1-4, Civics Ch 1-2', coverage: 55, tips: 'Focus on map work and timeline events. Practice answer writing within word limits.', chapters: 9 },
-  { id: 5, subject: 'Hindi', date: '28 Mar 2026', syllabus: 'Kshitij (Ch 1-5), Kritika (Ch 1-2)', coverage: 70, tips: 'Practice letter and essay formats. Memorize key poetry lines with meanings.', chapters: 7 },
-  { id: 6, subject: 'Computer Science', date: '30 Mar 2026', syllabus: 'Python Revision Tour, Functions, Lists & Dictionaries', coverage: 90, tips: 'Practice output-based questions. Write dry runs for complex programs.', chapters: 3 },
-]
-
-const activityData = [
-  { id: 1, name: 'Inter-School Quiz Competition', type: 'Academic', status: 'Completed', achievement: '1st Place', date: 'Feb 2026' },
-  { id: 2, name: 'Science Exhibition', type: 'Science', status: 'Completed', achievement: 'Best Innovation Award', date: 'Jan 2026' },
-  { id: 3, name: 'Annual Day - Drama', type: 'Cultural', status: 'Completed', achievement: 'Lead Role', date: 'Dec 2025' },
-  { id: 4, name: 'Cricket Tournament', type: 'Sports', status: 'In Progress', achievement: '-', date: 'Mar 2026' },
-  { id: 5, name: 'Math Olympiad', type: 'Academic', status: 'Upcoming', achievement: '-', date: 'Apr 2026' },
-  { id: 6, name: 'Robotics Club Project', type: 'Technical', status: 'In Progress', achievement: '-', date: 'Mar-Apr 2026' },
-  { id: 7, name: 'Hindi Debate Competition', type: 'Literary', status: 'Upcoming', achievement: '-', date: 'Apr 2026' },
-  { id: 8, name: 'Yoga Day Celebration', type: 'Wellness', status: 'Completed', achievement: 'Participation Certificate', date: 'Nov 2025' },
-]
-
-const skillMappingData = [
-  { skill: 'Communication', score: 78 },
-  { skill: 'Critical Thinking', score: 85 },
-  { skill: 'Creativity', score: 72 },
-  { skill: 'Collaboration', score: 88 },
-  { skill: 'Digital Literacy', score: 92 },
-  { skill: 'Problem Solving', score: 80 },
-]
-
-// ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -145,1081 +26,973 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
-// ─── Circular Progress Component ──────────────────────────────────
-function CircularProgress({ percentage, color, size = 80, strokeWidth = 6 }) {
-  const radius = (size - strokeWidth) / 2
-  const circumference = radius * 2 * Math.PI
-  const offset = circumference - (percentage / 100) * circumference
+const CHART_COLORS = ['#1A2D4A', '#22D3EE', '#C8A45C', '#8B5CF6', '#10B981', '#EF4444']
 
-  return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="currentColor" strokeWidth={strokeWidth} fill="none" className="text-muted/30" />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} stroke={color} strokeWidth={strokeWidth} fill="none"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          strokeLinecap="round" className="transition-all duration-700"
-        />
-      </svg>
-      <span className="absolute text-sm font-bold text-foreground">{percentage}%</span>
-    </div>
-  )
+const currentStudent = {
+  name: 'Aarav Sharma', class: 'X', section: 'A', rollNo: '01',
+  bspId: 'BSP/WB/2023/00001', penNo: 'PEN-1234-5678', upparId: 'UPPR-WB-000001'
 }
 
-// ─── Main Component ───────────────────────────────────────────────
+const subjects = ['Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 'Computer Science']
+const activities = ['Basketball', 'Debate Club', 'Science Olympiad', 'Art Exhibition', 'Music Band', 'Cricket', 'Robotics Club', 'Math Quiz']
+
+const performanceTrendData = [
+  { term: 'Term 1', Mathematics: 72, Science: 68, English: 75, Hindi: 65, Social: 70 },
+  { term: 'Term 2', Mathematics: 76, Science: 72, English: 78, Hindi: 68, Social: 73 },
+  { term: 'Term 3', Mathematics: 80, Science: 76, English: 82, Hindi: 72, Social: 76 },
+  { term: 'Term 4', Mathematics: 84, Science: 80, English: 85, Hindi: 75, Social: 79 },
+]
+
+const attendanceMonthlyData = [
+  { month: 'Apr', present: 22, absent: 2, late: 1 },
+  { month: 'May', present: 20, absent: 3, late: 1 },
+  { month: 'Jun', present: 18, absent: 1, late: 2 },
+  { month: 'Jul', present: 21, absent: 2, late: 1 },
+  { month: 'Aug', present: 23, absent: 1, late: 0 },
+  { month: 'Sep', present: 19, absent: 3, late: 2 },
+  { month: 'Oct', present: 22, absent: 2, late: 1 },
+  { month: 'Nov', present: 20, absent: 1, late: 1 },
+  { month: 'Dec', present: 18, absent: 2, late: 0 },
+  { month: 'Jan', present: 22, absent: 1, late: 1 },
+  { month: 'Feb', present: 21, absent: 2, late: 1 },
+  { month: 'Mar', present: 20, absent: 3, late: 1 },
+]
+
+const subjectScoresData = [
+  { subject: 'Mathematics', score: 84, classAvg: 72 },
+  { subject: 'Science', score: 80, classAvg: 68 },
+  { subject: 'English', score: 85, classAvg: 74 },
+  { subject: 'Hindi', score: 75, classAvg: 70 },
+  { subject: 'Social Science', score: 79, classAvg: 71 },
+  { subject: 'Computer', score: 92, classAvg: 76 },
+]
+
+const homeworkCompletionData = [
+  { subject: 'Mathematics', total: 15, completed: 14, rate: 93 },
+  { subject: 'Science', total: 12, completed: 10, rate: 83 },
+  { subject: 'English', total: 14, completed: 13, rate: 93 },
+  { subject: 'Hindi', total: 10, completed: 8, rate: 80 },
+  { subject: 'Social Science', total: 11, completed: 10, rate: 91 },
+  { subject: 'Computer', total: 8, completed: 8, rate: 100 },
+]
+
+const skillBadgeData = [
+  { name: 'Problem Solver', category: 'Academic', earned: true, date: '15 Jan 2026' },
+  { name: 'Science Wizard', category: 'Academic', earned: true, date: '20 Feb 2026' },
+  { name: 'Book Worm', category: 'Academic', earned: true, date: '10 Mar 2026' },
+  { name: 'Team Player', category: 'Sports', earned: true, date: '05 Jan 2026' },
+  { name: 'Creative Mind', category: 'Arts', earned: true, date: '18 Feb 2026' },
+  { name: 'Tech Genius', category: 'Academic', earned: true, date: '25 Mar 2026' },
+  { name: 'Leadership', category: 'Sports', earned: false, date: '' },
+  { name: 'Public Speaker', category: 'Arts', earned: false, date: '' },
+]
+
+const skillBadgePieData = [
+  { name: 'Academic', value: 4, color: '#22D3EE' },
+  { name: 'Sports', value: 1, color: '#10B981' },
+  { name: 'Arts', value: 1, color: '#C8A45C' },
+  { name: 'Pending', value: 2, color: '#94a3b8' },
+]
+
+const examScoreData = [
+  { exam: 'Unit Test 1', score: 78, classAvg: 70, max: 100 },
+  { exam: 'Periodic 1', score: 82, classAvg: 72, max: 100 },
+  { exam: 'Half Yearly', score: 76, classAvg: 68, max: 100 },
+  { exam: 'Unit Test 2', score: 85, classAvg: 74, max: 100 },
+  { exam: 'Periodic 2', score: 88, classAvg: 75, max: 100 },
+  { exam: 'Annual', score: 84, classAvg: 73, max: 100 },
+]
+
+const timetableData = [
+  { day: 'Monday', periods: [
+    { time: '8:00-8:45', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 101' },
+    { time: '8:45-9:30', subject: 'English', teacher: 'Ms. Anita Desai', room: 'Room 101' },
+    { time: '9:30-10:15', subject: 'Science', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+    { time: '10:15-10:30', subject: 'Break', teacher: '', room: '' },
+    { time: '10:30-11:15', subject: 'Hindi', teacher: 'Mrs. Kavita Sharma', room: 'Room 101' },
+    { time: '11:15-12:00', subject: 'Social Science', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+    { time: '12:00-12:45', subject: 'Computer', teacher: 'Ms. Ritu Singh', room: 'Lab 1' },
+    { time: '12:45-1:30', subject: 'Lunch', teacher: '', room: '' },
+    { time: '1:30-2:15', subject: 'PT', teacher: 'Mr. Vikram Roy', room: 'Ground' },
+    { time: '2:15-3:00', subject: 'Art', teacher: 'Ms. Priti Jain', room: 'Art Room' },
+  ]},
+  { day: 'Tuesday', periods: [
+    { time: '8:00-8:45', subject: 'English', teacher: 'Ms. Anita Desai', room: 'Room 101' },
+    { time: '8:45-9:30', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 101' },
+    { time: '9:30-10:15', subject: 'Hindi', teacher: 'Mrs. Kavita Sharma', room: 'Room 101' },
+    { time: '10:15-10:30', subject: 'Break', teacher: '', room: '' },
+    { time: '10:30-11:15', subject: 'Science', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+    { time: '11:15-12:00', subject: 'Social Science', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+    { time: '12:00-12:45', subject: 'Music', teacher: 'Ms. Alka Nair', room: 'Music Room' },
+    { time: '12:45-1:30', subject: 'Lunch', teacher: '', room: '' },
+    { time: '1:30-2:15', subject: 'Mathematics Lab', teacher: 'Dr. Priya Menon', room: 'Math Lab' },
+    { time: '2:15-3:00', subject: 'Library', teacher: 'Mrs. Meera Iyer', room: 'Library' },
+  ]},
+  { day: 'Wednesday', periods: [
+    { time: '8:00-8:45', subject: 'Science', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+    { time: '8:45-9:30', subject: 'Hindi', teacher: 'Mrs. Kavita Sharma', room: 'Room 101' },
+    { time: '9:30-10:15', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 101' },
+    { time: '10:15-10:30', subject: 'Break', teacher: '', room: '' },
+    { time: '10:30-11:15', subject: 'English', teacher: 'Ms. Anita Desai', room: 'Room 101' },
+    { time: '11:15-12:00', subject: 'Computer', teacher: 'Ms. Ritu Singh', room: 'Lab 1' },
+    { time: '12:00-12:45', subject: 'Social Science', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+    { time: '12:45-1:30', subject: 'Lunch', teacher: '', room: '' },
+    { time: '1:30-2:15', subject: 'Yoga', teacher: 'Mr. Vikram Roy', room: 'Hall' },
+    { time: '2:15-3:00', subject: 'Science Lab', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+  ]},
+  { day: 'Thursday', periods: [
+    { time: '8:00-8:45', subject: 'Social Science', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+    { time: '8:45-9:30', subject: 'Science', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+    { time: '9:30-10:15', subject: 'English', teacher: 'Ms. Anita Desai', room: 'Room 101' },
+    { time: '10:15-10:30', subject: 'Break', teacher: '', room: '' },
+    { time: '10:30-11:15', subject: 'Hindi', teacher: 'Mrs. Kavita Sharma', room: 'Room 101' },
+    { time: '11:15-12:00', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 101' },
+    { time: '12:00-12:45', subject: 'Art', teacher: 'Ms. Priti Jain', room: 'Art Room' },
+    { time: '12:45-1:30', subject: 'Lunch', teacher: '', room: '' },
+    { time: '1:30-2:15', subject: 'PT', teacher: 'Mr. Vikram Roy', room: 'Ground' },
+    { time: '2:15-3:00', subject: 'English Lab', teacher: 'Ms. Anita Desai', room: 'Lang Lab' },
+  ]},
+  { day: 'Friday', periods: [
+    { time: '8:00-8:45', subject: 'Hindi', teacher: 'Mrs. Kavita Sharma', room: 'Room 101' },
+    { time: '8:45-9:30', subject: 'Mathematics', teacher: 'Dr. Priya Menon', room: 'Room 101' },
+    { time: '9:30-10:15', subject: 'Social Science', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+    { time: '10:15-10:30', subject: 'Break', teacher: '', room: '' },
+    { time: '10:30-11:15', subject: 'Science', teacher: 'Mr. Suresh Patel', room: 'Lab 3' },
+    { time: '11:15-12:00', subject: 'Computer', teacher: 'Ms. Ritu Singh', room: 'Lab 1' },
+    { time: '12:00-12:45', subject: 'English', teacher: 'Ms. Anita Desai', room: 'Room 101' },
+    { time: '12:45-1:30', subject: 'Lunch', teacher: '', room: '' },
+    { time: '1:30-2:15', subject: 'Club Activity', teacher: '', room: 'Various' },
+    { time: '2:15-3:00', subject: 'Assembly', teacher: '', room: 'Auditorium' },
+  ]},
+]
+
+const homeworkList = [
+  { id: 1, subject: 'Mathematics', title: 'Quadratic Equations - Exercise 5.3', dueDate: '2026-03-20', status: 'Pending', teacher: 'Dr. Priya Menon' },
+  { id: 2, subject: 'Science', title: 'Light Reflection - Diagrams', dueDate: '2026-03-19', status: 'Submitted', teacher: 'Mr. Suresh Patel' },
+  { id: 3, subject: 'English', title: 'Essay: My Vision for India 2030', dueDate: '2026-03-21', status: 'Pending', teacher: 'Ms. Anita Desai' },
+  { id: 4, subject: 'Hindi', title: 'पद्यांश की व्याख्या', dueDate: '2026-03-18', status: 'Graded', teacher: 'Mrs. Kavita Sharma', grade: 'A' },
+  { id: 5, subject: 'Social Science', title: 'Map Work - Indian Rivers', dueDate: '2026-03-22', status: 'Pending', teacher: 'Mr. Rajesh Kumar' },
+  { id: 6, subject: 'Computer', title: 'Python Program - Sorting', dueDate: '2026-03-20', status: 'Submitted', teacher: 'Ms. Ritu Singh' },
+]
+
+const achievementsData = [
+  { title: 'Science Olympiad - District Level', type: 'Academic', date: '15 Feb 2026', badge: '🥈', level: 'District' },
+  { title: 'Inter-School Debate Winner', type: 'Co-Curricular', date: '28 Jan 2026', badge: '🥇', level: 'Inter-School' },
+  { title: 'Best Coder Award - CodeFest', type: 'Academic', date: '10 Mar 2026', badge: '🏆', level: 'School' },
+  { title: 'Cricket Tournament - Runner Up', type: 'Sports', date: '05 Mar 2026', badge: '🥈', level: 'Zonal' },
+  { title: 'Art Exhibition - Special Mention', type: 'Arts', date: '20 Feb 2026', badge: '🌟', level: 'School' },
+  { title: '100% Attendance - Term 1', type: 'Attendance', date: 'Dec 2025', badge: '✅', level: 'School' },
+]
+
+const examPrepData = [
+  { subject: 'Mathematics', chapters: 8, completed: 6, nextExam: 'Periodic Test 3', date: '25 Mar 2026' },
+  { subject: 'Science', chapters: 10, completed: 7, nextExam: 'Periodic Test 3', date: '26 Mar 2026' },
+  { subject: 'English', chapters: 6, completed: 5, nextExam: 'Periodic Test 3', date: '27 Mar 2026' },
+  { subject: 'Hindi', chapters: 7, completed: 5, nextExam: 'Periodic Test 3', date: '28 Mar 2026' },
+  { subject: 'Social Science', chapters: 9, completed: 6, nextExam: 'Periodic Test 3', date: '29 Mar 2026' },
+]
+
 export default function StudentPortal() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
+  const [showForm, setShowForm] = useState(null)
+  const [selectedDay, setSelectedDay] = useState('Monday')
+
+  const [homeworkSubForm, setHomeworkSubForm] = useState({
+    assignment: '', subject: '', description: '', fileUpload: false, submissionNotes: ''
+  })
+  const [leaveForm, setLeaveForm] = useState({
+    leaveType: 'Casual', fromDate: '', toDate: '', reason: '', parentConsent: false
+  })
+  const [grievanceForm, setGrievanceForm] = useState({
+    category: 'Academic', description: '', priority: 'Medium', preferredResolution: ''
+  })
+  const [activityRegForm, setActivityRegForm] = useState({
+    activity: '', parentApproval: false, medicalFitness: false, emergencyContact: ''
+  })
+  const [digitalNoteForm, setDigitalNoteForm] = useState({
+    subject: '', title: '', content: '', tags: '', isPublic: false
+  })
+
+  const tooltipStyle = {
+    backgroundColor: darkMode ? '#1A2D4A' : '#fff',
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
+    borderRadius: '12px', fontSize: '12px', color: darkMode ? '#e2e8f0' : '#1e293b'
+  }
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'timetable', label: 'Timetable', icon: Calendar },
-    { id: 'homework', label: 'Homework', icon: FileText },
+    { id: 'homework', label: 'Homework', icon: ClipboardList },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'achievements', label: 'Achievements', icon: Award },
-    { id: 'examprep', label: 'Exam Prep', icon: ClipboardCheck },
+    { id: 'achievements', label: 'Achievements', icon: Trophy },
+    { id: 'exam-prep', label: 'Exam Prep', icon: GraduationCap },
+    { id: 'forms', label: 'Forms', icon: FileText },
+    { id: 'reports', label: 'Reports', icon: Activity },
   ]
 
-  const presentDays = attendanceMonthData.filter(d => d.status === 'present').length
-  const lateDays = attendanceMonthData.filter(d => d.status === 'late').length
-  const absentDays = attendanceMonthData.filter(d => d.status === 'absent').length
-  const totalWorkingDays = attendanceMonthData.filter(d => d.status !== 'weekend').length
-  const attendancePercent = Math.round(((presentDays + lateDays * 0.5) / totalWorkingDays) * 100)
+  const forms = [
+    { id: 'homeworkSub', label: 'Homework Submission', icon: ClipboardList },
+    { id: 'leaveApp', label: 'Leave Application', icon: Calendar },
+    { id: 'grievance', label: 'Grievance', icon: AlertCircle },
+    { id: 'activityReg', label: 'Activity Registration', icon: Trophy },
+    { id: 'digitalNote', label: 'Digital Note', icon: StickyNote },
+  ]
 
-  const pendingHW = homeworkData.filter(h => h.status === 'pending').length
-  const submittedHW = homeworkData.filter(h => h.status === 'submitted').length
-  const lateHW = homeworkData.filter(h => h.status === 'late').length
-  const earnedBadges = achievementsData.filter(a => a.earned).length
+  const handleSubmit = () => setShowForm(null)
 
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-      border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-      borderRadius: '12px',
-      fontSize: '12px',
-      color: darkMode ? '#e2e8f0' : '#1e293b',
-    },
-  }
+  const inputClass = `w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-birla-cyan/30`
+  const labelClass = 'block text-xs font-medium text-muted-foreground mb-1'
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* ─── Student Header ──────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl gradient-birla flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-birla-gold" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">Student Portal</h2>
-            <p className="text-xs text-muted-foreground">Welcome back, Aarav Sharma &bull; Class X-A &bull; Roll No. 01</p>
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <UserCheck className="w-7 h-7 text-birla-cyan" />Student Portal
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Welcome, {currentStudent.name} &bull; Class {currentStudent.class}-{currentStudent.section}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className="px-2 py-0.5 rounded-lg bg-birla-blue/10 text-birla-blue dark:text-birla-cyan text-[10px] font-mono font-medium">BSP: {currentStudent.bspId}</span>
+            <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium">PEN: {currentStudent.penNo}</span>
+            <span className="px-2 py-0.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-mono font-medium">UPPR: {currentStudent.upparId}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium flex items-center gap-1">
-            <Flame className="w-3 h-3" /> 15 Day Streak
-          </span>
-          <span className="px-3 py-1 rounded-full bg-birla-gold/10 text-birla-gold text-[10px] font-medium flex items-center gap-1">
-            <Medal className="w-3 h-3" /> Rank #3
-          </span>
+        <div className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border overflow-x-auto">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all ${activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}>
+                <Icon className="w-3.5 h-3.5" />{tab.label}
+              </button>
+            )
+          })}
         </div>
       </motion.div>
 
-      {/* ─── Tab Navigation ──────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
+      {/* Stats */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Overall Score', value: '82%', change: '+5.2%', icon: TrendingUp, color: 'from-blue-900 to-blue-700' },
+          { label: 'Attendance', value: '93%', change: '+1.8%', icon: Calendar, color: 'from-emerald-800 to-emerald-600' },
+          { label: 'Assignments Done', value: '55/62', change: '+4', icon: ClipboardList, color: 'from-amber-800 to-amber-600' },
+          { label: 'Skills Achieved', value: '6/8', change: '+2', icon: Target, color: 'from-purple-800 to-purple-600' },
+        ].map((card) => {
+          const Icon = card.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
+            <div key={card.label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.color} p-4 text-white shadow-xl`}>
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"><Icon className="w-4 h-4" /></div>
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                  <ArrowUpRight className="w-3 h-3" />{card.change}
+                </span>
+              </div>
+              <p className="text-xl font-bold">{card.value}</p>
+              <p className="text-[11px] text-white/70 mt-0.5">{card.label}</p>
+            </div>
           )
         })}
       </motion.div>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          OVERVIEW TAB
-         ═══════════════════════════════════════════════════════════════ */}
+      {/* ====== OVERVIEW TAB ====== */}
       {activeTab === 'overview' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-
-          {/* ─── Top Stats Row ──────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Today's Classes", value: '6', icon: Calendar, color: 'from-blue-900 to-blue-700', sub: '2 completed' },
-              { label: 'Pending Homework', value: '4', icon: FileText, color: 'from-amber-800 to-amber-600', sub: '2 due today' },
-              { label: 'Attendance Rate', value: '96%', icon: CheckCircle2, color: 'from-emerald-800 to-emerald-600', sub: `${presentDays} present this month` },
-              { label: 'Skill Badges', value: '12', icon: Award, color: 'from-purple-800 to-purple-600', sub: `${earnedBadges} earned` },
-            ].map((stat) => {
-              const Icon = stat.icon
-              return (
-                <motion.div key={stat.label} variants={itemVariants} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-4 text-white hover:shadow-lg transition-shadow`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-white/70">{stat.label}</p>
-                      <p className="text-[9px] text-white/50">{stat.sub}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* ─── Daily Timetable Widget ────────────────────── */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-birla-cyan" />
-                  Today&apos;s Timetable
-                </h4>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-birla-cyan/10 text-birla-cyan font-medium">
-                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}
-                </span>
-              </div>
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {todayTimetable.filter(t => t.subject !== 'Break' && t.subject !== 'Lunch Break').map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                      item.status === 'completed'
-                        ? 'border-emerald-500/20 bg-emerald-500/5'
-                        : item.status === 'in-progress'
-                          ? 'border-birla-cyan/30 bg-birla-cyan/5 animate-pulse-glow'
-                          : 'border-border gradient-card-blue'
-                    }`}
-                  >
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      item.status === 'completed' ? 'bg-emerald-500/15' :
-                      item.status === 'in-progress' ? 'bg-birla-cyan/15' : 'bg-muted/50'
-                    }`}>
-                      {item.status === 'completed' ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> :
-                       item.status === 'in-progress' ? <Play className="w-4 h-4 text-birla-cyan" /> :
-                       <Clock className="w-4 h-4 text-muted-foreground" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold text-foreground">{item.subject}</p>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                          item.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          item.status === 'in-progress' ? 'bg-birla-cyan/10 text-birla-cyan' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {item.status === 'in-progress' ? 'Live Now' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">{item.teacher} &bull; {item.room}</p>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-medium flex-shrink-0">{item.time}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* ─── Homework Tracker Mini ─────────────────────── */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-amber-500" />
-                  Homework Tracker
-                </h4>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
-                  {pendingHW} pending
-                </span>
-              </div>
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {homeworkData.filter(h => h.status === 'pending' || h.status === 'late').map((hw) => (
-                  <div key={hw.id} className={`p-3 rounded-xl border ${
-                    hw.status === 'late' ? 'border-rose-500/20 bg-rose-500/5' :
-                    hw.priority === 'high' ? 'border-amber-500/20 bg-amber-500/5' :
-                    'border-border gradient-card-blue'
-                  }`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-medium text-muted-foreground">{hw.subject}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                        hw.priority === 'high' ? 'bg-rose-500/10 text-rose-500' :
-                        hw.priority === 'medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                        'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      }`}>
-                        {hw.priority}
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-medium text-foreground leading-tight">{hw.title}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className={`text-[9px] font-medium ${
-                        hw.status === 'late' ? 'text-rose-500' : 'text-muted-foreground'
-                      }`}>
-                        Due: {new Date(hw.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                      </span>
-                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-medium ${
-                        hw.status === 'late' ? 'bg-rose-500/10 text-rose-500' :
-                        'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                      }`}>
-                        {hw.status === 'late' ? 'Overdue' : 'Pending'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* ─── Performance Analytics (AreaChart) ────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                Subject-wise Performance Trend
-              </h4>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-birla-cyan" />Performance Trend
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">Progress across terms</p>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={performanceTrendData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'} />
-                    <XAxis dataKey="term" tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <YAxis tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} domain={[50, 100]} />
-                    <Tooltip {...tooltipStyle} />
-                    <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Area type="monotone" dataKey="Mathematics" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.1} strokeWidth={2} />
-                    <Area type="monotone" dataKey="Science" stroke="#10B981" fill="#10B981" fillOpacity={0.1} strokeWidth={2} />
-                    <Area type="monotone" dataKey="English" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.1} strokeWidth={2} />
-                    <Area type="monotone" dataKey="Hindi" stroke="#EF4444" fill="#EF4444" fillOpacity={0.1} strokeWidth={2} />
+                  <AreaChart data={performanceTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="term" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[50, 100]} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Area type="monotone" dataKey="Mathematics" stroke="#1A2D4A" fill="rgba(26,45,74,0.12)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Science" stroke="#22D3EE" fill="rgba(34,211,238,0.08)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="English" stroke="#C8A45C" fill="rgba(200,164,92,0.08)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
-
-            {/* ─── Attendance Overview ────────────────────────── */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Attendance - March 2026
-                </h4>
-                <span className="text-lg font-bold text-gradient-birla">{attendancePercent}%</span>
-              </div>
-              <div className="grid grid-cols-7 gap-1.5 mb-4">
-                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-                  <div key={i} className="text-[9px] text-muted-foreground text-center font-medium py-1">{d}</div>
-                ))}
-                {/* Empty cells for March 2026 starting on Sunday */}
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={`empty-${i}`} />
-                ))}
-                {attendanceMonthData.map((day) => (
-                  <div
-                    key={day.day}
-                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-medium transition-all ${
-                      day.status === 'present' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' :
-                      day.status === 'absent' ? 'bg-rose-500/15 text-rose-500' :
-                      day.status === 'late' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' :
-                      'bg-muted/30 text-muted-foreground/40'
-                    }`}
-                    title={`${day.day} Mar - ${day.status}`}
-                  >
-                    {day.day}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-4 mt-2">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-emerald-500/15 border border-emerald-500/30" />
-                  <span className="text-[10px] text-muted-foreground">Present ({presentDays})</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-amber-500/15 border border-amber-500/30" />
-                  <span className="text-[10px] text-muted-foreground">Late ({lateDays})</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-rose-500/15 border border-rose-500/30" />
-                  <span className="text-[10px] text-muted-foreground">Absent ({absentDays})</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* ─── Learning Progress ─────────────────────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Target className="w-4 h-4 text-purple-500" />
-                Subject Competency
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                {subjectProgressData.map((subj) => (
-                  <div key={subj.subject} className="flex flex-col items-center gap-1.5">
-                    <CircularProgress percentage={subj.progress} color={subj.color} size={72} strokeWidth={5} />
-                    <p className="text-[10px] font-medium text-foreground text-center">{subj.subject}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* ─── AI Study Assistant ────────────────────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Brain className="w-4 h-4 text-birla-cyan" />
-                AI Study Assistant
-              </h4>
-              <div className="space-y-3 max-h-80 overflow-y-auto">
-                {aiRecommendations.map((rec) => {
-                  const Icon = rec.icon
-                  return (
-                    <div key={rec.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                      <div className="flex items-start gap-2.5">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.color}`}>
-                          <Icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-foreground">{rec.title}</p>
-                          <p className="text-[9px] text-muted-foreground mt-0.5 leading-relaxed">{rec.description}</p>
-                        </div>
-                        <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
-                          rec.priority === 'high' ? 'bg-rose-500' :
-                          rec.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </motion.div>
-
-            {/* ─── Digital Notes ─────────────────────────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <StickyNote className="w-4 h-4 text-amber-500" />
-                Digital Notes
-              </h4>
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {digitalNotes.map((note) => (
-                  <div key={note.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all cursor-pointer group">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-medium bg-birla-gold/10 text-birla-gold">{note.subject}</span>
-                      <span className="text-[9px] text-muted-foreground">{note.date}</span>
-                    </div>
-                    <p className="text-[11px] font-semibold text-foreground group-hover:text-gradient-birla transition-colors">{note.title}</p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{note.preview}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* ─── Gamified Achievements (Mini) ─────────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-birla-gold" />
-                  Recent Badges
-                </h4>
-                <button onClick={() => setActiveTab('achievements')} className="text-[10px] text-birla-cyan hover:underline flex items-center gap-0.5">
-                  View All <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {achievementsData.filter(a => a.earned).slice(0, 8).map((badge) => (
-                  <div key={badge.id} className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <span className="text-2xl">{badge.icon}</span>
-                    <p className="text-[9px] font-medium text-foreground text-center leading-tight">{badge.name}</p>
-                    <p className="text-[8px] text-muted-foreground">{badge.earnedDate}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* ─── Skill Mapping (RadarChart) ────────────────── */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-purple-500" />
-                NEP 2020 Skill Mapping
-              </h4>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <Target className="w-4 h-4 text-birla-gold" />Subject Scores
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">Your score vs class average</p>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={skillMappingData} cx="50%" cy="50%" outerRadius="70%">
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'} />
-                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 9, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 8, fill: darkMode ? '#64748b' : '#94a3b8' }} />
-                    <Radar name="Skills" dataKey="score" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name="Target" dataKey={() => 85} stroke="#C8A45C" fill="none" strokeWidth={1} strokeDasharray="5 5" />
-                    <Tooltip {...tooltipStyle} />
-                    <Legend wrapperStyle={{ fontSize: '10px' }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ─── Activity Participation (Overview) ──────────── */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-birla-cyan" />
-              Co-curricular Activities
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {activityData.slice(0, 4).map((act) => (
-                <div key={act.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                      act.type === 'Academic' ? 'bg-blue-500/10 text-blue-500' :
-                      act.type === 'Science' ? 'bg-emerald-500/10 text-emerald-500' :
-                      act.type === 'Cultural' ? 'bg-purple-500/10 text-purple-500' :
-                      act.type === 'Sports' ? 'bg-amber-500/10 text-amber-500' :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {act.type}
-                    </span>
-                    <span className={`w-2 h-2 rounded-full ${
-                      act.status === 'Completed' ? 'bg-emerald-500' :
-                      act.status === 'In Progress' ? 'bg-birla-cyan' : 'bg-amber-500'
-                    }`} />
-                  </div>
-                  <p className="text-[11px] font-semibold text-foreground">{act.name}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[9px] text-muted-foreground">{act.date}</span>
-                    {act.achievement !== '-' && (
-                      <span className="text-[9px] text-birla-gold font-medium flex items-center gap-0.5">
-                        <Trophy className="w-2.5 h-2.5" /> {act.achievement}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          TIMETABLE TAB
-         ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'timetable' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-birla-gold" />
-              Weekly Timetable &bull; Class X-A
-            </h3>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="overflow-x-auto rounded-2xl border border-border bg-card">
-            <div className="min-w-[800px]">
-              {/* Header */}
-              <div className="grid grid-cols-6 border-b border-border bg-muted/30">
-                <div className="p-3 text-xs font-semibold text-muted-foreground">Time</div>
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) => (
-                  <div key={day} className="p-3 text-xs font-semibold text-foreground text-center">{day}</div>
-                ))}
-              </div>
-              {/* Periods */}
-              {[
-                { time: '08:00-08:45', slots: ['Mathematics', 'English', 'Science', 'Mathematics', 'Hindi'] },
-                { time: '08:45-09:30', slots: ['Mathematics', 'Science', 'English', 'Science', 'English'] },
-                { time: '09:30-09:50', slots: ['Break', 'Break', 'Break', 'Break', 'Break'] },
-                { time: '09:50-10:35', slots: ['English', 'Social Science', 'Mathematics', 'Hindi', 'Computer Science'] },
-                { time: '10:35-11:20', slots: ['Science', 'Mathematics', 'Social Science', 'English', 'Mathematics'] },
-                { time: '11:20-12:05', slots: ['Social Science', 'Hindi', 'Computer Science', 'Social Science', 'Science'] },
-                { time: '12:05-12:45', slots: ['Lunch', 'Lunch', 'Lunch', 'Lunch', 'Lunch'] },
-                { time: '12:45-13:30', slots: ['Hindi', 'Computer Science', 'Hindi', 'Art', 'Social Science'] },
-                { time: '13:30-14:15', slots: ['Computer Science', 'Art', 'PT', 'Computer Science', 'PT'] },
-              ].map((period, periodIdx) => (
-                <div key={periodIdx} className="grid grid-cols-6 border-b border-border/50 last:border-0">
-                  <div className="p-3 text-[10px] text-muted-foreground flex flex-col justify-center">
-                    <span className="font-semibold text-foreground text-[11px]">P{periodIdx + 1}</span>
-                    <span>{period.time}</span>
-                  </div>
-                  {period.slots.map((subject, dayIdx) => {
-                    const isBreak = subject === 'Break' || subject === 'Lunch'
-                    const subjectColors = {
-                      'Mathematics': 'bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400',
-                      'English': 'bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400',
-                      'Science': 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-                      'Social Science': 'bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400',
-                      'Hindi': 'bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400',
-                      'Computer Science': 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400',
-                      'Art': 'bg-pink-500/10 border border-pink-500/20 text-pink-600 dark:text-pink-400',
-                      'PT': 'bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400',
-                    }
-                    return (
-                      <div key={dayIdx} className={`p-2 text-center ${isBreak ? 'bg-muted/50' : ''}`}>
-                        {isBreak ? (
-                          <span className="text-[10px] text-muted-foreground font-medium">{subject === 'Break' ? '☕ Break' : '🍽️ Lunch'}</span>
-                        ) : (
-                          <div className={`rounded-lg p-2 ${subjectColors[subject] || 'bg-muted/50'}`}>
-                            <p className="text-[11px] font-semibold">{subject}</p>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Subject Hours Summary */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {[
-              { subject: 'Mathematics', hours: 5, color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-              { subject: 'English', hours: 4, color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-              { subject: 'Science', hours: 4, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-              { subject: 'Social Science', hours: 3, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-              { subject: 'Hindi', hours: 3, color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
-              { subject: 'Computer Sci.', hours: 3, color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400' },
-              { subject: 'Art & PT', hours: 2, color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
-            ].map((item) => (
-              <div key={item.subject} className="rounded-xl border border-border bg-card p-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.color}`}>
-                  <Timer className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-foreground">{item.hours}h</p>
-                  <p className="text-[9px] text-muted-foreground">{item.subject}</p>
-                </div>
-              </div>
-            ))}
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          HOMEWORK TAB
-         ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'homework' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-500" />
-              Homework Tracker
-            </h3>
-          </motion.div>
-
-          {/* Homework Stats */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { label: 'Pending', value: pendingHW, icon: Clock, color: 'from-amber-800 to-amber-600' },
-              { label: 'Submitted', value: submittedHW, icon: CheckCircle2, color: 'from-emerald-800 to-emerald-600' },
-              { label: 'Late', value: lateHW, icon: AlertTriangle, color: 'from-rose-800 to-rose-600' },
-            ].map((stat) => {
-              const Icon = stat.icon
-              return (
-                <div key={stat.label} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-4 text-white`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-white/70">{stat.label}</p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </motion.div>
-
-          {/* Homework List */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="space-y-3">
-              {homeworkData.map((hw) => (
-                <div key={hw.id} className={`p-4 rounded-xl border transition-all hover:shadow-sm ${
-                  hw.status === 'submitted' ? 'border-emerald-500/20 bg-emerald-500/5' :
-                  hw.status === 'late' ? 'border-rose-500/20 bg-rose-500/5' :
-                  hw.priority === 'high' ? 'border-amber-500/20 bg-amber-500/5' :
-                  'border-border gradient-card-blue'
-                }`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      hw.status === 'submitted' ? 'bg-emerald-500/15' :
-                      hw.status === 'late' ? 'bg-rose-500/15' :
-                      'bg-amber-500/15'
-                    }`}>
-                      {hw.status === 'submitted' ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> :
-                       hw.status === 'late' ? <AlertTriangle className="w-4 h-4 text-rose-500" /> :
-                       <FileText className="w-4 h-4 text-amber-500" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-birla-gold/10 text-birla-gold">{hw.subject}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                          hw.priority === 'high' ? 'bg-rose-500/10 text-rose-500' :
-                          hw.priority === 'medium' ? 'bg-amber-500/10 text-amber-500' :
-                          'bg-emerald-500/10 text-emerald-500'
-                        }`}>
-                          {hw.priority} priority
-                        </span>
-                      </div>
-                      <p className="text-xs font-semibold text-foreground mt-1">{hw.title}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Due: {new Date(hw.dueDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-medium ${
-                        hw.status === 'submitted' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        hw.status === 'late' ? 'bg-rose-500/10 text-rose-500' :
-                        'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                      }`}>
-                        {hw.status === 'submitted' ? '✓ Submitted' : hw.status === 'late' ? '⚠ Overdue' : '⏳ Pending'}
-                      </span>
-                      {hw.status === 'pending' && (
-                        <button className="px-3 py-1 rounded-lg gradient-birla text-white text-[10px] font-medium hover:shadow-md transition-all">
-                          Submit
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          PERFORMANCE TAB
-         ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'performance' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-emerald-500" />
-              Performance Analytics
-            </h3>
-          </motion.div>
-
-          {/* Full Performance Chart */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4">Subject-wise Performance Across Terms</h4>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={performanceTrendData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'} />
-                  <XAxis dataKey="term" tick={{ fontSize: 11, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                  <YAxis tick={{ fontSize: 11, fill: darkMode ? '#94a3b8' : '#64748b' }} domain={[50, 100]} />
-                  <Tooltip {...tooltipStyle} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="Mathematics" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.1} strokeWidth={2} />
-                  <Area type="monotone" dataKey="English" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.1} strokeWidth={2} />
-                  <Area type="monotone" dataKey="Science" stroke="#10B981" fill="#10B981" fillOpacity={0.1} strokeWidth={2} />
-                  <Area type="monotone" dataKey="SocialScience" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.1} strokeWidth={2} name="Social Science" />
-                  <Area type="monotone" dataKey="Hindi" stroke="#EF4444" fill="#EF4444" fillOpacity={0.1} strokeWidth={2} />
-                  <Area type="monotone" dataKey="ComputerScience" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.1} strokeWidth={2} name="Computer Science" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Subject-wise Comparison */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4">SA2 Scores - Subject Comparison</h4>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[
-                    { subject: 'Math', score: 94 },
-                    { subject: 'English', score: 89 },
-                    { subject: 'Science', score: 93 },
-                    { subject: 'SST', score: 85 },
-                    { subject: 'Hindi', score: 95 },
-                    { subject: 'CS', score: 97 },
-                  ]} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : '#e2e8f0'} />
-                    <XAxis dataKey="subject" tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <YAxis tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} domain={[60, 100]} />
-                    <Tooltip {...tooltipStyle} />
-                    <Bar dataKey="score" radius={[6, 6, 0, 0]}>
-                      {[
-                        { subject: 'Math', score: 94 },
-                        { subject: 'English', score: 89 },
-                        { subject: 'Science', score: 93 },
-                        { subject: 'SST', score: 85 },
-                        { subject: 'Hindi', score: 95 },
-                        { subject: 'CS', score: 97 },
-                      ].map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#22D3EE'][index]} />
-                      ))}
-                    </Bar>
+                  <BarChart data={subjectScoresData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="subject" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="score" fill="#22D3EE" radius={[4,4,0,0]} name="My Score" />
+                    <Bar dataKey="classAvg" fill="#C8A45C" radius={[4,4,0,0]} name="Class Avg" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
-
-            {/* Skill Mapping Radar */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4">NEP 2020 Competency Mapping</h4>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={skillMappingData} cx="50%" cy="50%" outerRadius="70%">
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.08)' : '#e2e8f0'} />
-                    <PolarAngleAxis dataKey="skill" tick={{ fontSize: 9, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 8, fill: darkMode ? '#64748b' : '#94a3b8' }} />
-                    <Radar name="Current" dataKey="score" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name="Target" dataKey={() => 85} stroke="#C8A45C" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
-                    <Tooltip {...tooltipStyle} />
-                    <Legend wrapperStyle={{ fontSize: '10px' }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
           </div>
-
-          {/* Learning Progress Full */}
           <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-purple-500" />
-              Subject Competency Levels
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-              {subjectProgressData.map((subj) => (
-                <div key={subj.subject} className="flex flex-col items-center gap-2">
-                  <CircularProgress percentage={subj.progress} color={subj.color} size={90} strokeWidth={6} />
-                  <p className="text-xs font-medium text-foreground text-center">{subj.subject}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {subj.progress >= 90 ? 'Excellent' : subj.progress >= 80 ? 'Good' : subj.progress >= 70 ? 'Average' : 'Needs Improvement'}
-                  </p>
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+              <ClipboardList className="w-4 h-4 text-birla-gold" />Recent Homework
+            </h3>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {homeworkList.slice(0, 4).map(hw => (
+                <div key={hw.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{hw.title}</p>
+                    <p className="text-xs text-muted-foreground">{hw.subject} &bull; Due: {hw.dueDate}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-lg text-[10px] font-medium ${hw.status === 'Graded' ? 'bg-emerald-500/10 text-emerald-600' : hw.status === 'Submitted' ? 'bg-blue-500/10 text-blue-600' : 'bg-amber-500/10 text-amber-600'}`}>{hw.status}{hw.grade && ` - ${hw.grade}`}</span>
                 </div>
               ))}
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          ACHIEVEMENTS TAB
-         ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'achievements' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-birla-gold" />
-              Achievements & Badges
-            </h3>
-          </motion.div>
-
-          {/* Achievement Stats */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-purple-900 to-purple-700 p-4 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{earnedBadges}/{achievementsData.length}</p>
-                  <p className="text-[10px] text-white/70">Badges Earned</p>
-                </div>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-gradient-to-br from-amber-800 to-amber-600 p-4 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                  <Flame className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">15</p>
-                  <p className="text-[10px] text-white/70">Day Streak</p>
-                </div>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-gradient-to-br from-cyan-800 to-cyan-600 p-4 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                  <Star className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">2,450</p>
-                  <p className="text-[10px] text-white/70">XP Points</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Badges Grid */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {achievementsData.map((badge) => (
-              <div
-                key={badge.id}
-                className={`p-4 rounded-2xl border transition-all hover:shadow-lg ${
-                  badge.earned
-                    ? 'border-birla-gold/30 bg-gradient-to-br from-birla-gold/5 to-amber-500/5'
-                    : 'border-border bg-card opacity-60'
-                }`}
-              >
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className={`text-4xl ${badge.earned ? '' : 'grayscale'}`}>{badge.icon}</div>
-                  <div>
-                    <p className={`text-xs font-bold ${badge.earned ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {badge.name}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{badge.description}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-medium ${
-                      badge.category === 'Academic' ? 'bg-blue-500/10 text-blue-500' :
-                      badge.category === 'Competition' ? 'bg-purple-500/10 text-purple-500' :
-                      badge.category === 'Technical' ? 'bg-cyan-500/10 text-cyan-500' :
-                      badge.category === 'Creative' ? 'bg-pink-500/10 text-pink-500' :
-                      badge.category === 'Leadership' ? 'bg-amber-500/10 text-amber-500' :
-                      badge.category === 'Attendance' ? 'bg-emerald-500/10 text-emerald-500' :
-                      badge.category === 'Language' ? 'bg-rose-500/10 text-rose-500' :
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {badge.category}
-                    </span>
-                  </div>
-                  {badge.earned ? (
-                    <div className="flex items-center gap-1 text-[9px] text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-3 h-3" /> Earned {badge.earnedDate}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                      <CircleDot className="w-3 h-3" /> Not yet earned
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* ====== TIMETABLE TAB ====== */}
+      {activeTab === 'timetable' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {timetableData.map(d => (
+              <button key={d.day} onClick={() => setSelectedDay(d.day)}
+                className={`px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${selectedDay === d.day ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
+                {d.day}
+              </button>
             ))}
-          </motion.div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-birla-cyan" />{selectedDay}&apos;s Timetable - Class {currentStudent.class}-{currentStudent.section}
+            </h3>
+            <div className="space-y-2">
+              {timetableData.find(d => d.day === selectedDay)?.periods.map((p, i) => (
+                <div key={i} className={`flex items-center gap-4 p-3 rounded-xl ${p.subject === 'Break' || p.subject === 'Lunch' ? 'bg-muted/30 border border-dashed border-border' : 'border border-border bg-card'}`}>
+                  <span className="text-xs font-mono text-muted-foreground w-20 shrink-0">{p.time}</span>
+                  <span className={`text-sm font-medium ${p.subject === 'Break' || p.subject === 'Lunch' ? 'text-muted-foreground italic' : 'text-foreground'}`}>{p.subject}</span>
+                  {p.teacher && <span className="text-xs text-muted-foreground ml-auto hidden sm:block">{p.teacher}</span>}
+                  {p.room && <span className="text-[10px] px-2 py-0.5 rounded-lg bg-birla-cyan/10 text-birla-cyan hidden sm:block">{p.room}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-          {/* Activity Participation Full */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-birla-cyan" />
-              Co-curricular Activity Participation
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {activityData.map((act) => (
-                <div key={act.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      act.status === 'Completed' ? 'bg-emerald-500/15' :
-                      act.status === 'In Progress' ? 'bg-birla-cyan/15' : 'bg-amber-500/15'
-                    }`}>
-                      {act.status === 'Completed' ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> :
-                       act.status === 'In Progress' ? <Zap className="w-4 h-4 text-birla-cyan" /> :
-                       <Clock className="w-4 h-4 text-amber-500" />}
+      {/* ====== HOMEWORK TAB ====== */}
+      {activeTab === 'homework' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-border bg-card p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{homeworkList.length}</p>
+              <p className="text-xs text-muted-foreground">Total Assigned</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4 text-center">
+              <p className="text-2xl font-bold text-emerald-600">{homeworkList.filter(h => h.status === 'Submitted' || h.status === 'Graded').length}</p>
+              <p className="text-xs text-muted-foreground">Completed</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4 text-center">
+              <p className="text-2xl font-bold text-amber-600">{homeworkList.filter(h => h.status === 'Pending').length}</p>
+              <p className="text-xs text-muted-foreground">Pending</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-birla-cyan" />All Homework
+            </h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {homeworkList.map(hw => (
+                <div key={hw.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20 hover:bg-muted/40 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{hw.title}</p>
+                    <p className="text-xs text-muted-foreground">{hw.subject} &bull; {hw.teacher} &bull; Due: {hw.dueDate}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-lg text-[10px] font-medium shrink-0 ${hw.status === 'Graded' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : hw.status === 'Submitted' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{hw.status}{hw.grade && ` - ${hw.grade}`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ====== PERFORMANCE TAB ====== */}
+      {activeTab === 'performance' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <Shield className="w-4 h-4 text-birla-blue dark:text-birla-cyan" />
+              <span className="text-xs font-mono text-muted-foreground">BSP: {currentStudent.bspId} | PEN: {currentStudent.penNo} | UPPR: {currentStudent.upparId}</span>
+            </div>
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-birla-cyan" />Subject-wise Performance
+            </h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={subjectScoresData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis dataKey="subject" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <Bar dataKey="score" fill="#22D3EE" radius={[4,4,0,0]} name="My Score" />
+                  <Bar dataKey="classAvg" fill="#C8A45C" radius={[4,4,0,0]} name="Class Avg" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Brain className="w-4 h-4 text-purple-500" />NEP Competency Progress
+            </h3>
+            <div className="space-y-3 max-h-72 overflow-y-auto">
+              {[
+                { competency: 'Critical Thinking', progress: 78, nep: 'NEP 2.4' },
+                { competency: 'Communication', progress: 85, nep: 'NEP 2.5' },
+                { competency: 'Collaboration', progress: 72, nep: 'NEP 2.6' },
+                { competency: 'Creativity', progress: 68, nep: 'NEP 3.1' },
+                { competency: 'Digital Literacy', progress: 90, nep: 'NEP 4.2' },
+                { competency: 'Scientific Temper', progress: 75, nep: 'NEP 4.5' },
+              ].map(item => (
+                <div key={item.competency}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{item.competency}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-birla-gold">{item.nep}</span>
+                      <span className="text-xs font-semibold text-foreground">{item.progress}%</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                          act.type === 'Academic' ? 'bg-blue-500/10 text-blue-500' :
-                          act.type === 'Science' ? 'bg-emerald-500/10 text-emerald-500' :
-                          act.type === 'Cultural' ? 'bg-purple-500/10 text-purple-500' :
-                          act.type === 'Sports' ? 'bg-amber-500/10 text-amber-500' :
-                          act.type === 'Technical' ? 'bg-cyan-500/10 text-cyan-500' :
-                          act.type === 'Literary' ? 'bg-rose-500/10 text-rose-500' :
-                          'bg-teal-500/10 text-teal-500'
-                        }`}>
-                          {act.type}
-                        </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-medium ${
-                          act.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          act.status === 'In Progress' ? 'bg-birla-cyan/10 text-birla-cyan' :
-                          'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        }`}>
-                          {act.status}
-                        </span>
-                      </div>
-                      <p className="text-[11px] font-semibold text-foreground">{act.name}</p>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <span className="text-[9px] text-muted-foreground">{act.date}</span>
-                        {act.achievement !== '-' && (
-                          <span className="text-[9px] text-birla-gold font-medium flex items-center gap-0.5">
-                            <Trophy className="w-2.5 h-2.5" /> {act.achievement}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${item.progress}%`, background: item.progress >= 80 ? 'linear-gradient(90deg, #10B981, #22D3EE)' : item.progress >= 65 ? 'linear-gradient(90deg, #C8A45C, #E8D5A0)' : 'linear-gradient(90deg, #EF4444, #F59E0B)' }} />
                   </div>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          EXAM PREP TAB
-         ═══════════════════════════════════════════════════════════════ */}
-      {activeTab === 'examprep' && (
-        <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <ClipboardCheck className="w-5 h-5 text-birla-cyan" />
-              Exam Preparation
-            </h3>
-          </motion.div>
-
-          {/* Exam Preparation Overview */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* ====== ACHIEVEMENTS TAB ====== */}
+      {activeTab === 'achievements' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { label: 'Upcoming Exams', value: '6', icon: FileText, color: 'from-blue-900 to-blue-700' },
-              { label: 'Avg. Preparation', value: '73%', icon: Target, color: 'from-amber-800 to-amber-600' },
-              { label: 'Days to First Exam', value: '8', icon: Timer, color: 'from-rose-800 to-rose-600' },
-            ].map((stat) => {
+              { label: 'Total Achievements', value: achievementsData.length, icon: Trophy, color: 'text-birla-gold bg-birla-gold/10' },
+              { label: 'Skill Badges', value: skillBadgeData.filter(b => b.earned).length, icon: Award, color: 'text-birla-cyan bg-birla-cyan/10' },
+              { label: 'Competitions', value: '4', icon: Star, color: 'text-purple-500 bg-purple-500/10' },
+            ].map(stat => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className={`rounded-2xl bg-gradient-to-br ${stat.color} p-4 text-white`}>
+                <div key={stat.label} className="rounded-2xl border border-border bg-card p-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color} mb-2`}><Icon className="w-5 h-5" /></div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                </div>
+              )
+            })}
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-birla-gold" />My Achievements
+            </h3>
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {achievementsData.map((a, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/20">
+                  <span className="text-2xl">{a.badge}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{a.title}</p>
+                    <p className="text-xs text-muted-foreground">{a.type} &bull; {a.level} &bull; {a.date}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-lg bg-birla-gold/10 text-birla-gold text-[10px] font-medium">{a.level}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-birla-cyan" />Skill Badges
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {skillBadgeData.map((b, i) => (
+                <div key={i} className={`p-3 rounded-xl border text-center transition-all ${b.earned ? 'border-birla-gold/30 bg-birla-gold/5' : 'border-border bg-muted/20 opacity-50'}`}>
+                  <div className={`w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center ${b.earned ? 'gradient-birla-gold text-white' : 'bg-muted text-muted-foreground'}`}>
+                    <Award className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{b.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{b.earned ? b.date : 'Locked'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ====== EXAM PREP TAB ====== */}
+      {activeTab === 'exam-prep' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-birla-cyan" />Exam Preparation Status
+            </h3>
+            <div className="space-y-3">
+              {examPrepData.map(ep => (
+                <div key={ep.subject} className="p-3 rounded-xl border border-border bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">{ep.subject}</span>
+                    <span className="text-[10px] text-muted-foreground">Next: {ep.nextExam} ({ep.date})</span>
+                  </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Icon className="w-5 h-5" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-muted-foreground">Chapters Covered</span>
+                        <span className="text-xs font-semibold text-foreground">{ep.completed}/{ep.chapters}</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full rounded-full gradient-birla-cyan" style={{ width: `${(ep.completed / ep.chapters) * 100}%` }} />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-white/70">{stat.label}</p>
-                    </div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${(ep.completed / ep.chapters) >= 0.8 ? 'bg-emerald-500/10 text-emerald-600' : (ep.completed / ep.chapters) >= 0.5 ? 'bg-amber-500/10 text-amber-600' : 'bg-red-500/10 text-red-600'}`}>
+                      {Math.round((ep.completed / ep.chapters) * 100)}%
+                    </span>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-birla-gold" />Quick Revision Cards
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+              {[
+                { subject: 'Mathematics', topic: 'Quadratic Formula', formula: 'x = (-b ± √(b²-4ac)) / 2a' },
+                { subject: 'Science', topic: 'Ohm\'s Law', formula: 'V = IR' },
+                { subject: 'English', topic: 'Active-Passive Rule', formula: 'Subject + Verb + Object → Object + be + V3 + by + Subject' },
+                { subject: 'Hindi', topic: 'संधि नियम', formula: 'वृद्धि संधि: अ/आ + अ/आ = आ' },
+              ].map((card, i) => (
+                <div key={i} className="p-3 rounded-xl border border-border bg-muted/20">
+                  <p className="text-xs font-medium text-birla-cyan">{card.subject}</p>
+                  <p className="text-sm font-medium text-foreground mt-1">{card.topic}</p>
+                  <p className="text-xs font-mono text-muted-foreground mt-1 p-2 rounded-lg bg-background">{card.formula}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ====== FORMS TAB ====== */}
+      {activeTab === 'forms' && (
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {forms.map((form) => {
+              const Icon = form.icon
+              return (
+                <button key={form.id} onClick={() => setShowForm(form.id)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border border-border hover:border-birla-gold/30 hover:shadow-lg transition-all group ${showForm === form.id ? 'border-birla-gold/50 shadow-lg bg-birla-gold/5' : ''}`}>
+                  <div className="w-10 h-10 rounded-xl bg-birla-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-5 h-5 text-birla-blue dark:text-birla-cyan" />
+                  </div>
+                  <span className="text-[11px] text-muted-foreground group-hover:text-foreground text-center">{form.label}</span>
+                </button>
               )
             })}
           </motion.div>
 
-          {/* Exam Cards */}
-          <div className="space-y-4">
-            {examPrepData.map((exam) => (
-              <motion.div key={exam.id} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-all">
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      exam.subject === 'Mathematics' ? 'bg-blue-500/15' :
-                      exam.subject === 'Science' ? 'bg-emerald-500/15' :
-                      exam.subject === 'English' ? 'bg-purple-500/15' :
-                      exam.subject === 'Social Science' ? 'bg-amber-500/15' :
-                      exam.subject === 'Hindi' ? 'bg-rose-500/15' :
-                      'bg-cyan-500/15'
-                    }`}>
-                      <BookOpen className={`w-5 h-5 ${
-                        exam.subject === 'Mathematics' ? 'text-blue-500' :
-                        exam.subject === 'Science' ? 'text-emerald-500' :
-                        exam.subject === 'English' ? 'text-purple-500' :
-                        exam.subject === 'Social Science' ? 'text-amber-500' :
-                        exam.subject === 'Hindi' ? 'text-rose-500' :
-                        'text-cyan-500'
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-bold text-foreground">{exam.subject}</p>
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-medium bg-birla-cyan/10 text-birla-cyan">
-                          {exam.chapters} chapters
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{exam.syllabus}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Calendar className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">
-                          {new Date(exam.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                        </span>
-                      </div>
-                    </div>
+          {/* Homework Submission Form */}
+          {showForm === 'homeworkSub' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-birla-cyan" />Homework Submission Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Assignment *</label>
+                  <select value={homeworkSubForm.assignment} onChange={(e) => setHomeworkSubForm({...homeworkSubForm, assignment: e.target.value})} className={inputClass}>
+                    <option value="">Select Assignment</option>
+                    <option value="Math Ch 5">Mathematics - Chapter 5 Problems</option>
+                    <option value="Science Lab">Science - Lab Report</option>
+                    <option value="English Essay">English - Essay Writing</option>
+                    <option value="Hindi Compre">Hindi - Comprehension</option>
+                    <option value="Social Map">Social Science - Map Work</option>
+                    <option value="Computer Python">Computer - Python Program</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Subject *</label>
+                  <select value={homeworkSubForm.subject} onChange={(e) => setHomeworkSubForm({...homeworkSubForm, subject: e.target.value})} className={inputClass}>
+                    <option value="">Select Subject</option>
+                    {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Description</label>
+                  <input type="text" value={homeworkSubForm.description} onChange={(e) => setHomeworkSubForm({...homeworkSubForm, description: e.target.value})} className={inputClass} placeholder="Brief description of your submission..." />
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={homeworkSubForm.fileUpload} onChange={(e) => setHomeworkSubForm({...homeworkSubForm, fileUpload: e.target.checked})} className="w-4 h-4 rounded accent-[#C8A45C]" />
+                    <span className="text-xs text-muted-foreground">Attach File Upload</span>
+                  </label>
+                </div>
+                {homeworkSubForm.fileUpload && (
+                  <div>
+                    <label className={labelClass}>Upload File</label>
+                    <input type="file" className={inputClass} onChange={() => {}} />
                   </div>
+                )}
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Submission Notes</label>
+                  <textarea value={homeworkSubForm.submissionNotes} onChange={(e) => setHomeworkSubForm({...homeworkSubForm, submissionNotes: e.target.value})} rows={3} className={inputClass + ' resize-none'} placeholder="Any notes for the teacher..." />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Homework</button>
+              </div>
+            </motion.div>
+          )}
 
-                  {/* Coverage Progress */}
-                  <div className="flex items-center gap-4 lg:w-80">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] text-muted-foreground">Syllabus Coverage</span>
-                        <span className={`text-xs font-bold ${
-                          exam.coverage >= 80 ? 'text-emerald-500' :
-                          exam.coverage >= 60 ? 'text-amber-500' : 'text-rose-500'
-                        }`}>{exam.coverage}%</span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-muted/50 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            exam.coverage >= 80 ? 'bg-emerald-500' :
-                            exam.coverage >= 60 ? 'bg-amber-500' : 'bg-rose-500'
-                          }`}
-                          style={{ width: `${exam.coverage}%` }}
-                        />
-                      </div>
-                    </div>
+          {/* Leave Application Form */}
+          {showForm === 'leaveApp' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-emerald-500" />Leave Application Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Leave Type *</label>
+                  <select value={leaveForm.leaveType} onChange={(e) => setLeaveForm({...leaveForm, leaveType: e.target.value})} className={inputClass}>
+                    <option value="Casual">Casual Leave</option>
+                    <option value="Sick">Sick Leave</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Student</label>
+                  <div className="px-3 py-2 rounded-xl border border-border bg-muted text-foreground text-sm">
+                    {currentStudent.name} <span className="text-[10px] text-muted-foreground ml-1">{currentStudent.bspId}</span>
                   </div>
                 </div>
+                <div>
+                  <label className={labelClass}>From Date *</label>
+                  <input type="date" value={leaveForm.fromDate} onChange={(e) => setLeaveForm({...leaveForm, fromDate: e.target.value})} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>To Date *</label>
+                  <input type="date" value={leaveForm.toDate} onChange={(e) => setLeaveForm({...leaveForm, toDate: e.target.value})} className={inputClass} />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Reason *</label>
+                  <textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})} rows={3} className={inputClass + ' resize-none'} placeholder="Reason for leave..." />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={leaveForm.parentConsent} onChange={(e) => setLeaveForm({...leaveForm, parentConsent: e.target.checked})} className="w-4 h-4 rounded accent-[#C8A45C]" />
+                    <span className="text-xs text-muted-foreground">I have my parent&apos;s consent for this leave</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Leave Application</button>
+              </div>
+            </motion.div>
+          )}
 
-                {/* Preparation Tips */}
-                <div className="mt-3 p-3 rounded-xl bg-muted/30 border border-border/50">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">{exam.tips}</p>
+          {/* Grievance Form */}
+          {showForm === 'grievance' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-500" />Grievance Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Category *</label>
+                  <select value={grievanceForm.category} onChange={(e) => setGrievanceForm({...grievanceForm, category: e.target.value})} className={inputClass}>
+                    <option value="Academic">Academic</option>
+                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Behavior">Behavior</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Priority *</label>
+                  <select value={grievanceForm.priority} onChange={(e) => setGrievanceForm({...grievanceForm, priority: e.target.value})} className={inputClass}>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Description *</label>
+                  <textarea value={grievanceForm.description} onChange={(e) => setGrievanceForm({...grievanceForm, description: e.target.value})} rows={3} className={inputClass + ' resize-none'} placeholder="Describe your grievance in detail..." />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Preferred Resolution</label>
+                  <textarea value={grievanceForm.preferredResolution} onChange={(e) => setGrievanceForm({...grievanceForm, preferredResolution: e.target.value})} rows={2} className={inputClass + ' resize-none'} placeholder="How would you like this to be resolved?" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Submit Grievance</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Activity Registration Form */}
+          {showForm === 'activityReg' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-birla-gold" />Activity Registration Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Activity *</label>
+                  <select value={activityRegForm.activity} onChange={(e) => setActivityRegForm({...activityRegForm, activity: e.target.value})} className={inputClass}>
+                    <option value="">Select Activity</option>
+                    {activities.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Student</label>
+                  <div className="px-3 py-2 rounded-xl border border-border bg-muted text-foreground text-sm">
+                    {currentStudent.name} <span className="text-[10px] text-muted-foreground ml-1">BSP: {currentStudent.bspId}</span>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={activityRegForm.parentApproval} onChange={(e) => setActivityRegForm({...activityRegForm, parentApproval: e.target.checked})} className="w-4 h-4 rounded accent-[#C8A45C]" />
+                    <span className="text-xs text-muted-foreground">I have my parent&apos;s approval</span>
+                  </label>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={activityRegForm.medicalFitness} onChange={(e) => setActivityRegForm({...activityRegForm, medicalFitness: e.target.checked})} className="w-4 h-4 rounded accent-[#C8A45C]" />
+                    <span className="text-xs text-muted-foreground">I am medically fit to participate</span>
+                  </label>
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Emergency Contact *</label>
+                  <input type="text" value={activityRegForm.emergencyContact} onChange={(e) => setActivityRegForm({...activityRegForm, emergencyContact: e.target.value})} className={inputClass} placeholder="+91 XXXXX XXXXX" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Register</button>
+              </div>
+            </motion.div>
+          )}
 
-          {/* Digital Notes */}
+          {/* Digital Note Form */}
+          {showForm === 'digitalNote' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <StickyNote className="w-5 h-5 text-emerald-500" />Digital Note Form
+                </h3>
+                <button onClick={() => setShowForm(null)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-muted/50"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Subject *</label>
+                  <select value={digitalNoteForm.subject} onChange={(e) => setDigitalNoteForm({...digitalNoteForm, subject: e.target.value})} className={inputClass}>
+                    <option value="">Select Subject</option>
+                    {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Title *</label>
+                  <input type="text" value={digitalNoteForm.title} onChange={(e) => setDigitalNoteForm({...digitalNoteForm, title: e.target.value})} className={inputClass} placeholder="Note title" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>Content *</label>
+                  <textarea value={digitalNoteForm.content} onChange={(e) => setDigitalNoteForm({...digitalNoteForm, content: e.target.value})} rows={5} className={inputClass + ' resize-none'} placeholder="Write your notes here..." />
+                </div>
+                <div>
+                  <label className={labelClass}>Tags</label>
+                  <input type="text" value={digitalNoteForm.tags} onChange={(e) => setDigitalNoteForm({...digitalNoteForm, tags: e.target.value})} className={inputClass} placeholder="Comma-separated tags" />
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer mt-5">
+                    <input type="checkbox" checked={digitalNoteForm.isPublic} onChange={(e) => setDigitalNoteForm({...digitalNoteForm, isPublic: e.target.checked})} className="w-4 h-4 rounded accent-[#C8A45C]" />
+                    <span className="text-xs text-muted-foreground">Make this note public</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={() => setShowForm(null)} className="px-4 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted/50">Cancel</button>
+                <button onClick={handleSubmit} className="px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium hover:shadow-lg transition-all">Save Note</button>
+              </div>
+            </motion.div>
+          )}
+
+          {!showForm && (
+            <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl gradient-birla flex items-center justify-center mb-4"><Plus className="w-8 h-8 text-white" /></div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Select a Form</h3>
+              <p className="text-sm text-muted-foreground">Choose a form from above to start</p>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* ====== REPORTS TAB ====== */}
+      {activeTab === 'reports' && (
+        <div className="space-y-4">
+          {/* 1. My Attendance Report */}
           <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <StickyNote className="w-4 h-4 text-amber-500" />
-              Quick Revision Notes
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {digitalNotes.map((note) => (
-                <div key={note.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all cursor-pointer group">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+              <Calendar className="w-4 h-4 text-emerald-500" />My Attendance Report
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">Monthly attendance summary</p>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={attendanceMonthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <Line type="monotone" dataKey="present" stroke="#10B981" strokeWidth={2} name="Present" dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="absent" stroke="#EF4444" strokeWidth={2} name="Absent" dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="late" stroke="#F59E0B" strokeWidth={2} name="Late" dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* 2. My Performance Report */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <Shield className="w-4 h-4 text-birla-blue dark:text-birla-cyan" />
+              <span className="text-xs font-mono text-muted-foreground">BSP: {currentStudent.bspId} | PEN: {currentStudent.penNo} | UPPR: {currentStudent.upparId}</span>
+            </div>
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+              <TrendingUp className="w-4 h-4 text-birla-cyan" />My Performance Report
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">Subject-wise scores vs class average</p>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={subjectScoresData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis dataKey="subject" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <Bar dataKey="score" fill="#22D3EE" radius={[4,4,0,0]} name="My Score" />
+                  <Bar dataKey="classAvg" fill="#C8A45C" radius={[4,4,0,0]} name="Class Avg" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* 3. Homework Completion Report */}
+          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+              <ClipboardList className="w-4 h-4 text-birla-gold" />Homework Completion Report
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">Subject-wise completion rate</p>
+            <div className="space-y-3 max-h-72 overflow-y-auto">
+              {homeworkCompletionData.map(item => (
+                <div key={item.subject}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-medium bg-birla-gold/10 text-birla-gold">{note.subject}</span>
-                    <span className="text-[9px] text-muted-foreground">{note.date}</span>
+                    <span className="text-xs text-muted-foreground">{item.subject}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">{item.completed}/{item.total}</span>
+                      <span className="text-xs font-semibold text-foreground">{item.rate}%</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] font-semibold text-foreground group-hover:text-gradient-birla transition-colors">{note.title}</p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{note.preview}</p>
-                  <div className="flex items-center gap-1 mt-1.5 text-[9px] text-birla-cyan">
-                    <BookMarked className="w-3 h-3" /> Open Note
+                  <div className="h-3 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${item.rate}%`, background: item.rate >= 90 ? 'linear-gradient(90deg, #10B981, #22D3EE)' : item.rate >= 75 ? 'linear-gradient(90deg, #C8A45C, #E8D5A0)' : 'linear-gradient(90deg, #EF4444, #F59E0B)' }} />
                   </div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* AI Study Assistant */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-birla-cyan" />
-              AI Study Recommendations
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {aiRecommendations.map((rec) => {
-                const Icon = rec.icon
-                return (
-                  <div key={rec.id} className="p-4 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${rec.color}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-semibold text-foreground">{rec.title}</p>
-                        <span className={`text-[8px] font-medium ${
-                          rec.priority === 'high' ? 'text-rose-500' :
-                          rec.priority === 'medium' ? 'text-amber-500' : 'text-emerald-500'
-                        }`}>
-                          {rec.priority} priority
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-[9px] text-muted-foreground leading-relaxed">{rec.description}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* 4. Skill Badge Report */}
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <Award className="w-4 h-4 text-purple-500" />Skill Badge Report
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">Badges earned by category</p>
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={skillBadgePieData} cx="50%" cy="50%" innerRadius={45} outerRadius={80} paddingAngle={3} dataKey="value">
+                      {skillBadgePieData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-1.5 mt-2 max-h-32 overflow-y-auto">
+                {skillBadgeData.filter(b => b.earned).map((b, i) => (
+                  <div key={i} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/20">
+                    <span className="text-xs text-foreground">{b.name}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-birla-gold/10 text-birla-gold">{b.category}</span>
                   </div>
-                )
-              })}
-            </div>
-          </motion.div>
-        </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* 5. Exam Score Report */}
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+                <GraduationCap className="w-4 h-4 text-birla-cyan" />Exam Score Report
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">Exam-wise scores with class average comparison</p>
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={examScoreData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="exam" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="score" fill="#22D3EE" radius={[3,3,0,0]} name="My Score" />
+                    <Bar dataKey="classAvg" fill="#C8A45C" radius={[3,3,0,0]} name="Class Avg" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-3 p-2 rounded-lg bg-muted/20">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Overall Average:</span>
+                  <span className="font-semibold text-foreground">{Math.round(examScoreData.reduce((a,b) => a + b.score, 0) / examScoreData.length)}%</span>
+                </div>
+                <div className="flex items-center justify-between text-xs mt-1">
+                  <span className="text-muted-foreground">Highest Score:</span>
+                  <span className="font-semibold text-emerald-600">{Math.max(...examScoreData.map(e => e.score))}%</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       )}
     </motion.div>
   )

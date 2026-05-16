@@ -3,21 +3,100 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  HeartPulse, Shield, Activity, Users, Eye, Clock, CheckCircle2,
-  AlertTriangle, XCircle, Search, Plus, Phone, Mail, Calendar,
-  Syringe, Brain, Heart, AlertCircle, TrendingUp, Star,
-  Thermometer, Pill, Stethoscope, Ambulance, Siren,
-  FileText, UserCheck, ArrowUpRight, Zap, RefreshCw,
-  BarChart3, Smile, Frown, Meh, Sun, Moon, Apple,
-  Droplets, Wind, Baby, EyeOff, ShieldCheck, Download, MapPin
+  HeartPulse, Users, Activity, Shield, Plus, Download, ArrowUpRight,
+  TrendingUp, BarChart3, FileText, Calendar, CheckCircle2,
+  AlertTriangle, X, Save, RotateCcw, ClipboardList, Syringe,
+  Stethoscope, Brain, AlertCircle, PieChart as PieChartIcon,
+  Thermometer, Eye, Baby, Heart, Phone, Clock, UserCheck,
+  Beaker, FlaskConical, Bug
 } from 'lucide-react'
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, PieChart, Pie, Cell, AreaChart,
+  Area, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, Radar
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
+// ─── Mock Data ────────────────────────────────────────────────────
+const topStats = [
+  { label: 'Total Students', value: '1,247', change: 'Enrolled', icon: Users, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+  { label: 'Vaccinated', value: '89%', change: 'Coverage', icon: Syringe, gradient: 'from-blue-900 to-blue-700', glow: 'shadow-blue-800/20' },
+  { label: 'Checkups Done', value: '324', change: 'This year', icon: Stethoscope, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+  { label: 'Counselling', value: '56', change: 'Sessions', icon: Brain, gradient: 'from-purple-900 to-purple-600', glow: 'shadow-purple-800/20' },
+]
+
+const vaccinationCoverage = [
+  { vaccine: 'BCG', coverage: 95, total: 1247, vaccinated: 1185 },
+  { vaccine: 'DPT', coverage: 92, total: 1247, vaccinated: 1147 },
+  { vaccine: 'OPV', coverage: 94, total: 1247, vaccinated: 1172 },
+  { vaccine: 'MMR', coverage: 88, total: 1247, vaccinated: 1097 },
+  { vaccine: 'Hepatitis B', coverage: 91, total: 1247, vaccinated: 1135 },
+  { vaccine: 'Typhoid', coverage: 78, total: 1247, vaccinated: 973 },
+  { vaccine: 'COVID-19', coverage: 65, total: 1247, vaccinated: 811 },
+]
+
+const healthCheckupSummary = [
+  { class: 'Nursery', total: 80, healthy: 72, followUp: 6, referred: 2 },
+  { class: 'LKG', total: 95, healthy: 88, followUp: 5, referred: 2 },
+  { class: 'UKG', total: 90, healthy: 82, followUp: 6, referred: 2 },
+  { class: 'I', total: 110, healthy: 100, followUp: 7, referred: 3 },
+  { class: 'II', total: 105, healthy: 96, followUp: 6, referred: 3 },
+  { class: 'III', total: 100, healthy: 90, followUp: 7, referred: 3 },
+  { class: 'IV', total: 98, healthy: 89, followUp: 6, referred: 3 },
+  { class: 'V', total: 102, healthy: 93, followUp: 6, referred: 3 },
+]
+
+const counsellingSessions = [
+  { counsellor: 'Dr. Meera Iyer', sessions: 28, academic: 10, behavioral: 8, career: 5, personal: 3, family: 2 },
+  { counsellor: 'Mr. Arvind Desai', sessions: 18, academic: 6, behavioral: 5, career: 3, personal: 2, family: 2 },
+  { counsellor: 'Mrs. Sunita Reddy', sessions: 10, academic: 3, behavioral: 3, career: 1, personal: 2, family: 1 },
+]
+
+const allergyConditionData = [
+  { condition: 'Dust Allergy', count: 45, students: ['Aarav Kumar (BSP/WB/2023/00125)', 'Priya Gupta (BSP/WB/2023/00089)'] },
+  { condition: 'Asthma', count: 22, students: ['Rohan Sharma (BSP/WB/2023/00130)', 'Arjun Patel (BSP/WB/2023/00156)'] },
+  { condition: 'Food Allergy', count: 35, students: ['Karan Singh (BSP/WB/2023/00201)', 'Ananya Joshi (BSP/WB/2023/00045)'] },
+  { condition: 'Skin Condition', count: 18, students: ['Neha Agarwal (BSP/WB/2023/00067)'] },
+  { condition: 'Vision Issue', count: 56, students: ['Vikram Rao (BSP/WB/2023/00178)', 'Sneha Das (BSP/WB/2023/00034)'] },
+  { condition: 'Hearing Issue', count: 8, students: ['Ravi Teja (BSP/WB/2023/00210)'] },
+]
+
+const wellnessScores = [
+  { class: 'I', physical: 85, mental: 78, social: 82, emotional: 75, academic: 80 },
+  { class: 'II', physical: 82, mental: 80, social: 78, emotional: 77, academic: 83 },
+  { class: 'III', physical: 80, mental: 76, social: 80, emotional: 72, academic: 78 },
+  { class: 'IV', physical: 78, mental: 82, social: 76, emotional: 80, academic: 76 },
+  { class: 'V', physical: 83, mental: 75, social: 85, emotional: 73, academic: 82 },
+]
+
+const medicalRecordsData = [
+  { name: 'Aarav Kumar', bspId: 'BSP/WB/2023/00125', penNo: 'PEN-2301-0456', upparId: 'UPPR-WB-102345', bloodGroup: 'B+', height: '155 cm', weight: '45 kg', lastCheckup: '2025-02-15' },
+  { name: 'Priya Gupta', bspId: 'BSP/WB/2023/00089', penNo: 'PEN-2301-0420', upparId: 'UPPR-WB-101987', bloodGroup: 'O+', height: '148 cm', weight: '40 kg', lastCheckup: '2025-02-14' },
+  { name: 'Rohan Sharma', bspId: 'BSP/WB/2023/00130', penNo: 'PEN-2301-0461', upparId: 'UPPR-WB-102350', bloodGroup: 'A+', height: '160 cm', weight: '50 kg', lastCheckup: '2025-01-20' },
+]
+
+const vaccinationRecords = [
+  { name: 'Aarav Kumar', bspId: 'BSP/WB/2023/00125', penNo: 'PEN-2301-0456', upparId: 'UPPR-WB-102345', vaccine: 'MMR', dose: 'Booster', date: '2025-01-15', nextDue: '2026-01-15' },
+  { name: 'Priya Gupta', bspId: 'BSP/WB/2023/00089', penNo: 'PEN-2301-0420', upparId: 'UPPR-WB-101987', vaccine: 'Typhoid', dose: '2nd', date: '2025-02-10', nextDue: '2027-02-10' },
+  { name: 'Rohan Sharma', bspId: 'BSP/WB/2023/00130', penNo: 'PEN-2301-0461', upparId: 'UPPR-WB-102350', vaccine: 'Hepatitis B', dose: '3rd', date: '2025-03-01', nextDue: 'Completed' },
+]
+
+const counsellingData = [
+  { student: 'Aarav Kumar', bspId: 'BSP/WB/2023/00125', penNo: 'PEN-2301-0456', upparId: 'UPPR-WB-102345', counsellor: 'Dr. Meera Iyer', type: 'Academic', date: '2025-03-05', status: 'Completed' },
+  { student: 'Sneha Das', bspId: 'BSP/WB/2023/00034', penNo: 'PEN-2301-0365', upparId: 'UPPR-WB-100987', counsellor: 'Mr. Arvind Desai', type: 'Behavioral', date: '2025-03-08', status: 'Scheduled' },
+]
+
+const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+const vaccineNames = ['BCG', 'DPT', 'OPV', 'MMR', 'Hepatitis B', 'Typhoid', 'COVID-19', 'HPV', 'Varicella']
+const counsellingTypes = ['Academic', 'Behavioral', 'Career', 'Personal', 'Family']
+const checkupTypes = ['Annual', 'Sports', 'Special', 'Pre-Board']
+const emergencyTypes = ['Medical', 'Accident', 'Allergic', 'Other']
+const severities = ['Low', 'Medium', 'High', 'Critical']
+const counsellors = ['Dr. Meera Iyer', 'Mr. Arvind Desai', 'Mrs. Sunita Reddy']
+const doctors = ['Dr. Rajiv Mehta', 'Dr. Sangeeta Patel', 'Dr. Amitabh Chatterjee']
+
+// ─── Animation Variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -27,765 +106,967 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
-const topStats = [
-  { label: 'Medical Records', value: '2,547', icon: FileText, color: 'text-birla-cyan bg-birla-cyan/10', change: 'All students covered' },
-  { label: 'Vaccinated', value: '2,180', icon: Syringe, color: 'text-emerald-500 bg-emerald-500/10', change: '85.6% coverage' },
-  { label: 'Counselling', value: '24', icon: Brain, color: 'text-purple-500 bg-purple-500/10', change: 'Active sessions' },
-  { label: 'Emergency', value: '0', icon: Siren, color: 'text-red-500 bg-red-500/10', change: 'All clear' },
-]
-
-const medicalRecords = [
-  { id: 'BOM-2025-001', name: 'Aarav Sharma', class: 'X-A', bloodGroup: 'B+', height: '165 cm', weight: '52 kg', bmi: '19.1', allergies: ['Dust', 'Pollen'], conditions: ['Mild Asthma'], medications: ['Inhaler (SOS)'], vision: '6/6', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Healthy' },
-  { id: 'BOM-2025-002', name: 'Priya Gupta', class: 'X-A', bloodGroup: 'A+', height: '158 cm', weight: '48 kg', bmi: '19.2', allergies: ['Nuts', 'Penicillin'], conditions: [], medications: [], vision: '6/9 (Corrected)', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Healthy' },
-  { id: 'BOM-2025-003', name: 'Arjun Reddy', class: 'IX-B', bloodGroup: 'O+', height: '162 cm', weight: '55 kg', bmi: '20.9', allergies: [], conditions: ['ADHD (Managed)'], medications: ['Methylphenidate 5mg'], vision: '6/6', hearing: 'Normal', lastCheckup: 'Feb 2026', status: 'Under Observation' },
-  { id: 'BOM-2025-004', name: 'Ananya Iyer', class: 'VIII-A', bloodGroup: 'AB+', height: '152 cm', weight: '44 kg', bmi: '19.0', allergies: ['Lactose'], conditions: ['Lactose Intolerance'], medications: ['Lactase enzyme'], vision: '6/6', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Healthy' },
-  { id: 'BOM-2025-005', name: 'Rohan Patel', class: 'VII-A', bloodGroup: 'B-', height: '148 cm', weight: '50 kg', bmi: '22.8', allergies: [], conditions: ['Overweight'], medications: ['Diet plan'], vision: '6/9', hearing: 'Normal', lastCheckup: 'Feb 2026', status: 'Monitoring' },
-  { id: 'BOM-2025-006', name: 'Ishita Banerjee', class: 'VI-B', bloodGroup: 'A-', height: '140 cm', weight: '36 kg', bmi: '18.4', allergies: ['Shellfish'], conditions: [], medications: [], vision: '6/6', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Healthy' },
-  { id: 'BOM-2025-007', name: 'Vivaan Kumar', class: 'V-A', bloodGroup: 'O-', height: '138 cm', weight: '34 kg', bmi: '17.9', allergies: ['Eggs'], conditions: ['Eczema'], medications: ['Moisturizer cream'], vision: '6/12 (Needs Correction)', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Needs Follow-up' },
-  { id: 'BOM-2025-008', name: 'Meera Nair', class: 'IV-A', bloodGroup: 'AB-', height: '132 cm', weight: '30 kg', bmi: '17.2', allergies: [], conditions: [], medications: [], vision: '6/6', hearing: 'Normal', lastCheckup: 'Jan 2026', status: 'Healthy' },
-]
-
-const vaccinationSchedule = [
-  { vaccine: 'BCG', age: 'At Birth', completed: 2547, total: 2547, percentage: 100, drive: 'N/A', nextDue: '—' },
-  { vaccine: 'OPV (0-5)', age: '0-6 months', completed: 2547, total: 2547, percentage: 100, drive: 'N/A', nextDue: '—' },
-  { vaccine: 'DPT Booster-1', age: '5-6 years', completed: 2180, total: 2547, percentage: 86, drive: 'Completed', nextDue: 'Apr 2026' },
-  { vaccine: 'MMR-2', age: '5-6 years', completed: 2310, total: 2547, percentage: 91, drive: 'Completed', nextDue: 'Jul 2026' },
-  { vaccine: 'Tdap', age: '10-12 years', completed: 1520, total: 1890, percentage: 80, drive: 'In Progress', nextDue: 'Mar 15, 2026' },
-  { vaccine: 'HPV (Girls)', age: '9-14 years', completed: 680, total: 1240, percentage: 55, drive: 'Scheduled', nextDue: 'Mar 20, 2026' },
-  { vaccine: 'COVID-19 Booster', age: '12+ years', completed: 890, total: 1650, percentage: 54, drive: 'Scheduled', nextDue: 'Apr 5, 2026' },
-  { vaccine: 'Typhoid Conjugate', age: 'All Students', completed: 1890, total: 2547, percentage: 74, drive: 'Upcoming', nextDue: 'Apr 2026' },
-]
-
-const upcomingDrives = [
-  { id: 1, name: 'Tdap Vaccination Drive', date: 'Mar 15, 2026', target: '370 students', venue: 'School Auditorium', coordinator: 'Dr. Sunita Rao', status: 'Confirmed', pharma: 'Serum Institute' },
-  { id: 2, name: 'HPV Vaccination (Girls)', date: 'Mar 20, 2026', target: '560 girls', venue: 'Medical Room', coordinator: 'Dr. Anita Deshmukh', status: 'Confirmed', pharma: 'MSD India' },
-  { id: 3, name: 'COVID-19 Booster', date: 'Apr 5, 2026', target: '760 students', venue: 'School Auditorium', coordinator: 'Dr. Rajesh Menon', status: 'Planning', pharma: 'Bharat Biotech' },
-  { id: 4, name: 'Typhoid Conjugate Drive', date: 'Apr 2026', target: '657 students', venue: 'TBD', coordinator: 'Dr. Sunita Rao', status: 'Planning', pharma: 'Bharat Biotech' },
-]
-
-const counsellorAppointments = [
-  { id: 'APT-001', student: 'Arjun Reddy', class: 'IX-B', counsellor: 'Dr. Kavitha Menon', date: 'Mar 3, 2026', time: '10:00 AM', type: 'Academic Stress', session: '4th of 8', status: 'Scheduled' },
-  { id: 'APT-002', student: 'Rohan Patel', class: 'VII-A', counsellor: 'Dr. Kavitha Menon', date: 'Mar 3, 2026', time: '11:30 AM', type: 'Self-Esteem', session: '2nd of 6', status: 'Scheduled' },
-  { id: 'APT-003', student: 'Sneha Kapoor', class: 'XII-A', counsellor: 'Dr. Suresh Pillai', date: 'Mar 4, 2026', time: '9:00 AM', type: 'Career Guidance', session: '1st of 4', status: 'Scheduled' },
-  { id: 'APT-004', student: 'Vivaan Kumar', class: 'V-A', counsellor: 'Dr. Suresh Pillai', date: 'Mar 4, 2026', time: '2:00 PM', type: 'Behavioral', session: '6th of 10', status: 'In Progress' },
-  { id: 'APT-005', student: 'Priya Gupta', class: 'X-A', counsellor: 'Dr. Kavitha Menon', date: 'Feb 28, 2026', time: '10:00 AM', type: 'Anxiety', session: '3rd of 6', status: 'Completed' },
-  { id: 'APT-006', student: 'Farhan Ali', class: 'XI-B', counsellor: 'Dr. Suresh Pillai', date: 'Feb 27, 2026', time: '11:00 AM', type: 'Social Adjustment', session: '5th of 8', status: 'Completed' },
-  { id: 'APT-007', student: 'Ananya Iyer', class: 'VIII-A', counsellor: 'Dr. Kavitha Menon', date: 'Mar 5, 2026', time: '10:30 AM', type: 'Exam Anxiety', session: '1st of 4', status: 'Scheduled' },
-  { id: 'APT-008', student: 'Devansh Gupta', class: 'VI-B', counsellor: 'Dr. Suresh Pillai', date: 'Mar 5, 2026', time: '3:00 PM', type: 'ADHD Support', session: '8th of 12', status: 'Scheduled' },
-]
-
-const wellnessScores = [
-  { student: 'Aarav Sharma', class: 'X-A', overall: 88, mental: 85, physical: 92, social: 87, emotional: 84, academic: 90, trend: 'up' },
-  { student: 'Priya Gupta', class: 'X-A', overall: 82, mental: 78, physical: 88, social: 85, emotional: 75, academic: 86, trend: 'up' },
-  { student: 'Arjun Reddy', class: 'IX-B', overall: 72, mental: 65, physical: 80, social: 70, emotional: 68, academic: 78, trend: 'stable' },
-  { student: 'Ananya Iyer', class: 'VIII-A', overall: 90, mental: 88, physical: 94, social: 92, emotional: 86, academic: 92, trend: 'up' },
-  { student: 'Rohan Patel', class: 'VII-A', overall: 68, mental: 62, physical: 70, social: 75, emotional: 60, academic: 65, trend: 'down' },
-  { student: 'Vivaan Kumar', class: 'V-A', overall: 74, mental: 70, physical: 78, social: 68, emotional: 72, academic: 76, trend: 'up' },
-]
-
-const mentalHealthIndicators = [
-  { month: 'Sep', stress: 28, anxiety: 22, depression: 8, wellbeing: 72 },
-  { month: 'Oct', stress: 32, anxiety: 25, depression: 10, wellbeing: 68 },
-  { month: 'Nov', stress: 38, anxiety: 30, depression: 12, wellbeing: 62 },
-  { month: 'Dec', stress: 25, anxiety: 18, depression: 6, wellbeing: 78 },
-  { month: 'Jan', stress: 30, anxiety: 22, depression: 8, wellbeing: 74 },
-  { month: 'Feb', stress: 35, anxiety: 28, depression: 10, wellbeing: 66 },
-]
-
-const activityTracking = [
-  { day: 'Mon', sports: 320, yoga: 180, meditation: 150, outdoor: 280 },
-  { day: 'Tue', sports: 290, yoga: 175, meditation: 140, outdoor: 260 },
-  { day: 'Wed', sports: 340, yoga: 190, meditation: 160, outdoor: 300 },
-  { day: 'Thu', sports: 280, yoga: 165, meditation: 145, outdoor: 250 },
-  { day: 'Fri', sports: 350, yoga: 200, meditation: 170, outdoor: 310 },
-  { day: 'Sat', sports: 400, yoga: 220, meditation: 180, outdoor: 350 },
-]
-
-const wellnessRadar = [
-  { subject: 'Mental', A: 85, fullMark: 100 },
-  { subject: 'Physical', A: 92, fullMark: 100 },
-  { subject: 'Social', A: 87, fullMark: 100 },
-  { subject: 'Emotional', A: 84, fullMark: 100 },
-  { subject: 'Academic', A: 90, fullMark: 100 },
-  { subject: 'Creative', A: 78, fullMark: 100 },
-]
-
-const emergencyContacts = [
-  { role: 'School Nurse', name: 'Mrs. Sunita Rao', phone: '+91 98765 00001', available: '24/7' },
-  { role: 'School Doctor', name: 'Dr. Rajesh Menon', phone: '+91 98765 00002', available: '8 AM - 4 PM' },
-  { role: 'Chief Warden', name: 'Mr. Debasish Chatterjee', phone: '+91 98765 00003', available: '24/7' },
-  { role: 'Principal', name: 'Dr. Meera Krishnan', phone: '+91 98765 00004', available: '8 AM - 5 PM' },
-  { role: 'Ambulance Service', name: 'Singur Hospital', phone: '108', available: '24/7' },
-  { role: 'Poison Control', name: 'National Helpline', phone: '1800-11-6117', available: '24/7' },
-  { role: 'Mental Health Crisis', name: 'iCall Helpline', phone: '9152987821', available: '24/7' },
-  { role: 'Nearest Hospital', name: 'Singur Block Hospital', phone: '+91 98765 00005', available: '24/7' },
-]
-
-const alertHistory = [
-  { id: 'EA-001', date: 'Feb 15, 2026', type: 'Medical Emergency', student: 'Karan Mehta', class: 'IX-A', description: 'Severe allergic reaction - peanut exposure', action: 'Epinephrine administered, ambulance called, parent notified', resolvedBy: 'Mrs. Sunita Rao', resolution: 'Student stabilized, shifted to hospital', duration: '45 min' },
-  { id: 'EA-002', date: 'Jan 22, 2026', type: 'Injury', student: 'Siddharth Nair', class: 'VII-A', description: 'Fractured arm during sports period', action: 'First aid applied, parent called, hospital visit arranged', resolvedBy: 'Dr. Rajesh Menon', resolution: 'Cast applied, follow-up scheduled', duration: '2 hrs' },
-  { id: 'EA-003', date: 'Dec 10, 2025', type: 'Fainting', student: 'Pallavi Mishra', class: 'VI-B', description: 'Fainted during morning assembly', action: 'Moved to medical room, vitals checked, glucose given', resolvedBy: 'Mrs. Sunita Rao', resolution: 'Low blood sugar, recovered fully', duration: '30 min' },
-  { id: 'EA-004', date: 'Nov 5, 2025', type: 'Asthma Attack', student: 'Aarav Sharma', class: 'X-A', description: 'Asthma attack triggered by dust during cleaning', action: 'Inhaler provided, nebulizer administered, parent notified', resolvedBy: 'Dr. Rajesh Menon', resolution: 'Stabilized within 15 minutes', duration: '20 min' },
-]
-
-const emergencyProtocol = [
-  { step: 1, action: 'Assess the situation & ensure safety', icon: Shield, time: 'Immediate' },
-  { step: 2, action: 'Call School Nurse / Doctor', icon: Phone, time: '< 1 min' },
-  { step: 3, action: 'Administer First Aid', icon: HeartPulse, time: '< 3 min' },
-  { step: 4, action: 'Notify Parents/Guardians', icon: Users, time: '< 5 min' },
-  { step: 5, action: 'Call Ambulance if needed (108)', icon: Ambulance, time: '< 5 min' },
-  { step: 6, action: 'Document the incident', icon: FileText, time: '< 30 min' },
-  { step: 7, action: 'Follow-up & report to management', icon: CheckCircle2, time: '< 24 hrs' },
-]
-
-const vaccinationChart = [
-  { vaccine: 'BCG', completed: 100 },
-  { vaccine: 'OPV', completed: 100 },
-  { vaccine: 'DPT', completed: 86 },
-  { vaccine: 'MMR-2', completed: 91 },
-  { vaccine: 'Tdap', completed: 80 },
-  { vaccine: 'HPV', completed: 55 },
-  { vaccine: 'COVID', completed: 54 },
-  { vaccine: 'Typhoid', completed: 74 },
-]
-
 export default function HealthModule() {
   const { darkMode } = useAppStore()
-  const [activeTab, setActiveTab] = useState('records')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('overview')
+  const [activeForm, setActiveForm] = useState('medicalRecord')
+  const [activeReport, setActiveReport] = useState('vaccination')
+
+  // ─── Form States ────────────────────────────────────────
+  const [medicalRecordData, setMedicalRecordData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', height: '', weight: '', bloodGroup: '', visionLeft: '', visionRight: '', hearing: '', allergies: '', chronicConditions: '', medications: '', emergencyContact: '', doctorName: '', lastCheckupDate: ''
+  })
+  const [vaccinationData, setVaccinationData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', vaccineName: '', doseNumber: '', date: '', nextDue: '', administeredBy: '', batchNumber: '', sideEffects: ''
+  })
+  const [counsellingData2, setCounsellingData2] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', counsellor: '', date: '', time: '', type: 'Academic', sessionNotes: '', followUpDate: '', parentConsent: 'Yes'
+  })
+  const [checkupData, setCheckupData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', checkupType: 'Annual', date: '', bp: '', pulse: '', temp: '', height: '', weight: '', bmi: '', doctorRemarks: '', referredTo: '', followUpRequired: 'No'
+  })
+  const [emergencyData, setEmergencyData] = useState({
+    student: '', bspId: '', penNo: '', upparId: '', emergencyType: 'Medical', description: '', severity: 'Medium', location: '', contactedParents: 'No', ambulanceCalled: 'No', actionTaken: ''
+  })
 
   const tabs = [
-    { id: 'records', label: 'Medical Records', icon: HeartPulse },
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'medical', label: 'Medical Records', icon: Stethoscope },
     { id: 'vaccination', label: 'Vaccination', icon: Syringe },
     { id: 'counselling', label: 'Counselling', icon: Brain },
-    { id: 'wellness', label: 'Wellness Dashboard', icon: Activity },
-    { id: 'emergency', label: 'Emergency Alerts', icon: Siren },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: TrendingUp },
+  ]
+
+  const formOptions = [
+    { key: 'medicalRecord', label: 'Medical Record', icon: Stethoscope },
+    { key: 'vaccinationRecord', label: 'Vaccination Record', icon: Syringe },
+    { key: 'counsellingAppt', label: 'Counselling Appointment', icon: Brain },
+    { key: 'healthCheckup', label: 'Health Checkup', icon: Activity },
+    { key: 'emergencyAlert', label: 'Emergency Alert', icon: AlertTriangle },
+  ]
+
+  const reportOptions = [
+    { key: 'vaccination', label: 'Vaccination Coverage', icon: Syringe },
+    { key: 'checkup', label: 'Health Checkup Summary', icon: Stethoscope },
+    { key: 'counsellingReport', label: 'Counselling Sessions', icon: Brain },
+    { key: 'allergy', label: 'Allergy & Conditions', icon: FlaskConical },
+    { key: 'wellness', label: 'Wellness Score', icon: Heart },
   ]
 
   const tooltipStyle = {
     backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
     borderRadius: '12px',
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
 
-  const filteredRecords = medicalRecords.filter((r) =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.id.toLowerCase().includes(searchQuery.toLowerCase())
+  const inputClass = 'w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 focus:border-birla-gold transition-all'
+  const labelClass = 'text-xs font-medium text-muted-foreground mb-1 block'
+  const formGroupClass = 'space-y-1'
+
+  const handleFormSubmit = (formName, data) => {
+    alert(`${formName} submitted successfully!\n${JSON.stringify(data, null, 2)}`)
+  }
+
+  const renderUdiseFields = (data, setData) => (
+    <>
+      <div className={formGroupClass}>
+        <label className={labelClass}>BSP ID (UDISE+)</label>
+        <input type="text" placeholder="BSP/WB/2023/XXXXX" value={data.bspId}
+          onChange={(e) => setData({ ...data, bspId: e.target.value })} className={inputClass} />
+      </div>
+      <div className={formGroupClass}>
+        <label className={labelClass}>PEN No</label>
+        <input type="text" placeholder="PEN-XXXX-XXXX" value={data.penNo}
+          onChange={(e) => setData({ ...data, penNo: e.target.value })} className={inputClass} />
+      </div>
+      <div className={formGroupClass}>
+        <label className={labelClass}>Uppar ID</label>
+        <input type="text" placeholder="UPPR-WB-XXXXXX" value={data.upparId}
+          onChange={(e) => setData({ ...data, upparId: e.target.value })} className={inputClass} />
+      </div>
+    </>
   )
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* Top Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {topStats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div key={stat.label} className="rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] text-muted-foreground">{stat.change}</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-            </div>
-          )
-        })}
-      </motion.div>
-
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
       {/* Tab Navigation */}
       <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+                activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}>
+              <Icon className="w-3.5 h-3.5" />{tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* Medical Records */}
-      {activeTab === 'records' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <HeartPulse className="w-5 h-5 text-red-500" />
-              Student Health Cards
-            </h3>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search student..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 rounded-xl border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 focus:border-birla-gold transition-all w-64"
-                />
-              </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                <Plus className="w-3.5 h-3.5" /> Add Record
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {filteredRecords.map((record) => (
-              <div key={record.id} className="rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-all">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl gradient-birla-gold flex items-center justify-center text-sm font-bold text-birla-blue">
-                    {record.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{record.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{record.id} &bull; Class {record.class}</p>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                    record.status === 'Healthy' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    record.status === 'Under Observation' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                    record.status === 'Monitoring' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                    'bg-red-500/10 text-red-600 dark:text-red-400'
-                  }`}>
-                    {record.status}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                  <div className="p-1.5 rounded-lg bg-red-500/5">
-                    <p className="text-[9px] text-muted-foreground">Blood Group</p>
-                    <p className="font-bold text-red-600 dark:text-red-400">{record.bloodGroup}</p>
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-muted/30">
-                    <p className="text-[9px] text-muted-foreground">BMI</p>
-                    <p className="font-medium text-foreground">{record.bmi}</p>
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-muted/30">
-                    <p className="text-[9px] text-muted-foreground">Height / Weight</p>
-                    <p className="font-medium text-foreground">{record.height} / {record.weight}</p>
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-muted/30">
-                    <p className="text-[9px] text-muted-foreground">Vision</p>
-                    <p className="font-medium text-foreground">{record.vision}</p>
-                  </div>
-                </div>
-
-                {/* Allergies */}
-                {record.allergies.length > 0 && (
-                  <div className="mb-2">
-                    <p className="text-[9px] text-muted-foreground mb-1">Allergies</p>
-                    <div className="flex flex-wrap gap-1">
-                      {record.allergies.map((a) => (
-                        <span key={a} className="px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 text-[9px]">{a}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Conditions */}
-                {record.conditions.length > 0 && (
-                  <div className="mb-2">
-                    <p className="text-[9px] text-muted-foreground mb-1">Conditions</p>
-                    <div className="flex flex-wrap gap-1">
-                      {record.conditions.map((c) => (
-                        <span key={c} className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[9px]">{c}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Medications */}
-                {record.medications.length > 0 && (
-                  <div className="mb-2">
-                    <p className="text-[9px] text-muted-foreground mb-1">Medications</p>
-                    <div className="flex flex-wrap gap-1">
-                      {record.medications.map((m) => (
-                        <span key={m} className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px]">{m}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-[9px] text-muted-foreground mt-2 pt-2 border-t border-border/50">
-                  <span>Last Checkup: {record.lastCheckup}</span>
-                  <span className="flex items-center gap-0.5"><Stethoscope className="w-3 h-3" />{record.hearing}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Vaccination Tracking */}
-      {activeTab === 'vaccination' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Syringe className="w-5 h-5 text-emerald-500" />
-            Vaccination Tracking
-          </h3>
-
-          {/* Vaccination Chart */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground mb-3">Vaccination Coverage by Type (%)</p>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={vaccinationChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="vaccine" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="completed" radius={[4, 4, 0, 0]} name="Coverage %">
-                    {vaccinationChart.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.completed >= 90 ? '#10B981' : entry.completed >= 70 ? '#22D3EE' : '#F59E0B'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Vaccination Schedule Table */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <h4 className="text-sm font-semibold text-foreground">Vaccination Schedule</h4>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vaccine</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Age Group</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Completed</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Total</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Coverage</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Drive Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Next Due</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vaccinationSchedule.map((vax) => (
-                    <tr key={vax.vaccine} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{vax.vaccine}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{vax.age}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{vax.completed.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{vax.total.toLocaleString()}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${vax.percentage}%`,
-                                backgroundColor: vax.percentage >= 90 ? '#10B981' : vax.percentage >= 70 ? '#22D3EE' : vax.percentage >= 50 ? '#F59E0B' : '#EF4444',
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs text-foreground">{vax.percentage}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          vax.drive === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          vax.drive === 'In Progress' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                          vax.drive === 'Scheduled' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                          vax.drive === 'Upcoming' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
-                          'bg-muted text-muted-foreground'
-                        }`}>{vax.drive}</span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-foreground">{vax.nextDue}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Upcoming Drives */}
-          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-birla-gold" />
-            Upcoming Vaccination Drives
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {upcomingDrives.map((drive) => (
-              <div key={drive.id} className="rounded-xl border border-border bg-card p-4 hover:shadow-sm transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                    drive.status === 'Confirmed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                  }`}>{drive.status}</span>
-                  <Syringe className="w-4 h-4 text-birla-cyan" />
-                </div>
-                <h4 className="text-xs font-semibold text-foreground mb-2">{drive.name}</h4>
-                <div className="space-y-1 text-[10px] text-muted-foreground">
-                  <p className="flex items-center gap-1"><Calendar className="w-3 h-3" />{drive.date}</p>
-                  <p className="flex items-center gap-1"><Users className="w-3 h-3" />{drive.target}</p>
-                  <p className="flex items-center gap-1"><MapPin className="w-3 h-3" />{drive.venue}</p>
-                  <p className="flex items-center gap-1"><Stethoscope className="w-3 h-3" />{drive.coordinator}</p>
-                  <p className="flex items-center gap-1"><Pill className="w-3 h-3" />{drive.pharma}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Counsellor Appointments */}
-      {activeTab === 'counselling' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Brain className="w-5 h-5 text-purple-500" />
-              Counsellor Appointments
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Schedule Appointment
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            {[
-              { label: 'Active Cases', value: '24', icon: Brain, color: 'text-purple-500 bg-purple-500/10' },
-              { label: 'Sessions This Month', value: '68', icon: Users, color: 'text-birla-cyan bg-birla-cyan/10' },
-              { label: 'Counsellors', value: '2', icon: Stethoscope, color: 'text-birla-gold bg-birla-gold/10' },
-              { label: 'Avg Improvement', value: '+18%', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-500/10' },
-            ].map((stat) => {
-              const Icon = stat.icon
+      {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
+      {activeTab === 'overview' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {topStats.map((card) => {
+              const Icon = card.icon
               return (
-                <div key={stat.label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
-                    <Icon className="w-5 h-5" />
+                <motion.div key={card.label} variants={itemVariants}
+                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}>
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                        <ArrowUpRight className="w-3 h-3" />{card.change}
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold">{card.value}</p>
+                    <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{stat.value}</p>
-                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
-                  </div>
-                </div>
+                </motion.div>
               )
             })}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Apt ID</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Student</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Counsellor</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Date & Time</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Session</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {counsellorAppointments.map((apt) => (
-                    <tr key={apt.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-birla-cyan">{apt.id}</td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-foreground">{apt.student}</p>
-                        <p className="text-[10px] text-muted-foreground">Class {apt.class}</p>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-foreground">{apt.counsellor}</td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm text-foreground">{apt.date}</p>
-                        <p className="text-[10px] text-muted-foreground">{apt.time}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-medium">{apt.type}</span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-foreground">{apt.session}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          apt.status === 'Scheduled' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                          apt.status === 'In Progress' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          'bg-muted text-muted-foreground'
-                        }`}>{apt.status}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Wellness Dashboard */}
-      {activeTab === 'wellness' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Activity className="w-5 h-5 text-birla-cyan" />
-            Wellness Dashboard
-          </h3>
-
-          {/* Wellness Score Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {wellnessScores.map((ws) => (
-              <div key={ws.student} className="rounded-2xl border border-border bg-card p-4 hover:shadow-sm transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg gradient-birla-gold flex items-center justify-center text-xs font-bold text-birla-blue">
-                      {ws.student.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{ws.student}</p>
-                      <p className="text-[10px] text-muted-foreground">Class {ws.class}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {ws.trend === 'up' ? <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> :
-                     ws.trend === 'down' ? <TrendingUp className="w-3.5 h-3.5 text-red-500 rotate-180" /> :
-                     <Activity className="w-3.5 h-3.5 text-amber-500" />}
-                    <span className={`text-[10px] font-medium ${
-                      ws.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' :
-                      ws.trend === 'down' ? 'text-red-600 dark:text-red-400' :
-                      'text-amber-600 dark:text-amber-400'
-                    }`}>{ws.trend}</span>
-                  </div>
-                </div>
-
-                {/* Overall Score */}
-                <div className="flex items-center justify-center mb-3">
-                  <div className="relative w-16 h-16">
-                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                      <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-muted/30" strokeWidth="4" />
-                      <circle cx="32" cy="32" r="28" fill="none" stroke={ws.overall >= 80 ? '#10B981' : ws.overall >= 70 ? '#22D3EE' : '#F59E0B'} strokeWidth="4" strokeDasharray={`${(ws.overall / 100) * 176} 176`} strokeLinecap="round" />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-bold text-foreground">{ws.overall}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dimension Scores */}
-                <div className="grid grid-cols-5 gap-1 text-center">
-                  {[
-                    { label: 'M', value: ws.mental, color: ws.mental >= 80 ? 'text-emerald-500' : ws.mental >= 65 ? 'text-amber-500' : 'text-red-500' },
-                    { label: 'P', value: ws.physical, color: ws.physical >= 80 ? 'text-emerald-500' : ws.physical >= 65 ? 'text-amber-500' : 'text-red-500' },
-                    { label: 'S', value: ws.social, color: ws.social >= 80 ? 'text-emerald-500' : ws.social >= 65 ? 'text-amber-500' : 'text-red-500' },
-                    { label: 'E', value: ws.emotional, color: ws.emotional >= 80 ? 'text-emerald-500' : ws.emotional >= 65 ? 'text-amber-500' : 'text-red-500' },
-                    { label: 'A', value: ws.academic, color: ws.academic >= 80 ? 'text-emerald-500' : ws.academic >= 65 ? 'text-amber-500' : 'text-red-500' },
-                  ].map((dim) => (
-                    <div key={dim.label}>
-                      <p className={`text-xs font-bold ${dim.color}`}>{dim.value}</p>
-                      <p className="text-[8px] text-muted-foreground">{dim.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Mental Health Indicators */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="text-xs text-muted-foreground mb-3">Mental Health Indicators (6-Month Trend)</p>
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Syringe className="w-4 h-4 text-birla-cyan" />Vaccination Coverage
+              </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mentalHealthIndicators}>
+                  <BarChart data={vaccinationCoverage}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 100]} />
+                    <XAxis dataKey="vaccine" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Line type="monotone" dataKey="stress" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} name="Stress %" />
-                    <Line type="monotone" dataKey="anxiety" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} name="Anxiety %" />
-                    <Line type="monotone" dataKey="wellbeing" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Wellbeing %" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Activity Tracking */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="text-xs text-muted-foreground mb-3">Weekly Activity Participation</p>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={activityTracking}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="day" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Bar dataKey="sports" fill="#22D3EE" radius={[2, 2, 0, 0]} name="Sports" />
-                    <Bar dataKey="yoga" fill="#C8A45C" radius={[2, 2, 0, 0]} name="Yoga" />
-                    <Bar dataKey="meditation" fill="#8B5CF6" radius={[2, 2, 0, 0]} name="Meditation" />
-                    <Bar dataKey="outdoor" fill="#10B981" radius={[2, 2, 0, 0]} name="Outdoor" />
+                    <Bar dataKey="coverage" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Coverage %" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          </div>
+            </motion.div>
 
-          {/* Wellness Radar for Top Student */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground mb-3">Wellness Radar - Ananya Iyer (Highest Score: 90)</p>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={wellnessRadar}>
-                  <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} stroke={darkMode ? '#94a3b8' : '#64748b'} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
-                  <Radar name="Wellness Score" dataKey="A" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.3} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Brain className="w-4 h-4 text-purple-500" />Counselling Sessions by Type
+              </h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={counsellingSessions}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="counsellor" tick={{ fontSize: 7 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                    <Bar dataKey="academic" stackId="a" fill="#0A1628" name="Academic" />
+                    <Bar dataKey="behavioral" stackId="a" fill="#22D3EE" name="Behavioral" />
+                    <Bar dataKey="career" stackId="a" fill="#C8A45C" name="Career" />
+                    <Bar dataKey="personal" stackId="a" fill="#8B5CF6" name="Personal" />
+                    <Bar dataKey="family" stackId="a" fill="#EF4444" name="Family" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       )}
 
-      {/* Emergency Alerts */}
-      {activeTab === 'emergency' && (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Siren className="w-5 h-5 text-red-500" />
-            Emergency Alerts & Protocols
-          </h3>
-
-          {/* Emergency Protocol */}
-          <div className="rounded-2xl border-2 border-red-500/30 bg-red-500/5 p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-red-500" />
-              Emergency Response Protocol
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {emergencyProtocol.map((step) => {
-                const Icon = step.icon
-                return (
-                  <div key={step.step} className="rounded-xl border border-red-500/20 bg-card p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">
-                        {step.step}
-                      </div>
-                      <Icon className="w-4 h-4 text-red-500" />
-                    </div>
-                    <p className="text-xs font-medium text-foreground mb-1">{step.action}</p>
-                    <p className="text-[10px] text-red-600 dark:text-red-400 font-medium">{step.time}</p>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-red-500/20">
-              <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors animate-pulse-glow">
-                <Siren className="w-3.5 h-3.5" /> TRIGGER EMERGENCY ALERT
-              </button>
-              <p className="text-[10px] text-red-600 dark:text-red-400">This will notify all staff, wardens, and emergency contacts immediately</p>
-            </div>
+      {/* ═══════════════ MEDICAL RECORDS TAB ═══════════════ */}
+      {activeTab === 'medical' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Stethoscope className="w-4 h-4 text-birla-cyan" />Medical Records
+            </h3>
+            <button onClick={() => { setActiveTab('forms'); setActiveForm('medicalRecord') }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
+              <Plus className="w-3.5 h-3.5" />New Record
+            </button>
           </div>
-
-          {/* Emergency Contacts */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Phone className="w-4 h-4 text-birla-cyan" />
-              Emergency Contact Directory
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {emergencyContacts.map((contact) => (
-                <div key={contact.role} className="rounded-xl border border-border p-3 hover:shadow-sm transition-all">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-                      <Phone className="w-4 h-4 text-red-500" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">{contact.role}</p>
-                      <p className="text-[10px] text-muted-foreground">{contact.available}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-foreground">{contact.name}</p>
-                  <p className="text-sm font-mono font-bold text-birla-cyan">{contact.phone}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Alert History */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500" />
-                Emergency Alert History
-              </h4>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">
-                <Download className="w-3.5 h-3.5" /> Export Report
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Alert ID</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Date</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Student</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Description</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Action Taken</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Resolved By</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Duration</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Blood Group</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Height</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Weight</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Last Checkup</th>
+                </tr>
+              </thead>
+              <tbody>
+                {medicalRecordsData.map((r, i) => (
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-2 px-3 font-medium">{r.name}</td>
+                    <td className="py-2 px-3 text-birla-cyan">{r.bspId}</td>
+                    <td className="py-2 px-3 text-birla-gold">{r.penNo}</td>
+                    <td className="py-2 px-3 text-purple-500">{r.upparId}</td>
+                    <td className="py-2 px-3"><span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-medium">{r.bloodGroup}</span></td>
+                    <td className="py-2 px-3">{r.height}</td>
+                    <td className="py-2 px-3">{r.weight}</td>
+                    <td className="py-2 px-3">{r.lastCheckup}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {alertHistory.map((alert) => (
-                    <tr key={alert.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-birla-cyan">{alert.id}</td>
-                      <td className="px-4 py-3 text-xs text-foreground">{alert.date}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          alert.type === 'Medical Emergency' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
-                          alert.type === 'Injury' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                          alert.type === 'Asthma Attack' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                          'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                        }`}>{alert.type}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm text-foreground">{alert.student}</p>
-                        <p className="text-[10px] text-muted-foreground">{alert.class}</p>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-foreground max-w-[200px]">{alert.description}</td>
-                      <td className="px-4 py-3 text-xs text-foreground max-w-[200px]">{alert.action}</td>
-                      <td className="px-4 py-3 text-xs text-foreground">{alert.resolvedBy}</td>
-                      <td className="px-4 py-3 text-xs font-medium text-foreground">{alert.duration}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════ VACCINATION TAB ═══════════════ */}
+      {activeTab === 'vaccination' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Syringe className="w-4 h-4 text-birla-cyan" />Vaccination Records
+            </h3>
+            <button onClick={() => { setActiveTab('forms'); setActiveForm('vaccinationRecord') }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
+              <Plus className="w-3.5 h-3.5" />New Record
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Vaccine</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Dose</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Date</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Next Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vaccinationRecords.map((v, i) => (
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-2 px-3 font-medium">{v.name}</td>
+                    <td className="py-2 px-3 text-birla-cyan">{v.bspId}</td>
+                    <td className="py-2 px-3 text-birla-gold">{v.penNo}</td>
+                    <td className="py-2 px-3 text-purple-500">{v.upparId}</td>
+                    <td className="py-2 px-3">{v.vaccine}</td>
+                    <td className="py-2 px-3">{v.dose}</td>
+                    <td className="py-2 px-3">{v.date}</td>
+                    <td className="py-2 px-3">{v.nextDue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════ COUNSELLING TAB ═══════════════ */}
+      {activeTab === 'counselling' && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Brain className="w-4 h-4 text-purple-500" />Counselling Appointments
+            </h3>
+            <button onClick={() => { setActiveTab('forms'); setActiveForm('counsellingAppt') }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
+              <Plus className="w-3.5 h-3.5" />New Appointment
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Counsellor</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Type</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Date</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {counsellingData.map((c, i) => (
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-2 px-3 font-medium">{c.student}</td>
+                    <td className="py-2 px-3 text-birla-cyan">{c.bspId}</td>
+                    <td className="py-2 px-3 text-birla-gold">{c.penNo}</td>
+                    <td className="py-2 px-3 text-purple-500">{c.upparId}</td>
+                    <td className="py-2 px-3">{c.counsellor}</td>
+                    <td className="py-2 px-3">{c.type}</td>
+                    <td className="py-2 px-3">{c.date}</td>
+                    <td className="py-2 px-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        c.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                      }`}>{c.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════ FORMS TAB ═══════════════ */}
+      {activeTab === 'forms' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {formOptions.map((f) => {
+              const Icon = f.icon
+              return (
+                <button key={f.key} onClick={() => setActiveForm(f.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeForm === f.key ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{f.label}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Current Status */}
-          <div className="rounded-2xl border-2 border-emerald-500/30 bg-emerald-500/5 p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+          {/* 1. Medical Record Form */}
+          {activeForm === 'medicalRecord' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Stethoscope className="w-5 h-5 text-emerald-500" />Medical Record Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={medicalRecordData.student}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(medicalRecordData, setMedicalRecordData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Height (cm)</label>
+                  <input type="text" placeholder="e.g. 155" value={medicalRecordData.height}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, height: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Weight (kg)</label>
+                  <input type="text" placeholder="e.g. 45" value={medicalRecordData.weight}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, weight: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Blood Group</label>
+                  <select value={medicalRecordData.bloodGroup} onChange={(e) => setMedicalRecordData({ ...medicalRecordData, bloodGroup: e.target.value })} className={inputClass}>
+                    <option value="">Select</option>
+                    {bloodGroups.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Vision (Left)</label>
+                  <input type="text" placeholder="e.g. 6/6" value={medicalRecordData.visionLeft}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, visionLeft: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Vision (Right)</label>
+                  <input type="text" placeholder="e.g. 6/6" value={medicalRecordData.visionRight}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, visionRight: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Hearing</label>
+                  <input type="text" placeholder="e.g. Normal" value={medicalRecordData.hearing}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, hearing: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Allergies</label>
+                  <input type="text" placeholder="e.g. Dust, Penicillin" value={medicalRecordData.allergies}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, allergies: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Chronic Conditions</label>
+                  <input type="text" placeholder="e.g. Asthma, Diabetes" value={medicalRecordData.chronicConditions}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, chronicConditions: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Medications</label>
+                  <input type="text" placeholder="Current medications" value={medicalRecordData.medications}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, medications: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Emergency Contact</label>
+                  <input type="text" placeholder="+91 XXXXX XXXXX" value={medicalRecordData.emergencyContact}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, emergencyContact: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Doctor Name</label>
+                  <select value={medicalRecordData.doctorName} onChange={(e) => setMedicalRecordData({ ...medicalRecordData, doctorName: e.target.value })} className={inputClass}>
+                    <option value="">Select Doctor</option>
+                    {doctors.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Last Checkup Date</label>
+                  <input type="date" value={medicalRecordData.lastCheckupDate}
+                    onChange={(e) => setMedicalRecordData({ ...medicalRecordData, lastCheckupDate: e.target.value })} className={inputClass} />
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">All Clear - No Active Emergencies</h4>
-                <p className="text-xs text-muted-foreground">Last emergency was on Feb 15, 2026. All medical supplies are stocked. Next audit scheduled for Mar 15, 2026.</p>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Medical Record', medicalRecordData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Save Record
+                </button>
+                <button onClick={() => setMedicalRecordData({ student: '', bspId: '', penNo: '', upparId: '', height: '', weight: '', bloodGroup: '', visionLeft: '', visionRight: '', hearing: '', allergies: '', chronicConditions: '', medications: '', emergencyContact: '', doctorName: '', lastCheckupDate: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
               </div>
-              <div className="ml-auto text-right">
-                <p className="text-xs text-muted-foreground">Emergency Kit Status</p>
-                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Fully Stocked ✓</p>
+            </motion.div>
+          )}
+
+          {/* 2. Vaccination Record Form */}
+          {activeForm === 'vaccinationRecord' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Syringe className="w-5 h-5 text-blue-500" />Vaccination Record Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={vaccinationData.student}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(vaccinationData, setVaccinationData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Vaccine Name *</label>
+                  <select value={vaccinationData.vaccineName} onChange={(e) => setVaccinationData({ ...vaccinationData, vaccineName: e.target.value })} className={inputClass}>
+                    <option value="">Select Vaccine</option>
+                    {vaccineNames.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Dose Number *</label>
+                  <input type="text" placeholder="e.g. 1st, 2nd, Booster" value={vaccinationData.doseNumber}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, doseNumber: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Date *</label>
+                  <input type="date" value={vaccinationData.date}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, date: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Next Due Date</label>
+                  <input type="date" value={vaccinationData.nextDue}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, nextDue: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Administered By</label>
+                  <input type="text" placeholder="Doctor/Nurse name" value={vaccinationData.administeredBy}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, administeredBy: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Batch Number</label>
+                  <input type="text" placeholder="Vaccine batch number" value={vaccinationData.batchNumber}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, batchNumber: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Side Effects</label>
+                  <input type="text" placeholder="e.g. Mild fever, None" value={vaccinationData.sideEffects}
+                    onChange={(e) => setVaccinationData({ ...vaccinationData, sideEffects: e.target.value })} className={inputClass} />
+                </div>
               </div>
-            </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Vaccination Record', vaccinationData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Save Record
+                </button>
+                <button onClick={() => setVaccinationData({ student: '', bspId: '', penNo: '', upparId: '', vaccineName: '', doseNumber: '', date: '', nextDue: '', administeredBy: '', batchNumber: '', sideEffects: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. Counselling Appointment Form */}
+          {activeForm === 'counsellingAppt' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Brain className="w-5 h-5 text-purple-500" />Counselling Appointment Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={counsellingData2.student}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(counsellingData2, setCounsellingData2)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Counsellor *</label>
+                  <select value={counsellingData2.counsellor} onChange={(e) => setCounsellingData2({ ...counsellingData2, counsellor: e.target.value })} className={inputClass}>
+                    <option value="">Select Counsellor</option>
+                    {counsellors.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Date *</label>
+                  <input type="date" value={counsellingData2.date}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, date: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Time *</label>
+                  <input type="time" value={counsellingData2.time}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, time: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Type *</label>
+                  <select value={counsellingData2.type} onChange={(e) => setCounsellingData2({ ...counsellingData2, type: e.target.value })} className={inputClass}>
+                    {counsellingTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>Session Notes</label>
+                  <textarea placeholder="Notes from counselling session..." value={counsellingData2.sessionNotes}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, sessionNotes: e.target.value })} className={inputClass} rows={3} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Follow-up Date</label>
+                  <input type="date" value={counsellingData2.followUpDate}
+                    onChange={(e) => setCounsellingData2({ ...counsellingData2, followUpDate: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Parent Consent</label>
+                  <select value={counsellingData2.parentConsent} onChange={(e) => setCounsellingData2({ ...counsellingData2, parentConsent: e.target.value })} className={inputClass}>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Counselling Appointment', counsellingData2)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Book Appointment
+                </button>
+                <button onClick={() => setCounsellingData2({ student: '', bspId: '', penNo: '', upparId: '', counsellor: '', date: '', time: '', type: 'Academic', sessionNotes: '', followUpDate: '', parentConsent: 'Yes' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Health Checkup Form */}
+          {activeForm === 'healthCheckup' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Activity className="w-5 h-5 text-cyan-500" />Health Checkup Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={checkupData.student}
+                    onChange={(e) => setCheckupData({ ...checkupData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(checkupData, setCheckupData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Checkup Type *</label>
+                  <select value={checkupData.checkupType} onChange={(e) => setCheckupData({ ...checkupData, checkupType: e.target.value })} className={inputClass}>
+                    {checkupTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Date *</label>
+                  <input type="date" value={checkupData.date}
+                    onChange={(e) => setCheckupData({ ...checkupData, date: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Blood Pressure</label>
+                  <input type="text" placeholder="e.g. 120/80" value={checkupData.bp}
+                    onChange={(e) => setCheckupData({ ...checkupData, bp: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Pulse (bpm)</label>
+                  <input type="text" placeholder="e.g. 72" value={checkupData.pulse}
+                    onChange={(e) => setCheckupData({ ...checkupData, pulse: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Temperature (°F)</label>
+                  <input type="text" placeholder="e.g. 98.6" value={checkupData.temp}
+                    onChange={(e) => setCheckupData({ ...checkupData, temp: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Height (cm)</label>
+                  <input type="text" placeholder="e.g. 155" value={checkupData.height}
+                    onChange={(e) => setCheckupData({ ...checkupData, height: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Weight (kg)</label>
+                  <input type="text" placeholder="e.g. 45" value={checkupData.weight}
+                    onChange={(e) => setCheckupData({ ...checkupData, weight: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>BMI</label>
+                  <input type="text" placeholder="Auto-calculated" value={checkupData.bmi}
+                    onChange={(e) => setCheckupData({ ...checkupData, bmi: e.target.value })} className={inputClass} />
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>Doctor Remarks</label>
+                  <textarea placeholder="Doctor observations and remarks..." value={checkupData.doctorRemarks}
+                    onChange={(e) => setCheckupData({ ...checkupData, doctorRemarks: e.target.value })} className={inputClass} rows={2} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Referred To</label>
+                  <input type="text" placeholder="Specialist/Hospital name" value={checkupData.referredTo}
+                    onChange={(e) => setCheckupData({ ...checkupData, referredTo: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Follow-up Required</label>
+                  <select value={checkupData.followUpRequired} onChange={(e) => setCheckupData({ ...checkupData, followUpRequired: e.target.value })} className={inputClass}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Health Checkup', checkupData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Save Checkup
+                </button>
+                <button onClick={() => setCheckupData({ student: '', bspId: '', penNo: '', upparId: '', checkupType: 'Annual', date: '', bp: '', pulse: '', temp: '', height: '', weight: '', bmi: '', doctorRemarks: '', referredTo: '', followUpRequired: 'No' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. Emergency Alert Form */}
+          {activeForm === 'emergencyAlert' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <AlertTriangle className="w-5 h-5 text-red-500" />Emergency Alert Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Student Name *</label>
+                  <input type="text" placeholder="Enter student name" value={emergencyData.student}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, student: e.target.value })} className={inputClass} />
+                </div>
+                {renderUdiseFields(emergencyData, setEmergencyData)}
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Emergency Type *</label>
+                  <select value={emergencyData.emergencyType} onChange={(e) => setEmergencyData({ ...emergencyData, emergencyType: e.target.value })} className={inputClass}>
+                    {emergencyTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>Description *</label>
+                  <textarea placeholder="Describe the emergency..." value={emergencyData.description}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, description: e.target.value })} className={inputClass} rows={2} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Severity *</label>
+                  <select value={emergencyData.severity} onChange={(e) => setEmergencyData({ ...emergencyData, severity: e.target.value })} className={inputClass}>
+                    {severities.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Location</label>
+                  <input type="text" placeholder="e.g. Class X-A, Playground" value={emergencyData.location}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, location: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Contacted Parents</label>
+                  <select value={emergencyData.contactedParents} onChange={(e) => setEmergencyData({ ...emergencyData, contactedParents: e.target.value })} className={inputClass}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Ambulance Called</label>
+                  <select value={emergencyData.ambulanceCalled} onChange={(e) => setEmergencyData({ ...emergencyData, ambulanceCalled: e.target.value })} className={inputClass}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>Action Taken</label>
+                  <textarea placeholder="Describe actions taken..." value={emergencyData.actionTaken}
+                    onChange={(e) => setEmergencyData({ ...emergencyData, actionTaken: e.target.value })} className={inputClass} rows={2} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Emergency Alert', emergencyData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <AlertTriangle className="w-4 h-4" />Raise Emergency Alert
+                </button>
+                <button onClick={() => setEmergencyData({ student: '', bspId: '', penNo: '', upparId: '', emergencyType: 'Medical', description: '', severity: 'Medium', location: '', contactedParents: 'No', ambulanceCalled: 'No', actionTaken: '' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════ REPORTS TAB ═══════════════ */}
+      {activeTab === 'reports' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {reportOptions.map((r) => {
+              const Icon = r.icon
+              return (
+                <button key={r.key} onClick={() => setActiveReport(r.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeReport === r.key ? 'gradient-birla-gold text-birla-blue shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{r.label}
+                </button>
+              )
+            })}
           </div>
+
+          {/* 1. Vaccination Coverage Report */}
+          {activeReport === 'vaccination' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Vaccine-wise Coverage</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Vaccine</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Total Students</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Vaccinated</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Coverage %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vaccinationCoverage.map((v, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{v.vaccine}</td>
+                          <td className="py-2 px-3">{v.total}</td>
+                          <td className="py-2 px-3">{v.vaccinated}</td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${v.coverage >= 90 ? 'bg-emerald-500' : v.coverage >= 75 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${v.coverage}%` }} />
+                              </div>
+                              <span className={v.coverage >= 90 ? 'text-emerald-600 dark:text-emerald-400' : v.coverage >= 75 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}>{v.coverage}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Vaccination Coverage Chart</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={vaccinationCoverage}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="vaccine" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="coverage" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Coverage %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 2. Health Checkup Summary Report */}
+          {activeReport === 'checkup' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Class-wise Health Summary</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Total</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Healthy</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Follow-up</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Referred</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {healthCheckupSummary.map((h, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{h.class}</td>
+                          <td className="py-2 px-3">{h.total}</td>
+                          <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">{h.healthy}</td>
+                          <td className="py-2 px-3 text-amber-600 dark:text-amber-400">{h.followUp}</td>
+                          <td className="py-2 px-3 text-red-600 dark:text-red-400">{h.referred}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Health Status Distribution</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={[
+                        { name: 'Healthy', value: healthCheckupSummary.reduce((a, b) => a + b.healthy, 0), color: '#10B981' },
+                        { name: 'Follow-up', value: healthCheckupSummary.reduce((a, b) => a + b.followUp, 0), color: '#F59E0B' },
+                        { name: 'Referred', value: healthCheckupSummary.reduce((a, b) => a + b.referred, 0), color: '#EF4444' },
+                      ]} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" nameKey="name" paddingAngle={3} label>
+                        {[{ color: '#10B981' }, { color: '#F59E0B' }, { color: '#EF4444' }].map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. Counselling Session Report */}
+          {activeReport === 'counsellingReport' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Counsellor-wise Sessions</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Counsellor</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Total Sessions</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Academic</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Behavioral</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Career</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Personal</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Family</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {counsellingSessions.map((c, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{c.counsellor}</td>
+                          <td className="py-2 px-3">{c.sessions}</td>
+                          <td className="py-2 px-3">{c.academic}</td>
+                          <td className="py-2 px-3">{c.behavioral}</td>
+                          <td className="py-2 px-3">{c.career}</td>
+                          <td className="py-2 px-3">{c.personal}</td>
+                          <td className="py-2 px-3">{c.family}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Session Type Distribution</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={counsellingSessions}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="counsellor" tick={{ fontSize: 7 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                      <Bar dataKey="academic" fill="#0A1628" name="Academic" />
+                      <Bar dataKey="behavioral" fill="#22D3EE" name="Behavioral" />
+                      <Bar dataKey="career" fill="#C8A45C" name="Career" />
+                      <Bar dataKey="personal" fill="#8B5CF6" name="Personal" />
+                      <Bar dataKey="family" fill="#EF4444" name="Family" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Allergy & Condition Report */}
+          {activeReport === 'allergy' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Allergy & Condition Report</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Condition</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student Count</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Sample Students (with BSP ID / PEN No / Uppar ID)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allergyConditionData.map((a, i) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="py-2 px-3 font-medium">{a.condition}</td>
+                        <td className="py-2 px-3">
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-medium">{a.count}</span>
+                        </td>
+                        <td className="py-2 px-3 text-muted-foreground">{a.students.join(', ')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. Wellness Score Report */}
+          {activeReport === 'wellness' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Class-wise Wellness Scores</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Physical</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Mental</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Social</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Emotional</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Academic</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {wellnessScores.map((w, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{w.class}</td>
+                          <td className="py-2 px-3">{w.physical}</td>
+                          <td className="py-2 px-3">{w.mental}</td>
+                          <td className="py-2 px-3">{w.social}</td>
+                          <td className="py-2 px-3">{w.emotional}</td>
+                          <td className="py-2 px-3">{w.academic}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Wellness Radar</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={wellnessScores}>
+                      <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                      <PolarAngleAxis dataKey="class" tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
+                      <Radar name="Physical" dataKey="physical" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.15} />
+                      <Radar name="Mental" dataKey="mental" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.15} />
+                      <Radar name="Social" dataKey="social" stroke="#C8A45C" fill="#C8A45C" fillOpacity={0.15} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </motion.div>

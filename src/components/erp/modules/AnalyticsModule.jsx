@@ -3,21 +3,105 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Brain, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, BarChart3,
-  PieChart as PieChartIcon, Activity, Users, Target, Sparkles, Eye,
-  ArrowUpRight, ArrowDownRight, Zap, Shield, BookOpen, GraduationCap,
-  Clock, Award, Lightbulb, ChevronRight, Download, Filter, Search,
-  Star, MessageSquare, IndianRupee, UserCheck, Calendar, FileText,
-  Cpu, Database, Gauge, LineChart as LineChartIcon, Layers
+  Brain, Users, TrendingUp, BarChart3, FileText, Calendar, Plus,
+  ArrowUpRight, Target, Zap, Save, RotateCcw, ClipboardList,
+  PieChart as PieChartIcon, Activity, Award, BookOpen, Briefcase,
+  IndianRupee, Settings, LineChart as LineChartIcon, AlertTriangle,
+  CheckCircle2, Star, ThumbsUp, ThumbsDown, Cpu, GitBranch,
+  BarChart2, Radar as RadarIcon, Percent, Clock
 } from 'lucide-react'
 import {
-  BarChart, Bar, AreaChart, Area, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  ScatterChart, Scatter, ComposedChart
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, PieChart, Pie, Cell, AreaChart,
+  Area, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, Radar, ComposedChart
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
 
+// ─── Mock Data ────────────────────────────────────────────────────
+const topStats = [
+  { label: 'AI Models', value: '4', change: 'Active', icon: Cpu, gradient: 'from-purple-900 to-purple-600', glow: 'shadow-purple-800/20' },
+  { label: 'Predictions', value: '1,247', change: 'This month', icon: Brain, gradient: 'from-blue-900 to-blue-700', glow: 'shadow-blue-800/20' },
+  { label: 'Accuracy', value: '92%', change: 'Avg accuracy', icon: Target, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+  { label: 'KPIs Tracked', value: '24', change: 'Categories', icon: BarChart2, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+]
+
+const predictionAccuracy = [
+  { month: 'Sep', performance: 88, attendance: 91, feeDefault: 85, teacherAttrition: 79 },
+  { month: 'Oct', performance: 89, attendance: 90, feeDefault: 87, teacherAttrition: 81 },
+  { month: 'Nov', performance: 90, attendance: 92, feeDefault: 86, teacherAttrition: 83 },
+  { month: 'Dec', performance: 91, attendance: 93, feeDefault: 88, teacherAttrition: 82 },
+  { month: 'Jan', performance: 92, attendance: 94, feeDefault: 89, teacherAttrition: 85 },
+  { month: 'Feb', performance: 93, attendance: 95, feeDefault: 90, teacherAttrition: 86 },
+  { month: 'Mar', performance: 94, attendance: 96, feeDefault: 91, teacherAttrition: 88 },
+]
+
+const riskStudents = [
+  { name: 'Aarav Kumar', bspId: 'BSP/WB/2023/00125', penNo: 'PEN-2301-0456', upparId: 'UPPR-WB-102345', class: 'X-A', riskType: 'Attendance', riskScore: 78, status: 'High' },
+  { name: 'Priya Gupta', bspId: 'BSP/WB/2023/00089', penNo: 'PEN-2301-0420', upparId: 'UPPR-WB-101987', class: 'IX-B', riskType: 'Performance', riskScore: 65, status: 'Medium' },
+  { name: 'Rohan Sharma', bspId: 'BSP/WB/2023/00130', penNo: 'PEN-2301-0461', upparId: 'UPPR-WB-102350', class: 'VIII-A', riskType: 'Fee Default', riskScore: 82, status: 'High' },
+  { name: 'Arjun Patel', bspId: 'BSP/WB/2023/00156', penNo: 'PEN-2301-0487', upparId: 'UPPR-WB-102678', class: 'XI-Sci', riskType: 'Attendance', riskScore: 45, status: 'Low' },
+  { name: 'Karan Singh', bspId: 'BSP/WB/2023/00201', penNo: 'PEN-2301-0532', upparId: 'UPPR-WB-103456', class: 'X-A', riskType: 'Performance', riskScore: 72, status: 'Medium' },
+  { name: 'Ananya Joshi', bspId: 'BSP/WB/2023/00045', penNo: 'PEN-2301-0376', upparId: 'UPPR-WB-101234', class: 'VII-A', riskType: 'Fee Default', riskScore: 55, status: 'Medium' },
+]
+
+const academicTrend = [
+  { year: '2020', avgScore: 72, passRate: 85, distinction: 18, attendance: 88 },
+  { year: '2021', avgScore: 74, passRate: 87, distinction: 20, attendance: 86 },
+  { year: '2022', avgScore: 76, passRate: 89, distinction: 22, attendance: 89 },
+  { year: '2023', avgScore: 78, passRate: 91, distinction: 25, attendance: 91 },
+  { year: '2024', avgScore: 81, passRate: 93, distinction: 28, attendance: 92 },
+  { year: '2025', avgScore: 83, passRate: 94, distinction: 30, attendance: 93 },
+]
+
+const teacherEffectiveness = [
+  { name: 'Dr. Priya Menon', subject: 'Mathematics', pedagogy: 88, engagement: 85, assessment: 90, communication: 82, innovation: 78, overall: 85 },
+  { name: 'Mr. Rajesh Kumar', subject: 'Science', pedagogy: 82, engagement: 88, assessment: 85, communication: 80, innovation: 85, overall: 84 },
+  { name: 'Mrs. Sunita Reddy', subject: 'English', pedagogy: 90, engagement: 82, assessment: 88, communication: 92, innovation: 75, overall: 85 },
+  { name: 'Mr. Arvind Desai', subject: 'Social Studies', pedagogy: 78, engagement: 80, assessment: 82, communication: 85, innovation: 72, overall: 79 },
+  { name: 'Mrs. Kavitha Nair', subject: 'Hindi', pedagogy: 85, engagement: 78, assessment: 80, communication: 88, innovation: 80, overall: 82 },
+]
+
+const kpiData = [
+  { name: 'Student Retention', category: 'Academic', current: 94, target: 95, previous: 92, unit: 'Percentage' },
+  { name: 'Avg Attendance', category: 'Academic', current: 91, target: 95, previous: 89, unit: 'Percentage' },
+  { name: 'Board Pass Rate', category: 'Academic', current: 93, target: 96, previous: 90, unit: 'Percentage' },
+  { name: 'Revenue Collection', category: 'Financial', current: 85, target: 90, previous: 82, unit: 'Percentage' },
+  { name: 'Fee Default Rate', category: 'Financial', current: 12, target: 8, previous: 15, unit: 'Percentage' },
+  { name: 'Teacher Retention', category: 'HR', current: 88, target: 92, previous: 85, unit: 'Percentage' },
+  { name: 'Parent Satisfaction', category: 'Operations', current: 87, target: 90, previous: 84, unit: 'Percentage' },
+  { name: 'Digital Adoption', category: 'Operations', current: 78, target: 85, previous: 70, unit: 'Percentage' },
+]
+
+const financialForecast = [
+  { month: 'Apr', actual: 1850000, predicted: 1800000, lower: 1700000, upper: 1950000 },
+  { month: 'May', actual: 2100000, predicted: 2050000, lower: 1900000, upper: 2200000 },
+  { month: 'Jun', actual: 1950000, predicted: 2000000, lower: 1850000, upper: 2150000 },
+  { month: 'Jul', actual: 2250000, predicted: 2200000, lower: 2050000, upper: 2350000 },
+  { month: 'Aug', actual: 2050000, predicted: 2100000, lower: 1950000, upper: 2250000 },
+  { month: 'Sep', actual: 2350000, predicted: 2300000, lower: 2150000, upper: 2450000 },
+  { month: 'Oct', actual: null, predicted: 2400000, lower: 2200000, upper: 2600000 },
+  { month: 'Nov', actual: null, predicted: 2500000, lower: 2300000, upper: 2700000 },
+  { month: 'Dec', actual: null, predicted: 2350000, lower: 2150000, upper: 2550000 },
+  { month: 'Jan', actual: null, predicted: 2600000, lower: 2400000, upper: 2800000 },
+  { month: 'Feb', actual: null, predicted: 2550000, lower: 2350000, upper: 2750000 },
+  { month: 'Mar', actual: null, predicted: 2700000, lower: 2500000, upper: 2900000 },
+]
+
+const modelTypes = ['Student Performance', 'Attendance Risk', 'Fee Default', 'Teacher Attrition']
+const dataRanges = ['3 months', '6 months', '1 year']
+const featureOptions = ['Attendance', 'Marks', 'Fee', 'Behavior', 'Demographics']
+const analysisTypes = ['Trend', 'Comparison', 'Prediction', 'Correlation']
+const dataSources = ['SIS', 'Examination', 'Finance', 'Attendance', 'HR']
+const outputFormats = ['Chart', 'Table', 'Both']
+const kpiCategories = ['Academic', 'Financial', 'Operations', 'HR']
+const kpiUnits = ['Percentage', 'Count', 'Currency']
+const reportFrequencies = ['Daily', 'Weekly', 'Monthly', 'Quarterly']
+const reportFormats = ['PDF', 'Excel', 'Both']
+const insightTypes = ['Prediction', 'Trend', 'Anomaly', 'Recommendation']
+const ratingOptions = ['1', '2', '3', '4', '5']
+
+// ─── Animation Variants ──────────────────────────────────────────
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06 } },
@@ -27,762 +111,910 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
-const CHART_COLORS = ['#0A1628', '#22D3EE', '#C8A45C', '#8B5CF6', '#10B981', '#EF4444', '#F59E0B']
-
-const statsCards = [
-  { label: 'AI Models', value: '5', change: '+2', up: true, icon: Cpu, gradient: 'from-[#0A1628] to-[#1A2D4A]', glow: 'shadow-[#0A1628]/20' },
-  { label: 'Data Points', value: '1.2M', change: '+340K', up: true, icon: Database, gradient: 'from-[#22D3EE]/80 to-[#0E7490]', glow: 'shadow-[#22D3EE]/20' },
-  { label: 'Predictions', value: '847', change: '+124', up: true, icon: Brain, gradient: 'from-[#C8A45C] to-[#E8D5A0]', glow: 'shadow-[#C8A45C]/20' },
-  { label: 'Accuracy', value: '94.2%', change: '+3.1%', up: true, icon: Target, gradient: 'from-emerald-800 to-emerald-600', glow: 'shadow-emerald-800/20' },
-]
-
-const predictedVsActualData = [
-  { month: 'Apr', predicted: 78, actual: 76 },
-  { month: 'May', predicted: 80, actual: 82 },
-  { month: 'Jun', predicted: 75, actual: 73 },
-  { month: 'Jul', predicted: 82, actual: 84 },
-  { month: 'Aug', predicted: 79, actual: 77 },
-  { month: 'Sep', predicted: 85, actual: 86 },
-  { month: 'Oct', predicted: 83, actual: 81 },
-  { month: 'Nov', predicted: 88, actual: 89 },
-  { month: 'Dec', predicted: 86, actual: 85 },
-  { month: 'Jan', predicted: 90, actual: 91 },
-  { month: 'Feb', predicted: 87, actual: 88 },
-  { month: 'Mar', predicted: 92, actual: null },
-]
-
-const riskStudentsData = [
-  { id: 1, name: 'Rohan Gupta', class: 'IX-A', risk: 'High', score: 87, factors: ['Attendance 68%', 'Declining grades', 'No homework submission'] },
-  { id: 2, name: 'Sneha Reddy', class: 'VIII-B', risk: 'High', score: 82, factors: ['Attendance 72%', 'Behavioral issues', 'Failed in 2 subjects'] },
-  { id: 3, name: 'Arjun Mehta', class: 'X-C', risk: 'Medium', score: 68, factors: ['Attendance 78%', 'Drop in Math scores'] },
-  { id: 4, name: 'Pooja Singh', class: 'VII-A', risk: 'Medium', score: 62, factors: ['Irregular attendance', 'Poor participation'] },
-  { id: 5, name: 'Vikram Joshi', class: 'IX-B', risk: 'Medium', score: 58, factors: ['Recent grade decline', 'Missed assessments'] },
-  { id: 6, name: 'Kavya Nair', class: 'X-A', risk: 'Low', score: 42, factors: ['Occasional late submission'] },
-  { id: 7, name: 'Aditya Kumar', class: 'VI-C', risk: 'High', score: 91, factors: ['Attendance 55%', 'No parental engagement', 'Failed 3 subjects'] },
-]
-
-const attendanceRiskData = [
-  { name: 'Rohan Gupta', class: 'IX-A', riskScore: 87, daysAbsent: 34, trend: 'Worsening', factors: ['Chronic absenteeism', 'No medical notes', 'Parent unreachable'] },
-  { name: 'Aditya Kumar', class: 'VI-C', riskScore: 91, daysAbsent: 42, trend: 'Critical', factors: ['Severe absenteeism', 'Family issues', 'Transport problems'] },
-  { name: 'Priya Sharma', class: 'VII-B', riskScore: 74, daysAbsent: 22, trend: 'Worsening', factors: ['Frequent illness', 'Monday-Friday pattern'] },
-  { name: 'Kabir Patel', class: 'VIII-A', riskScore: 65, daysAbsent: 18, trend: 'Stable', factors: ['Seasonal health issues'] },
-  { name: 'Meera Iyer', class: 'IX-C', riskScore: 58, daysAbsent: 14, trend: 'Improving', factors: ['Previous transport issue resolved'] },
-]
-
-const feeDefaultData = [
-  { name: 'Quarter 1', onTime: 82, late: 12, defaulted: 6 },
-  { name: 'Quarter 2', onTime: 78, late: 14, defaulted: 8 },
-  { name: 'Quarter 3', onTime: 85, late: 10, defaulted: 5 },
-  { name: 'Quarter 4', onTime: 72, late: 16, defaulted: 12 },
-]
-
-const feeDefaultParents = [
-  { name: 'Rajesh Kumar (Parent of Aarav, X-A)', probability: 82, amount: '₹37,500', lastPaid: 'Q2 2025-26', category: 'High Risk' },
-  { name: 'Sunita Devi (Parent of Priya, VII-B)', probability: 75, amount: '₹28,000', lastPaid: 'Q1 2025-26', category: 'High Risk' },
-  { name: 'Mohan Lal (Parent of Ravi, IX-C)', probability: 68, amount: '₹42,000', lastPaid: 'Q2 2025-26', category: 'Medium Risk' },
-  { name: 'Anita Sharma (Parent of Neha, VI-A)', probability: 55, amount: '₹18,500', lastPaid: 'Q3 2025-26', category: 'Medium Risk' },
-  { name: 'Vikram Singh (Parent of Arjun, VIII-A)', probability: 45, amount: '₹31,000', lastPaid: 'Q3 2025-26', category: 'Low Risk' },
-]
-
-const feeAtRiskPieData = [
-  { name: 'On Time', value: 72, color: '#10B981' },
-  { name: 'Late Payment', value: 16, color: '#F59E0B' },
-  { name: 'Default Risk', value: 12, color: '#EF4444' },
-]
-
-const academicTrendData = [
-  { year: '2020-21', overall: 74, science: 72, math: 70, english: 78, hindi: 76, sst: 73 },
-  { year: '2021-22', overall: 76, science: 75, math: 72, english: 80, hindi: 77, sst: 75 },
-  { year: '2022-23', overall: 79, science: 78, math: 75, english: 82, hindi: 79, sst: 78 },
-  { year: '2023-24', overall: 82, science: 81, math: 78, english: 84, hindi: 80, sst: 80 },
-  { year: '2024-25', overall: 85, science: 84, math: 82, english: 87, hindi: 83, sst: 82 },
-  { year: '2025-26', overall: 88, science: 87, math: 85, english: 90, hindi: 85, sst: 86 },
-]
-
-const subjectHeatmapData = [
-  { subject: 'Mathematics', class6: 82, class7: 78, class8: 75, class9: 72, class10: 85, class11: 70, class12: 68 },
-  { subject: 'Science', class6: 85, class7: 82, class8: 80, class9: 78, class10: 83, class11: 75, class12: 72 },
-  { subject: 'English', class6: 90, class7: 88, class8: 85, class9: 82, class10: 87, class11: 80, class12: 78 },
-  { subject: 'Hindi', class6: 78, class7: 76, class8: 74, class9: 72, class10: 80, class11: 68, class12: 65 },
-  { subject: 'Social Science', class6: 80, class7: 78, class8: 76, class9: 74, class10: 82, class11: 70, class12: 68 },
-  { subject: 'Computer Science', class6: 88, class7: 86, class8: 84, class9: 82, class10: 90, class11: 78, class12: 76 },
-]
-
-const teacherData = [
-  { name: 'Dr. Priya Menon', subject: 'Mathematics', rating: 4.8, classAvg: 86, students: 120, feedback: 4.7, experience: '12 yrs' },
-  { name: 'Mr. Rakesh Sharma', subject: 'Science', rating: 4.5, classAvg: 82, students: 110, feedback: 4.4, experience: '8 yrs' },
-  { name: 'Ms. Ananya Iyer', subject: 'English', rating: 4.7, classAvg: 88, students: 95, feedback: 4.6, experience: '10 yrs' },
-  { name: 'Mr. Suresh Kumar', subject: 'Hindi', rating: 4.2, classAvg: 78, students: 105, feedback: 4.1, experience: '15 yrs' },
-  { name: 'Ms. Deepa Nair', subject: 'Social Science', rating: 4.4, classAvg: 80, students: 100, feedback: 4.3, experience: '6 yrs' },
-  { name: 'Mr. Arvind Joshi', subject: 'Computer Science', rating: 4.6, classAvg: 85, students: 90, feedback: 4.5, experience: '9 yrs' },
-]
-
-const teacherRadarData = [
-  { subject: 'Teaching Quality', DrMenon: 95, Avg: 78 },
-  { subject: 'Student Engagement', DrMenon: 90, Avg: 72 },
-  { subject: 'Assignment Quality', DrMenon: 88, Avg: 75 },
-  { subject: 'Punctuality', DrMenon: 92, Avg: 80 },
-  { subject: 'Communication', DrMenon: 85, Avg: 70 },
-  { subject: 'Innovation', DrMenon: 88, Avg: 65 },
-]
-
-const recommendationsData = [
-  { id: 1, title: 'Implement remedial classes for Mathematics in Class IX', confidence: 94, impact: 'High', category: 'Academic', icon: BookOpen, desc: 'Based on declining Math scores in IX-A and IX-B, targeted remedial sessions can improve pass rates by 15-20%.' },
-  { id: 2, title: 'Activate parent engagement program for at-risk students', confidence: 91, impact: 'High', category: 'Student Welfare', icon: Users, desc: '7 students identified with chronic absenteeism. Parent counseling sessions recommended every 2 weeks.' },
-  { id: 3, title: 'Introduce AI-assisted homework for Class VI-VIII', confidence: 87, impact: 'Medium', category: 'Technology', icon: Cpu, desc: 'Adaptive learning platforms can address individual learning gaps in foundational years.' },
-  { id: 4, title: 'Schedule fee payment reminder cascade for Q4', confidence: 89, impact: 'High', category: 'Finance', icon: IndianRupee, desc: '₹2.8L at risk of default. Automated SMS + Email reminders to 45 parents with overdue payments.' },
-  { id: 5, title: 'Peer tutoring program for Science in Class X', confidence: 82, impact: 'Medium', category: 'Academic', icon: GraduationCap, desc: 'Top 10% students in Science can mentor struggling peers, improving class average by 8-12%.' },
-  { id: 6, title: 'Teacher training workshop on NEP 2020 pedagogy', confidence: 85, impact: 'Medium', category: 'Training', icon: Award, desc: 'Current NEP compliance at 82.5%. Targeted workshops can improve competency-based assessment adoption.' },
-]
-
-const executiveKPIs = [
-  { label: 'Student Retention', target: 95, actual: 93.2, unit: '%', trend: 'up' },
-  { label: 'Revenue Collection', target: 100, actual: 87.5, unit: '%', trend: 'up' },
-  { label: 'Teacher Satisfaction', target: 90, actual: 88, unit: '%', trend: 'up' },
-  { label: 'Board Exam Pass Rate', target: 98, actual: 96.8, unit: '%', trend: 'up' },
-  { label: 'NEP Compliance', target: 90, actual: 82.5, unit: '%', trend: 'up' },
-  { label: 'Digital Adoption', target: 85, actual: 92, unit: '%', trend: 'up' },
-  { label: 'Parent Satisfaction', target: 90, actual: 91, unit: '%', trend: 'up' },
-  { label: 'Infrastructure Score', target: 90, actual: 78, unit: '%', trend: 'down' },
-]
-
 export default function AnalyticsModule() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
+  const [activeForm, setActiveForm] = useState('predictionConfig')
+  const [activeReport, setActiveReport] = useState('predictionAccuracy')
+
+  // ─── Form States ────────────────────────────────────────
+  const [predictionData, setPredictionData] = useState({
+    modelType: 'Student Performance', dataRange: '6 months', confidenceThreshold: '80', features: ['Attendance', 'Marks'], retrain: false
+  })
+  const [customAnalysisData, setCustomAnalysisData] = useState({
+    analysisName: '', analysisType: 'Trend', dataSource: 'SIS', dateRange: '', filters: '', outputFormat: 'Chart'
+  })
+  const [kpiTargetData, setKpiTargetData] = useState({
+    kpiName: '', currentYear: '', targetValue: '', previousYear: '', category: 'Academic', unit: 'Percentage'
+  })
+  const [reportScheduleData, setReportScheduleData] = useState({
+    reportName: '', reportType: '', frequency: 'Monthly', recipients: '', format: 'PDF'
+  })
+  const [insightFeedbackData, setInsightFeedbackData] = useState({
+    insightId: '', insightType: 'Prediction', wasHelpful: 'Yes', userComments: '', accuracy: '4'
+  })
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Gauge },
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'predictions', label: 'Predictions', icon: Brain },
     { id: 'academic', label: 'Academic', icon: BookOpen },
-    { id: 'teacher', label: 'Teacher', icon: Users },
+    { id: 'teacher', label: 'Teacher', icon: Briefcase },
     { id: 'executive', label: 'Executive', icon: Award },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: TrendingUp },
+  ]
+
+  const formOptions = [
+    { key: 'predictionConfig', label: 'Prediction Config', icon: Brain },
+    { key: 'customAnalysis', label: 'Custom Analysis', icon: GitBranch },
+    { key: 'kpiTarget', label: 'KPI Target', icon: Target },
+    { key: 'reportSchedule', label: 'Report Schedule', icon: Calendar },
+    { key: 'insightFeedback', label: 'AI Insight Feedback', icon: Star },
+  ]
+
+  const reportOptions = [
+    { key: 'predictionAccuracy', label: 'Prediction Accuracy', icon: Brain },
+    { key: 'riskAssessment', label: 'Risk Assessment', icon: AlertTriangle },
+    { key: 'academicTrend', label: 'Academic Trend', icon: BookOpen },
+    { key: 'teacherEffectiveness', label: 'Teacher Effectiveness', icon: Briefcase },
+    { key: 'executiveKPI', label: 'Executive KPI', icon: Award },
+    { key: 'financialForecast', label: 'Financial Forecast', icon: IndianRupee },
   ]
 
   const tooltipStyle = {
     backgroundColor: darkMode ? '#1A2D4A' : '#fff',
-    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+    border: '1px solid ' + (darkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'),
     borderRadius: '12px',
     fontSize: '12px',
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
 
-  const getHeatColor = (value) => {
-    if (value >= 85) return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-    if (value >= 75) return 'bg-[#22D3EE]/15 text-[#0E7490] dark:text-[#22D3EE]'
-    if (value >= 65) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-    return 'bg-red-500/15 text-red-600 dark:text-red-400'
+  const inputClass = 'w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 focus:border-birla-gold transition-all'
+  const labelClass = 'text-xs font-medium text-muted-foreground mb-1 block'
+  const formGroupClass = 'space-y-1'
+
+  const handleFormSubmit = (formName, data) => {
+    alert(`${formName} submitted successfully!\n${JSON.stringify(data, null, 2)}`)
+  }
+
+  const toggleFeature = (feature) => {
+    const current = predictionData.features
+    if (current.includes(feature)) {
+      setPredictionData({ ...predictionData, features: current.filter(f => f !== feature) })
+    } else {
+      setPredictionData({ ...predictionData, features: [...current, feature] })
+    }
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
-      {/* ─── Top Stats ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <motion.div
-              key={card.label}
-              variants={itemVariants}
-              className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
-              <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${card.up ? 'bg-emerald-500/20 text-emerald-200' : 'bg-red-500/20 text-red-200'}`}>
-                    {card.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {card.change}
-                  </span>
-                </div>
-                <p className="text-2xl font-bold">{card.value}</p>
-                <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
-              </div>
-            </motion.div>
-          )
-        })}
-      </div>
-
-      {/* ─── Tab Navigation ───────────────────────────────── */}
-      <motion.div variants={itemVariants} className="flex gap-1 p-1 rounded-xl bg-muted/50 border border-border overflow-x-auto">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Tab Navigation */}
+      <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-[#0A1628] text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}>
+              <Icon className="w-3.5 h-3.5" />{tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* ─── Overview Tab ──────────────────────────────────── */}
+      {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Predictive Student Performance */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <LineChartIcon className="w-4 h-4 text-[#22D3EE]" />
-                    Predictive Student Performance
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">AI-predicted vs Actual academic performance</p>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#22D3EE]/10 text-[#22D3EE] font-medium">
-                  Model Accuracy: 94.2%
-                </span>
-              </div>
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {topStats.map((card) => {
+              const Icon = card.icon
+              return (
+                <motion.div key={card.label} variants={itemVariants}
+                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}>
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                        <ArrowUpRight className="w-3 h-3" />{card.change}
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold">{card.value}</p>
+                    <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Brain className="w-4 h-4 text-purple-500" />Model Accuracy Trend
+              </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={predictedVsActualData}>
+                  <LineChart data={predictionAccuracy}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis domain={[65, 100]} tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, '']} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Line type="monotone" dataKey="predicted" stroke="#C8A45C" strokeWidth={2.5} strokeDasharray="5 5" dot={{ r: 3, fill: '#C8A45C' }} name="Predicted" />
-                    <Line type="monotone" dataKey="actual" stroke="#22D3EE" strokeWidth={2.5} dot={{ r: 4, fill: '#22D3EE' }} name="Actual" />
+                    <XAxis dataKey="month" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis domain={[70, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                    <Line type="monotone" dataKey="performance" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} name="Performance" />
+                    <Line type="monotone" dataKey="attendance" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3 }} name="Attendance" />
+                    <Line type="monotone" dataKey="feeDefault" stroke="#C8A45C" strokeWidth={2} dot={{ r: 3 }} name="Fee Default" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
-                <AlertTriangle className="w-4 h-4 text-red-500" />
-                Risk Students
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <IndianRupee className="w-4 h-4 text-emerald-500" />Revenue Forecast
               </h3>
-              <p className="text-xs text-muted-foreground mb-3">AI-flagged at-risk students</p>
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {riskStudentsData.map((student) => (
-                  <div key={student.id} className="p-2.5 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-foreground">{student.name}</p>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                        student.risk === 'High' ? 'bg-red-500/10 text-red-500' :
-                        student.risk === 'Medium' ? 'bg-amber-500/10 text-amber-500' :
-                        'bg-emerald-500/10 text-emerald-500'
-                      }`}>{student.risk}</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{student.class} &bull; Score: {student.score}/100</p>
-                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mt-1">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${student.score}%` }}
-                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                        className={`h-full rounded-full ${
-                          student.risk === 'High' ? 'bg-red-500' :
-                          student.risk === 'Medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {student.factors.map((factor, i) => (
-                        <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{factor}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={financialForecast}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="month" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 8, formatter: (v) => `₹${(v / 100000).toFixed(0)}L` }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v) => v ? `₹${(v / 100000).toFixed(1)}L` : 'N/A'} />
+                    <Area type="monotone" dataKey="upper" stroke="transparent" fill="#C8A45C" fillOpacity={0.1} name="Upper Bound" />
+                    <Area type="monotone" dataKey="lower" stroke="transparent" fill="#C8A45C" fillOpacity={0.05} name="Lower Bound" />
+                    <Line type="monotone" dataKey="actual" stroke="#0A1628" strokeWidth={2} dot={{ r: 3 }} name="Actual" connectNulls={false} />
+                    <Line type="monotone" dataKey="predicted" stroke="#22D3EE" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} name="Predicted" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
           </div>
+        </motion.div>
+      )}
 
-          {/* Smart Recommendations */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#C8A45C]" />
-                Smart AI Recommendations
-              </h3>
-              <span className="text-xs text-muted-foreground">Updated 5 min ago</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {recommendationsData.map((rec) => {
-                const Icon = rec.icon
+      {/* ═══════════════ PREDICTIONS TAB ═══════════════ */}
+      {activeTab === 'predictions' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Brain className="w-4 h-4 text-purple-500" />AI Prediction Models
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {modelTypes.map((model, i) => {
+                const accuracy = [94, 96, 91, 88][i]
+                const status = ['Active', 'Active', 'Active', 'Training'][i]
                 return (
-                  <div key={rec.id} className="p-4 rounded-xl border border-border hover:border-[#C8A45C]/30 hover:shadow-md transition-all group">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#C8A45C]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#C8A45C]/20 transition-colors">
-                        <Icon className="w-4 h-4 text-[#C8A45C]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground leading-snug">{rec.title}</p>
-                      </div>
+                  <div key={model} className="p-4 rounded-xl border border-border hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold">{model}</h4>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{status}</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed mb-3">{rec.desc}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{rec.category}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                          rec.impact === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'
-                        }`}>{rec.impact} Impact</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full gradient-birla-cyan" style={{ width: `${accuracy}%` }} />
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Gauge className="w-3 h-3 text-[#22D3EE]" />
-                        <span className="text-[10px] font-semibold text-[#22D3EE]">{rec.confidence}%</span>
-                      </div>
+                      <span className="text-xs font-medium">{accuracy}% accuracy</span>
                     </div>
                   </div>
                 )
               })}
             </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* ─── Predictions Tab ───────────────────────────────── */}
-      {activeTab === 'predictions' && (
-        <div className="space-y-6">
-          {/* Attendance Risk Prediction */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
-                  Attendance Risk Prediction
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-medium">
-                  5 Students Flagged
-                </span>
-              </div>
-              <div className="space-y-2 max-h-80 overflow-y-auto">
-                {attendanceRiskData.map((student, i) => (
-                  <div key={i} className="p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{student.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{student.class} &bull; {student.daysAbsent} days absent</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-xs font-bold ${
-                          student.riskScore >= 80 ? 'text-red-500' :
-                          student.riskScore >= 60 ? 'text-amber-500' : 'text-emerald-500'
-                        }`}>{student.riskScore}/100</span>
-                        <p className={`text-[10px] font-medium ${
-                          student.trend === 'Critical' ? 'text-red-500' :
-                          student.trend === 'Worsening' ? 'text-amber-500' :
-                          student.trend === 'Improving' ? 'text-emerald-500' : 'text-blue-500'
-                        }`}>{student.trend}</p>
-                      </div>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-muted overflow-hidden mb-2">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${student.riskScore}%` }}
-                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                        className={`h-full rounded-full ${
-                          student.riskScore >= 80 ? 'bg-gradient-to-r from-red-500 to-red-400' :
-                          student.riskScore >= 60 ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
-                          'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                        }`}
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {student.factors.map((factor, j) => (
-                        <span key={j} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{factor}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Fee Default Prediction */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <IndianRupee className="w-4 h-4 text-red-500" />
-                  Fee Default Prediction
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 font-medium">
-                  ₹2.8L at Risk
-                </span>
-              </div>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={feeAtRiskPieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {feeAtRiskPieData.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, '']} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="space-y-2 mt-3 max-h-44 overflow-y-auto">
-                {feeDefaultParents.map((parent, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                      parent.category === 'High Risk' ? 'bg-red-500' :
-                      parent.category === 'Medium Risk' ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-medium text-foreground truncate">{parent.name}</p>
-                      <p className="text-[10px] text-muted-foreground">Last paid: {parent.lastPaid}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs font-semibold text-foreground">{parent.amount}</p>
-                      <p className={`text-[10px] font-medium ${
-                        parent.probability >= 70 ? 'text-red-500' :
-                        parent.probability >= 50 ? 'text-amber-500' : 'text-emerald-500'
-                      }`}>{parent.probability}% risk</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
           </div>
-
-          {/* Fee Default Trend */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <BarChart3 className="w-4 h-4 text-[#C8A45C]" />
-              Fee Payment Trends by Quarter
-            </h3>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={feeDefaultData} barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, '']} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="onTime" fill="#10B981" radius={[3, 3, 0, 0]} name="On Time" />
-                  <Bar dataKey="late" fill="#F59E0B" radius={[3, 3, 0, 0]} name="Late" />
-                  <Bar dataKey="defaulted" fill="#EF4444" radius={[3, 3, 0, 0]} name="Defaulted" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-        </div>
+        </motion.div>
       )}
 
-      {/* ─── Academic Tab ──────────────────────────────────── */}
+      {/* ═══════════════ ACADEMIC TAB ═══════════════ */}
       {activeTab === 'academic' && (
-        <div className="space-y-6">
-          {/* Academic Trend Analysis */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-[#22D3EE]" />
-                  Multi-Year Academic Trend Analysis
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Overall and subject-wise performance trends</p>
-              </div>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#22D3EE]/10 text-[#22D3EE] font-medium">
-                AY 2020-2026
-              </span>
-            </div>
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-birla-cyan" />Multi-Year Academic Trend
+            </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={academicTrendData}>
+                <AreaChart data={academicTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="year" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                  <YAxis domain={[60, 100]} tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, '']} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="overall" stroke="#0A1628" fill="rgba(10,22,40,0.1)" strokeWidth={2.5} name="Overall" />
-                  <Area type="monotone" dataKey="science" stroke="#22D3EE" fill="rgba(34,211,238,0.08)" strokeWidth={2} name="Science" />
-                  <Area type="monotone" dataKey="math" stroke="#C8A45C" fill="rgba(200,164,92,0.08)" strokeWidth={2} name="Mathematics" />
-                  <Area type="monotone" dataKey="english" stroke="#10B981" fill="rgba(16,185,129,0.08)" strokeWidth={2} name="English" />
+                  <XAxis dataKey="year" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis domain={[60, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                  <Area type="monotone" dataKey="avgScore" fill="#22D3EE" fillOpacity={0.15} stroke="#22D3EE" name="Avg Score" />
+                  <Area type="monotone" dataKey="passRate" fill="#10B981" fillOpacity={0.15} stroke="#10B981" name="Pass Rate" />
+                  <Area type="monotone" dataKey="attendance" fill="#C8A45C" fillOpacity={0.15} stroke="#C8A45C" name="Attendance" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
+      )}
 
-          {/* Subject-Wise Heat Map */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#C8A45C]" />
-                Subject-wise Performance Heat Map
-              </h3>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500/30" />85%+</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#22D3EE]/30" />75-84%</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500/30" />65-74%</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500/30" />&lt;65%</span>
-              </div>
-            </div>
+      {/* ═══════════════ TEACHER TAB ═══════════════ */}
+      {activeTab === 'teacher' && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-birla-gold" />Teacher Effectiveness
+            </h3>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left text-xs font-medium text-muted-foreground py-2 px-2">Subject</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">VI</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">VII</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">VIII</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">IX</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">X</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">XI</th>
-                    <th className="text-center text-xs font-medium text-muted-foreground py-2 px-2">XII</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Teacher</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Subject</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Pedagogy</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Engagement</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Assessment</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Communication</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Innovation</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Overall</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {subjectHeatmapData.map((row) => (
-                    <tr key={row.subject} className="border-b border-border/50">
-                      <td className="py-2 px-2 text-xs font-medium text-foreground">{row.subject}</td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class6)}`}>{row.class6}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class7)}`}>{row.class7}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class8)}`}>{row.class8}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class9)}`}>{row.class9}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class10)}`}>{row.class10}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class11)}`}>{row.class11}%</span></td>
-                      <td className="py-2 px-1"><span className={`inline-block w-full text-center text-xs font-semibold py-1.5 rounded-lg ${getHeatColor(row.class12)}`}>{row.class12}%</span></td>
+                  {teacherEffectiveness.map((t, i) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-2 px-3 font-medium">{t.name}</td>
+                      <td className="py-2 px-3">{t.subject}</td>
+                      <td className="py-2 px-3">{t.pedagogy}</td>
+                      <td className="py-2 px-3">{t.engagement}</td>
+                      <td className="py-2 px-3">{t.assessment}</td>
+                      <td className="py-2 px-3">{t.communication}</td>
+                      <td className="py-2 px-3">{t.innovation}</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${t.overall >= 85 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{t.overall}</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* ─── Teacher Tab ────────────────────────────────────── */}
-      {activeTab === 'teacher' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Teacher Effectiveness */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Star className="w-4 h-4 text-[#C8A45C]" />
-                  Teacher Effectiveness Dashboard
-                </h3>
-              </div>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {teacherData.map((teacher, i) => (
-                  <div key={i} className="flex items-center gap-4 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors group">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0A1628] to-[#1A2D4A] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                      {teacher.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground group-hover:text-[#22D3EE] transition-colors">{teacher.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{teacher.subject} &bull; {teacher.experience} exp &bull; {teacher.students} students</p>
-                    </div>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <div className="text-center">
-                        <p className="text-xs font-bold text-[#C8A45C]">{teacher.rating}</p>
-                        <p className="text-[9px] text-muted-foreground">Rating</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs font-bold text-[#22D3EE]">{teacher.classAvg}%</p>
-                        <p className="text-[9px] text-muted-foreground">Class Avg</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs font-bold text-emerald-500">{teacher.feedback}</p>
-                        <p className="text-[9px] text-muted-foreground">Feedback</p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Teacher Radar */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-[#22D3EE]" />
-                Dr. Priya Menon
-              </h3>
-              <p className="text-xs text-muted-foreground mb-3">Teacher vs School Average</p>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={teacherRadarData}>
-                    <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8 }} />
-                    <Radar name="Dr. Menon" dataKey="DrMenon" stroke="#C8A45C" fill="#C8A45C" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name="School Avg" dataKey="Avg" stroke="#22D3EE" fill="#22D3EE" fillOpacity={0.1} strokeWidth={2} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
           </div>
-
-          {/* Class Performance Correlation */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Activity className="w-4 h-4 text-emerald-500" />
-              Teacher Rating vs Class Performance Correlation
-            </h3>
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                  <XAxis dataKey="rating" name="Teacher Rating" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[3.5, 5]} />
-                  <YAxis dataKey="classAvg" name="Class Avg %" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[70, 95]} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ strokeDasharray: '3 3' }} />
-                  <Scatter name="Teachers" data={teacherData.map(t => ({ rating: t.rating, classAvg: t.classAvg, name: t.name }))} fill="#C8A45C" />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-        </div>
+        </motion.div>
       )}
 
-      {/* ─── Executive Tab ──────────────────────────────────── */}
+      {/* ═══════════════ EXECUTIVE TAB ═══════════════ */}
       {activeTab === 'executive' && (
-        <div className="space-y-6">
-          {/* KPI Dashboard */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#C8A45C]" />
-                Executive KPI Dashboard
-              </h3>
-              <span className="text-xs text-muted-foreground">AY 2025-26</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {executiveKPIs.map((kpi) => {
-                const pct = Math.min((kpi.actual / kpi.target) * 100, 120)
-                const isOnTrack = kpi.actual >= kpi.target
-                return (
-                  <div key={kpi.label} className="p-4 rounded-xl border border-border hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                      {kpi.trend === 'up' ? <TrendingUp className="w-3 h-3 text-emerald-500" /> : <TrendingDown className="w-3 h-3 text-red-500" />}
-                    </div>
-                    <div className="flex items-end gap-1 mb-2">
-                      <span className="text-xl font-bold text-foreground">{kpi.actual}{kpi.unit}</span>
-                      <span className="text-xs text-muted-foreground mb-0.5">/ {kpi.target}{kpi.unit}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(pct, 100)}%` }}
-                        transition={{ duration: 1, ease: 'easeOut' }}
-                        className={`h-full rounded-full ${
-                          isOnTrack ? 'bg-gradient-to-r from-emerald-500 to-[#22D3EE]' : 'bg-gradient-to-r from-amber-500 to-[#C8A45C]'
-                        }`}
-                      />
-                    </div>
-                    <p className={`text-[10px] mt-1.5 font-medium ${isOnTrack ? 'text-emerald-500' : 'text-amber-500'}`}>
-                      {isOnTrack ? '✓ On Track' : `${kpi.target - kpi.actual}${kpi.unit} below target`}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          </motion.div>
-
-          {/* Executive Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <BarChart3 className="w-4 h-4 text-[#22D3EE]" />
-                Revenue vs Target (₹ Lakhs)
-              </h3>
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={[
-                    { month: 'Q1', actual: 42, target: 48 },
-                    { month: 'Q2', actual: 46, target: 48 },
-                    { month: 'Q3', actual: 44, target: 50 },
-                    { month: 'Q4', actual: 38, target: 52 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `₹${v}L`} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`₹${value}L`, '']} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Bar dataKey="actual" fill="#0A1628" radius={[4, 4, 0, 0]} name="Actual" />
-                    <Line type="monotone" dataKey="target" stroke="#C8A45C" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4, fill: '#C8A45C' }} name="Target" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-                <Activity className="w-4 h-4 text-emerald-500" />
-                Key Metrics Trend
-              </h3>
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[
-                    { month: 'Oct', retention: 92, satisfaction: 88, compliance: 78 },
-                    { month: 'Nov', retention: 91, satisfaction: 89, compliance: 80 },
-                    { month: 'Dec', retention: 93, satisfaction: 90, compliance: 81 },
-                    { month: 'Jan', retention: 92, satisfaction: 89, compliance: 82 },
-                    { month: 'Feb', retention: 93, satisfaction: 91, compliance: 82 },
-                    { month: 'Mar', retention: 93, satisfaction: 91, compliance: 83 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis domain={[70, 100]} tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, '']} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                    <Line type="monotone" dataKey="retention" stroke="#0A1628" strokeWidth={2.5} dot={{ r: 3 }} name="Retention" />
-                    <Line type="monotone" dataKey="satisfaction" stroke="#22D3EE" strokeWidth={2.5} dot={{ r: 3 }} name="Satisfaction" />
-                    <Line type="monotone" dataKey="compliance" stroke="#C8A45C" strokeWidth={2.5} dot={{ r: 3 }} name="NEP Compliance" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Strategic Insights */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
-              <Lightbulb className="w-4 h-4 text-[#C8A45C]" />
-              Strategic AI Insights
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Award className="w-4 h-4 text-birla-gold" />Executive KPI Dashboard
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                { title: 'Student Enrollment Growth', insight: 'Projected 15% increase in admissions for AY 2026-27 based on current application trends and conversion rates.', confidence: 91, type: 'growth' },
-                { title: 'Fee Collection Optimization', insight: 'Implementing early bird discount of 2% can improve Q4 collection by ₹3.2L and reduce default risk by 18%.', confidence: 88, type: 'finance' },
-                { title: 'Teacher Workload Balance', insight: '3 teachers in Science dept are over-allocated. Redistributing 2 sections can improve teaching quality by 12%.', confidence: 85, type: 'hr' },
-                { title: 'Digital Infrastructure ROI', insight: 'Smart classroom investment of ₹15L projected to yield 22% improvement in student engagement within 6 months.', confidence: 82, type: 'infrastructure' },
-                { title: 'Transport Route Optimization', insight: 'Consolidating Routes 7 & 12 can save ₹4.5L annually while maintaining 98% coverage.', confidence: 79, type: 'operations' },
-                { title: 'Parent Engagement Strategy', insight: 'Monthly digital newsletters can improve parent participation in PTMs by 35% based on engagement data.', confidence: 86, type: 'engagement' },
-              ].map((item, i) => (
-                <div key={i} className="p-4 rounded-xl border border-border hover:border-[#C8A45C]/20 transition-all">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="text-xs font-semibold text-foreground">{item.title}</p>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Sparkles className="w-3 h-3 text-[#C8A45C]" />
-                      <span className="text-[10px] font-bold text-[#C8A45C]">{item.confidence}%</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {kpiData.map((kpi, i) => (
+                <div key={i} className="p-4 rounded-xl border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium">{kpi.name}</h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted">{kpi.category}</span>
+                  </div>
+                  <div className="flex items-end gap-4 mb-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Current</p>
+                      <p className="text-xl font-bold text-foreground">{kpi.current}{kpi.unit === 'Percentage' ? '%' : ''}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Target</p>
+                      <p className="text-sm font-medium text-birla-gold">{kpi.target}{kpi.unit === 'Percentage' ? '%' : ''}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Previous</p>
+                      <p className="text-sm text-muted-foreground">{kpi.previous}{kpi.unit === 'Percentage' ? '%' : ''}</p>
                     </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{item.insight}</p>
-                  <span className="inline-block text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground mt-2 capitalize">{item.type}</span>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${kpi.current >= kpi.target ? 'bg-emerald-500' : kpi.current >= kpi.target * 0.8 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      style={{ width: `${Math.min((kpi.current / kpi.target) * 100, 100)}%` }} />
+                  </div>
                 </div>
               ))}
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════ FORMS TAB ═══════════════ */}
+      {activeTab === 'forms' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {formOptions.map((f) => {
+              const Icon = f.icon
+              return (
+                <button key={f.key} onClick={() => setActiveForm(f.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeForm === f.key ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{f.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* 1. Prediction Configuration Form */}
+          {activeForm === 'predictionConfig' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Brain className="w-5 h-5 text-purple-500" />Prediction Configuration Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Model Type *</label>
+                  <select value={predictionData.modelType} onChange={(e) => setPredictionData({ ...predictionData, modelType: e.target.value })} className={inputClass}>
+                    {modelTypes.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Data Range *</label>
+                  <select value={predictionData.dataRange} onChange={(e) => setPredictionData({ ...predictionData, dataRange: e.target.value })} className={inputClass}>
+                    {dataRanges.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Confidence Threshold (%)</label>
+                  <input type="number" placeholder="e.g. 80" value={predictionData.confidenceThreshold}
+                    onChange={(e) => setPredictionData({ ...predictionData, confidenceThreshold: e.target.value })} className={inputClass} />
+                </div>
+                <div className={`${formGroupClass} md:col-span-2 lg:col-span-3`}>
+                  <label className={labelClass}>Features (multi-select)</label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {featureOptions.map((f) => (
+                      <button key={f} type="button" onClick={() => toggleFeature(f)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                          predictionData.features.includes(f) ? 'gradient-birla text-white' : 'border border-border text-muted-foreground hover:bg-muted'
+                        }`}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={formGroupClass}>
+                  <label className="flex items-center gap-2 text-sm text-foreground">
+                    <input type="checkbox" checked={predictionData.retrain}
+                      onChange={(e) => setPredictionData({ ...predictionData, retrain: e.target.checked })}
+                      className="rounded border-input" />
+                    Auto-retrain model
+                  </label>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Prediction Config', predictionData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Save Config
+                </button>
+                <button onClick={() => setPredictionData({ modelType: 'Student Performance', dataRange: '6 months', confidenceThreshold: '80', features: ['Attendance', 'Marks'], retrain: false })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 2. Custom Analysis Form */}
+          {activeForm === 'customAnalysis' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <GitBranch className="w-5 h-5 text-cyan-500" />Custom Analysis Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Analysis Name *</label>
+                  <input type="text" placeholder="e.g. Term-wise Performance" value={customAnalysisData.analysisName}
+                    onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, analysisName: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Analysis Type *</label>
+                  <select value={customAnalysisData.analysisType} onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, analysisType: e.target.value })} className={inputClass}>
+                    {analysisTypes.map((a) => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Data Source *</label>
+                  <select value={customAnalysisData.dataSource} onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, dataSource: e.target.value })} className={inputClass}>
+                    {dataSources.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Date Range</label>
+                  <input type="text" placeholder="e.g. Jan 2025 - Mar 2025" value={customAnalysisData.dateRange}
+                    onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, dateRange: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Filters</label>
+                  <input type="text" placeholder="e.g. Class=X, Section=A" value={customAnalysisData.filters}
+                    onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, filters: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Output Format *</label>
+                  <select value={customAnalysisData.outputFormat} onChange={(e) => setCustomAnalysisData({ ...customAnalysisData, outputFormat: e.target.value })} className={inputClass}>
+                    {outputFormats.map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Custom Analysis', customAnalysisData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Run Analysis
+                </button>
+                <button onClick={() => setCustomAnalysisData({ analysisName: '', analysisType: 'Trend', dataSource: 'SIS', dateRange: '', filters: '', outputFormat: 'Chart' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. KPI Target Form */}
+          {activeForm === 'kpiTarget' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Target className="w-5 h-5 text-amber-500" />KPI Target Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>KPI Name *</label>
+                  <input type="text" placeholder="e.g. Student Retention Rate" value={kpiTargetData.kpiName}
+                    onChange={(e) => setKpiTargetData({ ...kpiTargetData, kpiName: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Current Year Value *</label>
+                  <input type="text" placeholder="e.g. 94" value={kpiTargetData.currentYear}
+                    onChange={(e) => setKpiTargetData({ ...kpiTargetData, currentYear: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Target Value *</label>
+                  <input type="text" placeholder="e.g. 95" value={kpiTargetData.targetValue}
+                    onChange={(e) => setKpiTargetData({ ...kpiTargetData, targetValue: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Previous Year Value</label>
+                  <input type="text" placeholder="e.g. 92" value={kpiTargetData.previousYear}
+                    onChange={(e) => setKpiTargetData({ ...kpiTargetData, previousYear: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Category *</label>
+                  <select value={kpiTargetData.category} onChange={(e) => setKpiTargetData({ ...kpiTargetData, category: e.target.value })} className={inputClass}>
+                    {kpiCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Unit *</label>
+                  <select value={kpiTargetData.unit} onChange={(e) => setKpiTargetData({ ...kpiTargetData, unit: e.target.value })} className={inputClass}>
+                    {kpiUnits.map((u) => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('KPI Target', kpiTargetData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Save KPI Target
+                </button>
+                <button onClick={() => setKpiTargetData({ kpiName: '', currentYear: '', targetValue: '', previousYear: '', category: 'Academic', unit: 'Percentage' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Report Schedule Form */}
+          {activeForm === 'reportSchedule' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Calendar className="w-5 h-5 text-blue-500" />Report Schedule Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Report Name *</label>
+                  <input type="text" placeholder="e.g. Monthly Attendance Report" value={reportScheduleData.reportName}
+                    onChange={(e) => setReportScheduleData({ ...reportScheduleData, reportName: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Report Type</label>
+                  <input type="text" placeholder="e.g. Attendance, Finance" value={reportScheduleData.reportType}
+                    onChange={(e) => setReportScheduleData({ ...reportScheduleData, reportType: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Frequency *</label>
+                  <select value={reportScheduleData.frequency} onChange={(e) => setReportScheduleData({ ...reportScheduleData, frequency: e.target.value })} className={inputClass}>
+                    {reportFrequencies.map((f) => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>Recipients (comma separated emails)</label>
+                  <input type="text" placeholder="admin@birlaopenminds.edu, principal@birlaopenminds.edu" value={reportScheduleData.recipients}
+                    onChange={(e) => setReportScheduleData({ ...reportScheduleData, recipients: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Format *</label>
+                  <select value={reportScheduleData.format} onChange={(e) => setReportScheduleData({ ...reportScheduleData, format: e.target.value })} className={inputClass}>
+                    {reportFormats.map((f) => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('Report Schedule', reportScheduleData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Schedule Report
+                </button>
+                <button onClick={() => setReportScheduleData({ reportName: '', reportType: '', frequency: 'Monthly', recipients: '', format: 'PDF' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. AI Insight Feedback Form */}
+          {activeForm === 'insightFeedback' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-6">
+                <Star className="w-5 h-5 text-amber-500" />AI Insight Feedback Form
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Insight ID *</label>
+                  <input type="text" placeholder="e.g. INS-2025-0042" value={insightFeedbackData.insightId}
+                    onChange={(e) => setInsightFeedbackData({ ...insightFeedbackData, insightId: e.target.value })} className={inputClass} />
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Insight Type *</label>
+                  <select value={insightFeedbackData.insightType} onChange={(e) => setInsightFeedbackData({ ...insightFeedbackData, insightType: e.target.value })} className={inputClass}>
+                    {insightTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Was Helpful? *</label>
+                  <select value={insightFeedbackData.wasHelpful} onChange={(e) => setInsightFeedbackData({ ...insightFeedbackData, wasHelpful: e.target.value })} className={inputClass}>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className={formGroupClass}>
+                  <label className={labelClass}>Accuracy Rating (1-5) *</label>
+                  <select value={insightFeedbackData.accuracy} onChange={(e) => setInsightFeedbackData({ ...insightFeedbackData, accuracy: e.target.value })} className={inputClass}>
+                    {ratingOptions.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className={`${formGroupClass} md:col-span-2`}>
+                  <label className={labelClass}>User Comments</label>
+                  <textarea placeholder="Share your feedback on this insight..." value={insightFeedbackData.userComments}
+                    onChange={(e) => setInsightFeedbackData({ ...insightFeedbackData, userComments: e.target.value })} className={inputClass} rows={3} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <button onClick={() => handleFormSubmit('AI Insight Feedback', insightFeedbackData)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-birla text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                  <Save className="w-4 h-4" />Submit Feedback
+                </button>
+                <button onClick={() => setInsightFeedbackData({ insightId: '', insightType: 'Prediction', wasHelpful: 'Yes', userComments: '', accuracy: '4' })}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  <RotateCcw className="w-4 h-4" />Reset
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ═══════════════ REPORTS TAB ═══════════════ */}
+      {activeTab === 'reports' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {reportOptions.map((r) => {
+              const Icon = r.icon
+              return (
+                <button key={r.key} onClick={() => setActiveReport(r.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                    activeReport === r.key ? 'gradient-birla-gold text-birla-blue shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />{r.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* 1. Prediction Accuracy Report */}
+          {activeReport === 'predictionAccuracy' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Model-wise Accuracy</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Model</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Sep</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Oct</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Nov</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Dec</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Jan</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Feb</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Mar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { model: 'Student Performance', data: predictionAccuracy.map(p => p.performance) },
+                        { model: 'Attendance Risk', data: predictionAccuracy.map(p => p.attendance) },
+                        { model: 'Fee Default', data: predictionAccuracy.map(p => p.feeDefault) },
+                        { model: 'Teacher Attrition', data: predictionAccuracy.map(p => p.teacherAttrition) },
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{row.model}</td>
+                          {row.data.map((val, j) => (
+                            <td key={j} className={`py-2 px-3 ${val >= 90 ? 'text-emerald-600 dark:text-emerald-400' : val >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>{val}%</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Accuracy Trend</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={predictionAccuracy}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="month" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis domain={[70, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                      <Line type="monotone" dataKey="performance" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} name="Performance" />
+                      <Line type="monotone" dataKey="attendance" stroke="#22D3EE" strokeWidth={2} dot={{ r: 3 }} name="Attendance" />
+                      <Line type="monotone" dataKey="feeDefault" stroke="#C8A45C" strokeWidth={2} dot={{ r: 3 }} name="Fee Default" />
+                      <Line type="monotone" dataKey="teacherAttrition" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} name="Teacher Attrition" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 2. Risk Assessment Report */}
+          {activeReport === 'riskAssessment' && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Student Risk Assessment (with UDISE+ IDs)</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Student</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">BSP ID</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">PEN No</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Uppar ID</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Class</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Risk Type</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Risk Score</th>
+                      <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {riskStudents.map((s, i) => (
+                      <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                        <td className="py-2 px-3 font-medium">{s.name}</td>
+                        <td className="py-2 px-3 text-birla-cyan">{s.bspId}</td>
+                        <td className="py-2 px-3 text-birla-gold">{s.penNo}</td>
+                        <td className="py-2 px-3 text-purple-500">{s.upparId}</td>
+                        <td className="py-2 px-3">{s.class}</td>
+                        <td className="py-2 px-3">{s.riskType}</td>
+                        <td className="py-2 px-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${s.riskScore >= 70 ? 'bg-red-500' : s.riskScore >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${s.riskScore}%` }} />
+                            </div>
+                            <span>{s.riskScore}</span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            s.status === 'High' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
+                            s.status === 'Medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                            'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                          }`}>{s.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. Academic Trend Report */}
+          {activeReport === 'academicTrend' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Multi-Year Academic Trend</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Year</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Avg Score</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Pass Rate %</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Distinction %</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Attendance %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {academicTrend.map((a, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{a.year}</td>
+                          <td className="py-2 px-3">{a.avgScore}</td>
+                          <td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">{a.passRate}%</td>
+                          <td className="py-2 px-3 text-birla-gold">{a.distinction}%</td>
+                          <td className="py-2 px-3">{a.attendance}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Academic Trend Chart</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={academicTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="year" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis domain={[60, 100]} tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                      <Area type="monotone" dataKey="avgScore" fill="#22D3EE" fillOpacity={0.15} stroke="#22D3EE" name="Avg Score" />
+                      <Area type="monotone" dataKey="passRate" fill="#10B981" fillOpacity={0.15} stroke="#10B981" name="Pass Rate" />
+                      <Area type="monotone" dataKey="distinction" fill="#C8A45C" fillOpacity={0.15} stroke="#C8A45C" name="Distinction" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 4. Teacher Effectiveness Report */}
+          {activeReport === 'teacherEffectiveness' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Teacher Ratings</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Teacher</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Subject</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Overall</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {teacherEffectiveness.map((t, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{t.name}</td>
+                          <td className="py-2 px-3">{t.subject}</td>
+                          <td className="py-2 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${t.overall >= 85 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>{t.overall}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Effectiveness Radar</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={[
+                      { dimension: 'Pedagogy', ...teacherEffectiveness.reduce((acc, t, i) => ({ ...acc, [`t${i}`]: t.pedagogy }), {}) },
+                      { dimension: 'Engagement', ...teacherEffectiveness.reduce((acc, t, i) => ({ ...acc, [`t${i}`]: t.engagement }), {}) },
+                      { dimension: 'Assessment', ...teacherEffectiveness.reduce((acc, t, i) => ({ ...acc, [`t${i}`]: t.assessment }), {}) },
+                      { dimension: 'Communication', ...teacherEffectiveness.reduce((acc, t, i) => ({ ...acc, [`t${i}`]: t.communication }), {}) },
+                      { dimension: 'Innovation', ...teacherEffectiveness.reduce((acc, t, i) => ({ ...acc, [`t${i}`]: t.innovation }), {}) },
+                    ]}>
+                      <PolarGrid stroke={darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
+                      <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                      <PolarRadiusAxis angle={30} domain={[60, 100]} tick={{ fontSize: 8 }} />
+                      {teacherEffectiveness.map((t, i) => (
+                        <Radar key={i} name={t.name.split(' ').pop()} dataKey={`t${i}`} stroke={['#8B5CF6', '#22D3EE', '#C8A45C', '#EF4444', '#10B981'][i]} fill={['#8B5CF6', '#22D3EE', '#C8A45C', '#EF4444', '#10B981'][i]} fillOpacity={0.08} />
+                      ))}
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '9px' }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 5. Executive KPI Report */}
+          {activeReport === 'executiveKPI' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">KPI Dashboard - Targets vs Actuals</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {kpiData.map((kpi, i) => {
+                    const pct = Math.min((kpi.current / kpi.target) * 100, 120)
+                    return (
+                      <div key={i} className="p-4 rounded-xl border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-medium">{kpi.name}</h4>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted">{kpi.category}</span>
+                        </div>
+                        <div className="flex items-end gap-4 mb-2">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">Current</p>
+                            <p className="text-xl font-bold text-foreground">{kpi.current}{kpi.unit === 'Percentage' ? '%' : ''}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">Target</p>
+                            <p className="text-sm font-medium text-birla-gold">{kpi.target}{kpi.unit === 'Percentage' ? '%' : ''}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">Previous</p>
+                            <p className="text-sm text-muted-foreground">{kpi.previous}{kpi.unit === 'Percentage' ? '%' : ''}</p>
+                          </div>
+                        </div>
+                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all ${kpi.current >= kpi.target ? 'bg-emerald-500' : kpi.current >= kpi.target * 0.8 ? 'bg-amber-500' : 'bg-red-500'}`}
+                            style={{ width: `${Math.min(pct, 100)}%` }} />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1">{pct.toFixed(0)}% of target</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 6. Financial Forecast Report */}
+          {activeReport === 'financialForecast' && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Revenue Prediction</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Month</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Actual (₹)</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Predicted (₹)</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Lower Bound (₹)</th>
+                        <th className="text-left py-2 px-3 font-medium text-muted-foreground">Upper Bound (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {financialForecast.map((f, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-medium">{f.month}</td>
+                          <td className="py-2 px-3">{f.actual ? `₹${(f.actual / 100000).toFixed(1)}L` : '-'}</td>
+                          <td className="py-2 px-3 text-birla-cyan">₹{(f.predicted / 100000).toFixed(1)}L</td>
+                          <td className="py-2 px-3 text-muted-foreground">₹{(f.lower / 100000).toFixed(1)}L</td>
+                          <td className="py-2 px-3 text-muted-foreground">₹{(f.upper / 100000).toFixed(1)}L</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Revenue Forecast Chart</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={financialForecast}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="month" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 8, formatter: (v) => `₹${(v / 100000).toFixed(0)}L` }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v) => v ? `₹${(v / 100000).toFixed(1)}L` : 'N/A'} />
+                      <Area type="monotone" dataKey="upper" stroke="transparent" fill="#C8A45C" fillOpacity={0.1} name="Upper Bound" />
+                      <Area type="monotone" dataKey="lower" stroke="transparent" fill="#C8A45C" fillOpacity={0.05} name="Lower Bound" />
+                      <Line type="monotone" dataKey="actual" stroke="#0A1628" strokeWidth={2} dot={{ r: 3 }} name="Actual" connectNulls={false} />
+                      <Line type="monotone" dataKey="predicted" stroke="#22D3EE" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} name="Predicted" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
       )}
     </motion.div>
   )

@@ -3,204 +3,19 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Users, Briefcase, Clock, Calendar, IndianRupee, CheckCircle2,
-  AlertTriangle, XCircle, TrendingUp, ArrowUpRight, Download,
-  Printer, Eye, Plus, Search, Filter, Award, Star, Shield,
-  Building2, FileText, ChevronRight, ChevronLeft, Send,
-  Phone, Mail, MapPin, HeartPulse, UserCheck, ClipboardList,
-  BarChart3, Target, MessageSquare, Upload, Settings, Zap,
-  GraduationCap, BookOpen, Home, Globe, BadgeCheck, IdCard,
-  Timer, UserPlus, Activity, PieChart as PieChartIcon
+  Briefcase, Users, Clock, TrendingUp, TrendingDown, ArrowUpRight,
+  Plus, Download, Search, Filter, Award, Calendar, Bell, ChevronRight,
+  Save, UserPlus, FileText, BarChart3, PieChart as PieChartIcon,
+  UserCheck, UserX, Building2, Phone, Mail, MapPin, Star, Target,
+  GraduationCap, Banknote, Heart, Shield, ClipboardList, FileBarChart,
+  DollarSign, AlertTriangle, CheckCircle2, XCircle, Settings, Globe,
+  BookOpen, Megaphone, Smile, Frown, Meh, Handshake, FileSpreadsheet
 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, PieChart, Pie, Cell, AreaChart, Area
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
 import useAppStore from '@/store/useAppStore'
-
-// ─── Data ────────────────────────────────────────────────────────
-const topStats = [
-  { label: 'Total Staff', value: '186', change: '+4 this year', icon: Users, gradient: 'from-blue-900 to-blue-700', glow: 'shadow-blue-800/20' },
-  { label: 'On Leave', value: '8', change: '3 pending approval', icon: Clock, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
-  { label: 'Open Positions', value: '5', change: '2 urgent hires', icon: UserPlus, gradient: 'from-purple-900 to-purple-600', glow: 'shadow-purple-800/20' },
-  { label: 'Payroll', value: '₹1.24Cr', change: 'Monthly', icon: IndianRupee, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
-]
-
-const staffList = [
-  { id: 'STF-001', name: 'Dr. Priya Menon', department: 'Mathematics', designation: 'HOD - Mathematics', type: 'Teaching', joined: 'Jul 2018', salary: '₹85,000', status: 'Active', phone: '+91 98765 12345', email: 'priya.menon@bom.edu.in', attendance: 97 },
-  { id: 'STF-002', name: 'Mr. Rajesh Kumar', department: 'Physics', designation: 'Senior Teacher', type: 'Teaching', joined: 'Aug 2019', salary: '₹72,000', status: 'Active', phone: '+91 87654 23456', email: 'rajesh.kumar@bom.edu.in', attendance: 94 },
-  { id: 'STF-003', name: 'Ms. Ananya Das', department: 'English', designation: 'Teacher', type: 'Teaching', joined: 'Jun 2020', salary: '₹58,000', status: 'On Leave', phone: '+91 76543 34567', email: 'ananya.das@bom.edu.in', attendance: 91 },
-  { id: 'STF-004', name: 'Dr. Suresh Nair', department: 'Chemistry', designation: 'HOD - Science', type: 'Teaching', joined: 'Jan 2017', salary: '₹92,000', status: 'Active', phone: '+91 65432 45678', email: 'suresh.nair@bom.edu.in', attendance: 98 },
-  { id: 'STF-005', name: 'Ms. Kavitha Reddy', department: 'Biology', designation: 'Teacher', type: 'Teaching', joined: 'Mar 2021', salary: '₹55,000', status: 'Active', phone: '+91 54321 56789', email: 'kavitha.reddy@bom.edu.in', attendance: 95 },
-  { id: 'STF-006', name: 'Mr. Vikram Singh', department: 'Sports', designation: 'Sports Coordinator', type: 'Non-Teaching', joined: 'Sep 2019', salary: '₹48,000', status: 'Active', phone: '+91 43210 67890', email: 'vikram.singh@bom.edu.in', attendance: 96 },
-  { id: 'STF-007', name: 'Mrs. Sunita Sharma', department: 'Administration', designation: 'Office Manager', type: 'Admin', joined: 'Apr 2016', salary: '₹62,000', status: 'Active', phone: '+91 32109 78901', email: 'sunita.sharma@bom.edu.in', attendance: 99 },
-  { id: 'STF-008', name: 'Mr. Arjun Mehta', department: 'Computer Science', designation: 'Lab Administrator', type: 'Non-Teaching', joined: 'Nov 2022', salary: '₹42,000', status: 'Active', phone: '+91 21098 89012', email: 'arjun.mehta@bom.edu.in', attendance: 93 },
-  { id: 'STF-009', name: 'Dr. Meera Krishnan', department: 'Hindi', designation: 'Senior Teacher', type: 'Teaching', joined: 'Jul 2020', salary: '₹60,000', status: 'Active', phone: '+91 10987 90123', email: 'meera.krishnan@bom.edu.in', attendance: 96 },
-  { id: 'STF-010', name: 'Mr. Sanjay Gupta', department: 'Transport', designation: 'Transport Manager', type: 'Admin', joined: 'Feb 2018', salary: '₹45,000', status: 'Active', phone: '+91 09876 01234', email: 'sanjay.gupta@bom.edu.in', attendance: 94 },
-]
-
-const payrollByDepartment = [
-  { department: 'Mathematics', staff: 12, total: 840000, avg: 70000 },
-  { department: 'Science', staff: 18, total: 1380000, avg: 76667 },
-  { department: 'English', staff: 14, total: 896000, avg: 64000 },
-  { department: 'Hindi', staff: 8, total: 480000, avg: 60000 },
-  { department: 'Social Science', staff: 10, total: 580000, avg: 58000 },
-  { department: 'Computer Sc.', staff: 6, total: 360000, avg: 60000 },
-  { department: 'Sports', staff: 5, total: 240000, avg: 48000 },
-  { department: 'Administration', staff: 14, total: 840000, avg: 60000 },
-  { department: 'Support', staff: 8, total: 280000, avg: 35000 },
-  { department: 'Transport', staff: 12, total: 540000, avg: 45000 },
-]
-
-const leaveBalances = [
-  { type: 'CL', label: 'Casual Leave', total: 12, used: 4, balance: 8, color: '#22D3EE' },
-  { type: 'EL', label: 'Earned Leave', total: 15, used: 6, balance: 9, color: '#10B981' },
-  { type: 'ML', label: 'Medical Leave', total: 10, used: 2, balance: 8, color: '#8B5CF6' },
-  { type: 'SL', label: 'Special Leave', total: 5, used: 0, balance: 5, color: '#F59E0B' },
-  { type: 'CLP', label: 'Comp. Leave', total: 3, used: 1, balance: 2, color: '#EF4444' },
-]
-
-const leaveRequests = [
-  { id: 1, staff: 'Ms. Ananya Das', department: 'English', type: 'ML', from: 'Mar 1, 2026', to: 'Mar 5, 2026', days: 5, reason: 'Medical procedure', status: 'approved', approvedBy: 'Principal' },
-  { id: 2, staff: 'Mr. Rajesh Kumar', department: 'Physics', type: 'EL', from: 'Mar 10, 2026', to: 'Mar 14, 2026', days: 5, reason: 'Family function', status: 'pending', approvedBy: '-' },
-  { id: 3, staff: 'Mrs. Sunita Sharma', department: 'Admin', type: 'CL', from: 'Mar 8, 2026', to: 'Mar 8, 2026', days: 1, reason: 'Personal work', status: 'pending', approvedBy: '-' },
-  { id: 4, staff: 'Mr. Vikram Singh', department: 'Sports', type: 'CL', from: 'Mar 12, 2026', to: 'Mar 13, 2026', days: 2, reason: 'Attending sports workshop', status: 'pending', approvedBy: '-' },
-  { id: 5, staff: 'Dr. Meera Krishnan', department: 'Hindi', type: 'EL', from: 'Mar 20, 2026', to: 'Mar 25, 2026', days: 6, reason: 'Pilgrimage', status: 'approved', approvedBy: 'Vice Principal' },
-  { id: 6, staff: 'Mr. Sanjay Gupta', department: 'Transport', type: 'SL', from: 'Mar 15, 2026', to: 'Mar 15, 2026', days: 1, reason: 'Vehicle registration work', status: 'rejected', approvedBy: 'Admin Head' },
-]
-
-const leaveCalendarData = [
-  { day: 'Mon 3', present: 178, absent: 8, onLeave: 5, late: 4 },
-  { day: 'Tue 4', present: 180, absent: 6, onLeave: 5, late: 3 },
-  { day: 'Wed 5', present: 176, absent: 7, onLeave: 6, late: 5 },
-  { day: 'Thu 6', present: 182, absent: 4, onLeave: 5, late: 2 },
-  { day: 'Fri 7', present: 174, absent: 9, onLeave: 7, late: 6 },
-  { day: 'Mon 10', present: 179, absent: 7, onLeave: 6, late: 3 },
-  { day: 'Tue 11', present: 181, absent: 5, onLeave: 5, late: 4 },
-]
-
-const jobPostings = [
-  { id: 'JOB-001', title: 'TGT Mathematics', department: 'Mathematics', vacancies: 1, applications: 34, shortlisted: 8, interviews: 3, status: 'Interviewing', posted: 'Feb 1, 2026', deadline: 'Mar 15, 2026' },
-  { id: 'JOB-002', title: 'PGT Physics', department: 'Physics', vacancies: 1, applications: 28, shortlisted: 6, interviews: 2, status: 'Interviewing', posted: 'Feb 5, 2026', deadline: 'Mar 20, 2026' },
-  { id: 'JOB-003', title: 'Lab Assistant - Chemistry', department: 'Science', vacancies: 1, applications: 45, shortlisted: 10, interviews: 0, status: 'Shortlisting', posted: 'Feb 15, 2026', deadline: 'Mar 25, 2026' },
-  { id: 'JOB-004', title: 'School Counselor', department: 'Student Welfare', vacancies: 1, applications: 22, shortlisted: 5, interviews: 5, status: 'Offer Pending', posted: 'Jan 20, 2026', deadline: 'Feb 28, 2026' },
-  { id: 'JOB-005', title: 'Accountant', department: 'Finance', vacancies: 1, applications: 38, shortlisted: 0, interviews: 0, status: 'Open', posted: 'Mar 1, 2026', deadline: 'Apr 10, 2026' },
-]
-
-const applicantPipeline = [
-  { stage: 'Applied', count: 167, color: '#94a3b8' },
-  { stage: 'Screened', count: 89, color: '#22D3EE' },
-  { stage: 'Shortlisted', count: 29, color: '#C8A45C' },
-  { stage: 'Interviewed', count: 10, color: '#8B5CF6' },
-  { stage: 'Offered', count: 2, color: '#10B981' },
-  { stage: 'Joined', count: 1, color: '#0A1628' },
-]
-
-const interviewSchedule = [
-  { id: 1, candidate: 'Dr. Ramesh Iyer', position: 'PGT Physics', date: 'Mar 8, 2026', time: '10:00 AM', panel: 'Dr. Suresh Nair, Principal', round: 'Subject Expert', mode: 'In-Person' },
-  { id: 2, candidate: 'Ms. Pooja Agarwal', position: 'TGT Mathematics', date: 'Mar 8, 2026', time: '11:30 AM', panel: 'Dr. Priya Menon, VP', round: 'Demo Class', mode: 'In-Person' },
-  { id: 3, candidate: 'Mr. Ankit Verma', position: 'TGT Mathematics', date: 'Mar 9, 2026', time: '10:00 AM', panel: 'Dr. Priya Menon, VP', round: 'Demo Class', mode: 'In-Person' },
-  { id: 4, candidate: 'Ms. Shreya Banerjee', position: 'Lab Assistant', date: 'Mar 10, 2026', time: '2:00 PM', panel: 'Dr. Suresh Nair, HOD', round: 'Technical', mode: 'Online' },
-]
-
-const performanceData = [
-  { rating: 'Outstanding (5)', count: 18, percent: 10, color: '#0A1628' },
-  { rating: 'Excellent (4)', count: 52, percent: 28, color: '#22D3EE' },
-  { rating: 'Good (3)', count: 74, percent: 40, color: '#C8A45C' },
-  { rating: 'Average (2)', count: 32, percent: 17, color: '#8B5CF6' },
-  { rating: 'Below Avg (1)', count: 10, percent: 5, color: '#EF4444' },
-]
-
-const reviewCycles = [
-  { id: 1, name: 'Annual Review 2025-26', period: 'Apr 2025 - Mar 2026', status: 'In Progress', completion: 68, dueDate: 'Mar 31, 2026', reviewsCompleted: '126/186' },
-  { id: 2, name: 'Mid-Year Review 2025-26', period: 'Apr 2025 - Sep 2025', status: 'Completed', completion: 100, dueDate: 'Oct 31, 2025', reviewsCompleted: '186/186' },
-  { id: 3, name: 'Annual Review 2024-25', period: 'Apr 2024 - Mar 2025', status: 'Completed', completion: 100, dueDate: 'Mar 31, 2025', reviewsCompleted: '178/178' },
-]
-
-const staffDocuments = [
-  { category: 'Identity & Address', items: [
-    { name: 'Aadhaar Card', required: true, verified: true, expiry: 'N/A' },
-    { name: 'PAN Card', required: true, verified: true, expiry: 'N/A' },
-    { name: 'Voter ID', required: false, verified: true, expiry: 'N/A' },
-    { name: 'Passport', required: false, verified: false, expiry: 'N/A' },
-  ]},
-  { category: 'Academic & Professional', items: [
-    { name: 'Degree Certificates', required: true, verified: true, expiry: 'N/A' },
-    { name: 'B.Ed / D.El.Ed Certificate', required: true, verified: true, expiry: 'N/A' },
-    { name: 'CTET / TET Certificate', required: true, verified: true, expiry: 'Mar 2028' },
-    { name: 'Experience Letters', required: true, verified: true, expiry: 'N/A' },
-  ]},
-  { category: 'Employment', items: [
-    { name: 'Offer Letter (Signed)', required: true, verified: true, expiry: 'N/A' },
-    { name: 'Employment Agreement', required: true, verified: true, expiry: 'Mar 2027' },
-    { name: 'NOC from Previous Employer', required: true, verified: true, expiry: 'N/A' },
-    { name: 'PF Account Details', required: true, verified: true, expiry: 'N/A' },
-  ]},
-  { category: 'Health & Safety', items: [
-    { name: 'Medical Fitness Certificate', required: true, verified: true, expiry: 'Sep 2026' },
-    { name: 'COVID Vaccination Certificate', required: false, verified: true, expiry: 'N/A' },
-    { name: 'Police Verification', required: true, verified: true, expiry: 'Mar 2028' },
-  ]},
-]
-
-const onboardingSteps = [
-  { step: 1, label: 'Offer Letter', status: 'completed', icon: FileText },
-  { step: 2, label: 'Document Collection', status: 'completed', icon: Upload },
-  { step: 3, label: 'Background Verification', status: 'completed', icon: Shield },
-  { step: 4, label: 'System Access Setup', status: 'current', icon: IdCard },
-  { step: 5, label: 'Orientation Program', status: 'upcoming', icon: BookOpen },
-  { step: 6, label: 'Class Allocation', status: 'upcoming', icon: GraduationCap },
-  { step: 7, label: 'Mentor Assignment', status: 'upcoming', icon: Users },
-  { step: 8, label: 'Onboarding Complete', status: 'upcoming', icon: CheckCircle2 },
-]
-
-const attendanceGrid = [
-  { name: 'Dr. Priya Menon', dept: 'Math', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '5/5' },
-  { name: 'Mr. Rajesh Kumar', dept: 'Physics', days: { Mon: 'P', Tue: 'P', Wed: 'L', Thu: 'P', Fri: 'P' }, summary: '4/5' },
-  { name: 'Ms. Ananya Das', dept: 'English', days: { Mon: 'L', Tue: 'L', Wed: 'L', Thu: 'L', Fri: 'L' }, summary: '0/5' },
-  { name: 'Dr. Suresh Nair', dept: 'Chemistry', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '5/5' },
-  { name: 'Ms. Kavitha Reddy', dept: 'Biology', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'A', Fri: 'P' }, summary: '4/5' },
-  { name: 'Mr. Vikram Singh', dept: 'Sports', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'L' }, summary: '4/5' },
-  { name: 'Mrs. Sunita Sharma', dept: 'Admin', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '5/5' },
-  { name: 'Mr. Arjun Mehta', dept: 'Comp Sc.', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '5/5' },
-  { name: 'Dr. Meera Krishnan', dept: 'Hindi', days: { Mon: 'P', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '5/5' },
-  { name: 'Mr. Sanjay Gupta', dept: 'Transport', days: { Mon: 'L', Tue: 'P', Wed: 'P', Thu: 'P', Fri: 'P' }, summary: '4/5' },
-]
-
-const feedbackData = [
-  { id: 1, reviewer: 'Principal', reviewee: 'Dr. Priya Menon', type: 'Annual', rating: 4.5, feedback: 'Exemplary leadership in Mathematics department. Innovative teaching methods have improved student outcomes by 15%.', status: 'Completed' },
-  { id: 2, reviewer: 'Vice Principal', reviewee: 'Mr. Rajesh Kumar', type: 'Annual', rating: 4.0, feedback: 'Strong subject knowledge and good classroom management. Needs to improve on assignment turnaround time.', status: 'Completed' },
-  { id: 3, reviewer: 'HOD Science', reviewee: 'Ms. Kavitha Reddy', type: 'Annual', rating: 3.5, feedback: 'Good engagement with students. Should focus more on practical demonstrations and lab integration.', status: 'In Review' },
-  { id: 4, reviewer: 'Admin Head', reviewee: 'Mr. Sanjay Gupta', type: 'Mid-Year', rating: 3.8, feedback: 'Efficient transport management. Route optimization has saved costs. Needs to improve parent communication.', status: 'Completed' },
-]
-
-const payslipPreview = {
-  employee: 'Dr. Priya Menon',
-  empId: 'STF-001',
-  designation: 'HOD - Mathematics',
-  department: 'Mathematics',
-  bank: 'SBI A/C XXXX4523',
-  pfNo: 'PF/WB/123456',
-  month: 'March 2026',
-  earnings: [
-    { component: 'Basic Salary', amount: '₹42,500' },
-    { component: 'HRA', amount: '₹17,000' },
-    { component: 'Special Allowance', amount: '₹12,500' },
-    { component: 'Transport Allowance', amount: '₹3,200' },
-    { component: 'Medical Allowance', amount: '₹2,500' },
-    { component: 'HOD Allowance', amount: '₹5,000' },
-    { component: 'DA', amount: '₹2,300' },
-  ],
-  deductions: [
-    { component: 'PF (Employee)', amount: '₹5,100' },
-    { component: 'Professional Tax', amount: '₹200' },
-    { component: 'TDS', amount: '₹8,400' },
-    { component: 'Group Insurance', amount: '₹1,200' },
-  ],
-  grossEarnings: '₹85,000',
-  totalDeductions: '₹14,900',
-  netPay: '₹70,100',
-}
 
 // ─── Animation variants ──────────────────────────────────────────
 const containerVariants = {
@@ -212,17 +27,196 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+// ─── Mock Data ────────────────────────────────────────────────────
+const topStats = [
+  { label: 'Total Staff', value: '142', change: '+8 this year', icon: Users, gradient: 'from-blue-900 to-blue-600', glow: 'shadow-blue-800/20' },
+  { label: 'Present Today', value: '128', change: '90.1%', icon: UserCheck, gradient: 'from-emerald-900 to-emerald-600', glow: 'shadow-emerald-800/20' },
+  { label: 'On Leave', value: '9', change: '6.3%', icon: Clock, gradient: 'from-amber-900 to-amber-600', glow: 'shadow-amber-800/20' },
+  { label: 'Open Positions', value: '5', change: '3 depts', icon: Megaphone, gradient: 'from-purple-900 to-purple-600', glow: 'shadow-purple-800/20' },
+]
+
+const payrollData = [
+  { department: 'Teaching', headcount: 82, grossSalary: 5460000, deductions: 820000, netSalary: 4640000 },
+  { department: 'Admin', headcount: 24, grossSalary: 1440000, deductions: 216000, netSalary: 1224000 },
+  { department: 'Support', headcount: 18, grossSalary: 720000, deductions: 108000, netSalary: 612000 },
+  { department: 'Transport', headcount: 12, grossSalary: 480000, deductions: 72000, netSalary: 408000 },
+  { department: 'Maintenance', headcount: 6, grossSalary: 240000, deductions: 36000, netSalary: 204000 },
+]
+
+const leaveData = [
+  { type: 'CL', total: 12, used: 7.5, balance: 4.5 },
+  { type: 'EL', total: 15, used: 4, balance: 11 },
+  { type: 'ML', total: 180, used: 0, balance: 180 },
+  { type: 'SL', total: 10, used: 3, balance: 7 },
+  { type: 'Casual', total: 7, used: 5, balance: 2 },
+  { type: 'Compensatory', total: 5, used: 2, balance: 3 },
+]
+
+const recentLeaves = [
+  { id: 1, employee: 'Dr. Priya Menon', department: 'Science', type: 'CL', from: 'Mar 3', to: 'Mar 5', days: 3, status: 'Approved' },
+  { id: 2, employee: 'Mr. Rakesh Verma', department: 'Mathematics', type: 'SL', from: 'Mar 4', to: 'Mar 4', days: 1, status: 'Approved' },
+  { id: 3, employee: 'Ms. Sunita Rao', department: 'English', type: 'EL', from: 'Mar 10', to: 'Mar 14', days: 5, status: 'Pending' },
+  { id: 4, employee: 'Mr. Arvind Kumar', department: 'Admin', type: 'Casual', from: 'Mar 7', to: 'Mar 7', days: 1, status: 'Pending' },
+  { id: 5, employee: 'Mrs. Kavitha Nair', department: 'Hindi', type: 'CL', from: 'Mar 12', to: 'Mar 13', days: 2, status: 'Rejected' },
+]
+
+const jobPostings = [
+  { id: 1, position: 'TGT Mathematics', department: 'Mathematics', campus: 'Singur', type: 'Full-Time', applications: 18, status: 'Open' },
+  { id: 2, position: 'PTI (Physical Education)', department: 'Sports', campus: 'Singur', type: 'Full-Time', applications: 12, status: 'Open' },
+  { id: 3, position: 'Lab Assistant - Chemistry', department: 'Science', campus: 'Singur', type: 'Full-Time', applications: 8, status: 'Interview' },
+  { id: 4, position: 'Admin Coordinator', department: 'Admin', campus: 'Singur', type: 'Full-Time', applications: 22, status: 'Closed' },
+  { id: 5, position: 'Music Teacher', department: 'Arts', campus: 'Singur', type: 'Part-Time', applications: 6, status: 'Open' },
+]
+
+// ─── Report Data ──────────────────────────────────────────────────
+const payrollSummaryData = [
+  { department: 'Teaching', gross: 5460000, deductions: 820000, net: 4640000 },
+  { department: 'Admin', gross: 1440000, deductions: 216000, net: 1224000 },
+  { department: 'Support', gross: 720000, deductions: 108000, net: 612000 },
+  { department: 'Transport', gross: 480000, deductions: 72000, net: 408000 },
+  { department: 'Maintenance', gross: 240000, deductions: 36000, net: 204000 },
+]
+
+const leaveUtilData = [
+  { month: 'Apr', CL: 8, EL: 3, SL: 5, ML: 0 },
+  { month: 'May', CL: 6, EL: 5, SL: 3, ML: 0 },
+  { month: 'Jun', CL: 10, EL: 2, SL: 4, ML: 2 },
+  { month: 'Jul', CL: 5, EL: 8, SL: 2, ML: 0 },
+  { month: 'Aug', CL: 7, EL: 4, SL: 6, ML: 0 },
+  { month: 'Sep', CL: 4, EL: 3, SL: 3, ML: 0 },
+  { month: 'Oct', CL: 9, EL: 6, SL: 4, ML: 0 },
+  { month: 'Nov', CL: 6, EL: 2, SL: 5, ML: 1 },
+  { month: 'Dec', CL: 12, EL: 8, SL: 3, ML: 0 },
+  { month: 'Jan', CL: 7, EL: 5, SL: 4, ML: 0 },
+  { month: 'Feb', CL: 5, EL: 3, SL: 6, ML: 0 },
+  { month: 'Mar', CL: 8, EL: 4, SL: 2, ML: 0 },
+]
+
+const attendanceData = [
+  { month: 'Apr', Teaching: 94, Admin: 96, Support: 92 },
+  { month: 'May', Teaching: 92, Admin: 95, Support: 90 },
+  { month: 'Jun', Teaching: 90, Admin: 93, Support: 88 },
+  { month: 'Jul', Teaching: 95, Admin: 97, Support: 93 },
+  { month: 'Aug', Teaching: 93, Admin: 94, Support: 91 },
+  { month: 'Sep', Teaching: 91, Admin: 96, Support: 89 },
+  { month: 'Oct', Teaching: 94, Admin: 95, Support: 92 },
+  { month: 'Nov', Teaching: 92, Admin: 93, Support: 90 },
+  { month: 'Dec', Teaching: 88, Admin: 91, Support: 86 },
+  { month: 'Jan', Teaching: 93, Admin: 95, Support: 91 },
+  { month: 'Feb', Teaching: 95, Admin: 96, Support: 93 },
+  { month: 'Mar', Teaching: 91, Admin: 94, Support: 89 },
+]
+
+const performanceData = [
+  { rating: '5 - Outstanding', count: 12, color: '#10B981' },
+  { rating: '4 - Good', count: 38, color: '#22D3EE' },
+  { rating: '3 - Average', count: 52, color: '#C8A45C' },
+  { rating: '2 - Below Avg', count: 28, color: '#F59E0B' },
+  { rating: '1 - Poor', count: 12, color: '#EF4444' },
+]
+
+const recruitmentPipelineData = [
+  { stage: 'Applied', count: 66, color: '#0A1628' },
+  { stage: 'Screened', count: 42, color: '#22D3EE' },
+  { stage: 'Written Test', count: 28, color: '#C8A45C' },
+  { stage: 'Interview', count: 15, color: '#8B5CF6' },
+  { stage: 'Offered', count: 8, color: '#10B981' },
+  { stage: 'Joined', count: 5, color: '#F59E0B' },
+]
+
+const turnoverData = [
+  { month: 'Apr', joins: 3, exits: 1 },
+  { month: 'May', joins: 2, exits: 0 },
+  { month: 'Jun', joins: 1, exits: 2 },
+  { month: 'Jul', joins: 4, exits: 1 },
+  { month: 'Aug', joins: 0, exits: 1 },
+  { month: 'Sep', joins: 2, exits: 0 },
+  { month: 'Oct', joins: 1, exits: 2 },
+  { month: 'Nov', joins: 0, exits: 1 },
+  { month: 'Dec', joins: 3, exits: 0 },
+  { month: 'Jan', joins: 2, exits: 1 },
+  { month: 'Feb', joins: 1, exits: 0 },
+  { month: 'Mar', joins: 2, exits: 1 },
+]
+
+const departmentStaffData = [
+  { department: 'Teaching', count: 82, color: '#0A1628' },
+  { department: 'Admin', count: 24, color: '#22D3EE' },
+  { department: 'Support', count: 18, color: '#C8A45C' },
+  { department: 'Transport', count: 12, color: '#8B5CF6' },
+  { department: 'Maintenance', count: 6, color: '#10B981' },
+]
+
+// ─── Reusable Components ─────────────────────────────────────────
+function FormField({ label, children }) {
+  return (
+    <div>
+      <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function InputField({ value, onChange, placeholder, type = 'text' }) {
+  return (
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" />
+  )
+}
+
+function SelectField({ value, onChange, options }) {
+  return (
+    <select value={value} onChange={onChange}
+      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40">
+      {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+    </select>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────
 export default function HRModule() {
   const { darkMode } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [activeForm, setActiveForm] = useState(0)
+  const [activeReport, setActiveReport] = useState(0)
+
+  // Form States
+  const [onboardingForm, setOnboardingForm] = useState({ name: '', employeeId: '', department: 'Teaching', designation: '', campus: 'Singur', phone: '', email: '', joinDate: '', salary: '', qualification: '', experience: '', bankAccount: '', panNumber: '', aadhaarNumber: '', emergencyContact: '', reportingManager: '' })
+  const [leaveForm, setLeaveForm] = useState({ employeeId: '', leaveType: 'CL', fromDate: '', toDate: '', totalDays: '', reason: '', contactDuringLeave: '', arrangementMade: '' })
+  const [payrollForm, setPayrollForm] = useState({ month: 'March', year: '2026', department: 'All', includeBonus: false, includeDeductions: true })
+  const [performanceForm, setPerformanceForm] = useState({ employeeId: '', reviewPeriod: '2025-26', rating: '3', kpiScore: '', communication: '', punctuality: '', teamwork: '', leadership: '', initiative: '', overallComments: '', reviewerName: '', reviewDate: '' })
+  const [jobForm, setJobForm] = useState({ position: '', department: '', campus: 'Singur', qualification: '', experience: '', salaryRange: '', jobDescription: '', lastDate: '', positionCount: '1', employmentType: 'Full-Time' })
+  const [interviewForm, setInterviewForm] = useState({ candidateName: '', position: '', interviewDate: '', interviewTime: '', interviewer: '', mode: 'In-Person', location: '', notes: '' })
+  const [exitForm, setExitForm] = useState({ employeeId: '', lastWorkingDay: '', reason: '', noticePeriodServed: false, handoverComplete: false, duesCleared: false, exitInterviewDate: '', remarks: '' })
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'payroll', label: 'Payroll', icon: IndianRupee },
-    { id: 'leave', label: 'Leave', icon: Calendar },
+    { id: 'payroll', label: 'Payroll', icon: DollarSign },
+    { id: 'leave', label: 'Leave', icon: Clock },
     { id: 'recruitment', label: 'Recruitment', icon: UserPlus },
-    { id: 'performance', label: 'Performance', icon: Target },
+    { id: 'performance', label: 'Performance', icon: Star },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: FileBarChart },
+  ]
+
+  const forms = [
+    { name: 'Staff Onboarding', icon: UserPlus },
+    { name: 'Leave Application', icon: Clock },
+    { name: 'Payroll Processing', icon: DollarSign },
+    { name: 'Performance Review', icon: Star },
+    { name: 'Job Posting', icon: Megaphone },
+    { name: 'Interview Schedule', icon: Calendar },
+    { name: 'Staff Exit', icon: UserX },
+  ]
+
+  const reports = [
+    { name: 'Payroll Summary', icon: DollarSign },
+    { name: 'Leave Utilization', icon: Clock },
+    { name: 'Staff Attendance', icon: UserCheck },
+    { name: 'Performance Distribution', icon: Star },
+    { name: 'Recruitment Pipeline', icon: UserPlus },
+    { name: 'Staff Turnover', icon: TrendingDown },
+    { name: 'Department Staffing', icon: Building2 },
   ]
 
   const tooltipStyle = {
@@ -233,62 +227,35 @@ export default function HRModule() {
     color: darkMode ? '#e2e8f0' : '#1e293b',
   }
 
-  const filteredStaff = staffList.filter((s) => {
-    const q = searchQuery.toLowerCase()
-    return s.name.toLowerCase().includes(q) || s.department.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
-  })
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto">
       {/* ─── Tab Navigation ──────────────────────────────── */}
       <motion.div variants={itemVariants} className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? 'gradient-birla text-white shadow-md'
-                  : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === tab.id ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+              <Icon className="w-3.5 h-3.5" /> {tab.label}
             </button>
           )
         })}
       </motion.div>
 
-      {/* ─── Overview Tab ─────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          OVERVIEW TAB
+      ═══════════════════════════════════════════════════════════════ */}
       {activeTab === 'overview' && (
         <motion.div variants={itemVariants} className="space-y-6">
-          {/* Top Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {topStats.map((card) => {
               const Icon = card.icon
               return (
-                <motion.div
-                  key={card.label}
-                  variants={itemVariants}
-                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}
-                >
+                <motion.div key={card.label} variants={itemVariants} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-5 text-white shadow-xl ${card.glow}`}>
                   <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -translate-y-6 translate-x-6" />
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <span className="inline-flex items-center gap-0.5 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                        <ArrowUpRight className="w-3 h-3" />
-                        {card.change}
-                      </span>
+                      <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"><Icon className="w-5 h-5" /></div>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/80">{card.change}</span>
                     </div>
                     <p className="text-2xl font-bold">{card.value}</p>
                     <p className="text-sm text-white/70 mt-0.5">{card.label}</p>
@@ -298,927 +265,622 @@ export default function HRModule() {
             })}
           </div>
 
-          {/* Staff Onboarding + Quick Attendance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Staff Onboarding */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-purple-500" />
-                  Staff Onboarding
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium">
-                  New Hire: Ms. Pooja Agarwal
-                </span>
-              </div>
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-foreground">Progress: <span className="font-semibold text-birla-cyan">Step 4 of 8</span></p>
-                  <span className="text-xs text-muted-foreground">37.5% Complete</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full gradient-birla-cyan" style={{ width: '37.5%' }} />
-                </div>
-              </div>
-              <div className="relative">
-                <div className="flex items-start justify-between relative">
-                  {onboardingSteps.map((step, idx) => {
-                    const Icon = step.icon
-                    const isFirst = idx === 0
-                    const isLast = idx === onboardingSteps.length - 1
-                    return (
-                      <div key={step.step} className="flex flex-col items-center text-center" style={{ width: `${100 / onboardingSteps.length}%` }}>
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 z-10 ${
-                          step.status === 'completed' ? 'bg-emerald-500 text-white' :
-                          step.status === 'current' ? 'bg-birla-gold text-white animate-pulse-glow' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <p className="text-[9px] font-medium text-foreground leading-tight">{step.label}</p>
-                        <p className="text-[8px] text-muted-foreground mt-0.5 capitalize">{step.status}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-              {/* New Hire Checklist */}
-              <div className="mt-4 p-3 rounded-xl border border-border bg-muted/20">
-                <h4 className="text-xs font-semibold text-foreground mb-2">New Hire Checklist</h4>
-                <div className="space-y-1.5">
-                  {[
-                    { item: 'Offer letter signed & filed', done: true },
-                    { item: 'Educational certificates verified', done: true },
-                    { item: 'Background verification completed', done: true },
-                    { item: 'Email & ERP access configured', done: false },
-                    { item: 'ID card issued', done: false },
-                    { item: 'Bank details collected for payroll', done: false },
-                    { item: 'Orientation scheduled', done: false },
-                    { item: 'Mentor assigned', done: false },
-                  ].map((check, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
-                      <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${
-                        check.done ? 'bg-emerald-500 text-white' : 'border border-border'
-                      }`}>
-                        {check.done && <CheckCircle2 className="w-3 h-3" />}
-                      </div>
-                      <span className={check.done ? 'text-muted-foreground line-through' : 'text-foreground'}>{check.item}</span>
-                    </div>
-                  ))}
-                </div>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><DollarSign className="w-4 h-4 text-birla-gold" />Monthly Payroll</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={payrollData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                    <XAxis dataKey="department" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`₹${(v / 100000).toFixed(1)}L`]} />
+                    <Bar dataKey="grossSalary" fill="#C8A45C" name="Gross" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="netSalary" fill="#22D3EE" name="Net" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </motion.div>
 
-            {/* Attendance Quick View */}
             <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-500" />
-                  Attendance - This Week
-                </h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                  96.2% Avg
-                </span>
-              </div>
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={leaveCalendarData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[0, 200]} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                    <Area type="monotone" dataKey="present" stroke="#10B981" fill="rgba(16,185,129,0.08)" strokeWidth={2} name="Present" />
-                    <Area type="monotone" dataKey="absent" stroke="#EF4444" fill="rgba(239,68,68,0.08)" strokeWidth={2} name="Absent" />
-                    <Area type="monotone" dataKey="onLeave" stroke="#F59E0B" fill="rgba(245,158,11,0.08)" strokeWidth={2} name="On Leave" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Attendance Summary */}
-              <div className="grid grid-cols-4 gap-2 mt-3">
-                {[
-                  { label: 'Present', value: 178, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
-                  { label: 'Absent', value: 6, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500/10' },
-                  { label: 'On Leave', value: 5, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10' },
-                  { label: 'Late', value: 3, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10' },
-                ].map((s) => (
-                  <div key={s.label} className={`p-2 rounded-lg ${s.bg} text-center`}>
-                    <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-                    <p className="text-[9px] text-muted-foreground">{s.label}</p>
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Clock className="w-4 h-4 text-amber-500" />Recent Leave Applications</h3>
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {recentLeaves.map((leave) => (
+                  <div key={leave.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        leave.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                        leave.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                        'bg-red-500/10 text-red-600 dark:text-red-400'
+                      }`}>{leave.status}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-foreground">{leave.type}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">{leave.employee}</p>
+                    <p className="text-[11px] text-muted-foreground">{leave.department} &bull; {leave.from} - {leave.to} &bull; {leave.days} day(s)</p>
                   </div>
                 ))}
               </div>
             </motion.div>
           </div>
 
-          {/* Staff Directory Quick */}
           <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Users className="w-4 h-4 text-birla-cyan" />
-                Staff Directory
-                <span className="px-2 py-0.5 rounded-full bg-muted text-xs text-muted-foreground">{staffList.length} records</span>
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search staff..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 py-1.5 rounded-lg border border-input bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40 focus:border-birla-gold transition-all w-44"
-                  />
-                </div>
-                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                  <Plus className="w-3 h-3" /> Add Staff
-                </button>
-              </div>
-            </div>
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Megaphone className="w-4 h-4 text-purple-500" />Open Job Postings</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Staff ID</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Name</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Designation</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Attendance</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Position</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Applications</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
+                </tr></thead>
                 <tbody>
-                  {filteredStaff.map((staff) => (
-                    <tr key={staff.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-birla-cyan">{staff.id}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full gradient-birla-gold flex items-center justify-center text-xs font-bold text-birla-blue flex-shrink-0">
-                            {staff.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{staff.name}</p>
-                            <p className="text-[10px] text-muted-foreground">{staff.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-foreground">{staff.department}</td>
-                      <td className="px-4 py-3 text-xs text-foreground">{staff.designation}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          staff.type === 'Teaching' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                          staff.type === 'Admin' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
-                          'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        }`}>
-                          {staff.type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-12 h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${staff.attendance}%`,
-                                backgroundColor: staff.attendance >= 95 ? '#10B981' : staff.attendance >= 85 ? '#F59E0B' : '#EF4444',
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs text-foreground">{staff.attendance}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          staff.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        }`}>
-                          {staff.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="View">
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Message">
-                            <Mail className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+                  {jobPostings.map((job) => (
+                    <tr key={job.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{job.position}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{job.department}</td>
+                      <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-foreground">{job.type}</span></td>
+                      <td className="px-4 py-3 text-sm text-right text-foreground">{job.applications}</td>
+                      <td className="px-4 py-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${job.status === 'Open' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : job.status === 'Interview' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-muted text-muted-foreground'}`}>{job.status}</span></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </motion.div>
-
-          {/* Staff Document Management */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <FileText className="w-4 h-4 text-birla-gold" />
-                Staff Document Management
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                  12/15 Verified
-                </span>
-                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors">
-                  <Upload className="w-3 h-3" /> Upload
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {staffDocuments.map((category) => (
-                <div key={category.category} className="rounded-xl border border-border gradient-card-blue p-4">
-                  <h4 className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
-                    <BadgeCheck className="w-3.5 h-3.5 text-birla-cyan" />
-                    {category.category}
-                  </h4>
-                  <div className="space-y-2">
-                    {category.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs">
-                        <span className={item.verified ? 'text-foreground' : 'text-amber-600 dark:text-amber-400'}>{item.name}</span>
-                        <div className="flex items-center gap-1">
-                          {item.expiry !== 'N/A' && (
-                            <span className="text-[9px] text-muted-foreground">Exp: {item.expiry}</span>
-                          )}
-                          {item.verified ? (
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                          ) : (
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
         </motion.div>
       )}
 
-      {/* ─── Payroll Tab ──────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          PAYROLL TAB
+      ═══════════════════════════════════════════════════════════════ */}
       {activeTab === 'payroll' && (
         <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <IndianRupee className="w-5 h-5 text-birla-gold" />
-              Payroll Dashboard - March 2026
-            </h3>
-            <div className="flex items-center gap-2">
-              <select className="px-3 py-1.5 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                <option>March 2026</option>
-                <option>February 2026</option>
-                <option>January 2026</option>
-              </select>
-              <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-                <Download className="w-3 h-3" /> Process Payroll
-              </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: 'Gross Payroll', value: '₹83,40,000', icon: DollarSign, color: 'emerald' },
+              { label: 'Total Deductions', value: '₹12,52,000', icon: TrendingDown, color: 'rose' },
+              { label: 'Net Payroll', value: '₹70,88,000', icon: Banknote, color: 'blue' },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <motion.div key={item.label} variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl bg-${item.color}-500/10 flex items-center justify-center`}><Icon className={`w-5 h-5 text-${item.color}-500`} /></div><div><p className="text-xs text-muted-foreground">{item.label}</p><p className="text-lg font-bold text-foreground">{item.value}</p></div></div>
+                </motion.div>
+              )
+            })}
+          </div>
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <table className="w-full">
+              <thead><tr className="border-b border-border bg-muted/30">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Headcount</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Gross (₹)</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Deductions (₹)</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net (₹)</th>
+              </tr></thead>
+              <tbody>
+                {payrollData.map((row) => (
+                  <tr key={row.department} className="border-b border-border/50 hover:bg-muted/20">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{row.department}</td>
+                    <td className="px-4 py-3 text-sm text-right text-foreground">{row.headcount}</td>
+                    <td className="px-4 py-3 text-sm text-right text-foreground">₹{(row.grossSalary / 100000).toFixed(1)}L</td>
+                    <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">₹{(row.deductions / 100000).toFixed(1)}L</td>
+                    <td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{(row.netSalary / 100000).toFixed(1)}L</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          LEAVE TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'leave' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Clock className="w-4 h-4 text-amber-500" />Leave Balance Overview (Avg per Employee)</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Leave Type</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Total</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Used</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Balance</th>
+                </tr></thead>
+                <tbody>
+                  {leaveData.map((row) => (
+                    <tr key={row.type} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{row.type}</td>
+                      <td className="px-4 py-3 text-sm text-right text-foreground">{row.total}</td>
+                      <td className="px-4 py-3 text-sm text-right text-amber-600 dark:text-amber-400">{row.used}</td>
+                      <td className="px-4 py-3 text-sm text-right font-bold text-emerald-600 dark:text-emerald-400">{row.balance}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-
-          {/* Payroll Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: 'Gross Payroll', value: '₹1.24Cr', icon: IndianRupee, color: 'text-emerald-500 bg-emerald-500/10' },
-              { label: 'Total Deductions', value: '₹24.8L', icon: TrendingUp, color: 'text-red-500 bg-red-500/10' },
-              { label: 'Net Disbursement', value: '₹99.2L', icon: CheckCircle2, color: 'text-blue-500 bg-blue-500/10' },
-              { label: 'Staff Processed', value: '186/186', icon: Users, color: 'text-purple-500 bg-purple-500/10' },
-            ].map((stat) => {
-              const Icon = stat.icon
-              return (
-                <div key={stat.label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{stat.value}</p>
-                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
-                  </div>
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Calendar className="w-4 h-4 text-birla-cyan" />Recent Leave Applications</h3>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {recentLeaves.map((leave) => (
+                <div key={leave.id} className="flex items-center justify-between p-3 rounded-xl border border-border gradient-card-blue">
+                  <div><p className="text-sm font-semibold text-foreground">{leave.employee}</p><p className="text-[11px] text-muted-foreground">{leave.department} &bull; {leave.type} &bull; {leave.days} day(s)</p></div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${leave.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : leave.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>{leave.status}</span>
                 </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          RECRUITMENT TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'recruitment' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Megaphone className="w-4 h-4 text-purple-500" />Recruitment Pipeline</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={recruitmentPipelineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                  <XAxis dataKey="stage" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {recruitmentPipelineData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <table className="w-full">
+              <thead><tr className="border-b border-border bg-muted/30">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Position</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Applications</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
+              </tr></thead>
+              <tbody>
+                {jobPostings.map((job) => (
+                  <tr key={job.id} className="border-b border-border/50 hover:bg-muted/20">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{job.position}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{job.department}</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-foreground">{job.type}</span></td>
+                    <td className="px-4 py-3 text-sm text-right text-foreground">{job.applications}</td>
+                    <td className="px-4 py-3 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${job.status === 'Open' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : job.status === 'Interview' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-muted text-muted-foreground'}`}>{job.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PERFORMANCE TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'performance' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Star className="w-4 h-4 text-birla-gold" />Performance Distribution</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={performanceData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} dataKey="count" label={({ rating, count }) => `${rating}: ${count}`}>
+                      {performanceData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card overflow-hidden">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2 p-5 pb-3"><Target className="w-4 h-4 text-birla-cyan" />Top Performers</h3>
+              <div className="space-y-2 px-5 pb-5">
+                {[
+                  { name: 'Dr. Priya Menon', dept: 'Science', rating: 4.8 },
+                  { name: 'Mr. Sanjay Gupta', dept: 'Mathematics', rating: 4.7 },
+                  { name: 'Ms. Anjali Das', dept: 'English', rating: 4.6 },
+                  { name: 'Mr. Vikram Singh', dept: 'Hindi', rating: 4.5 },
+                  { name: 'Mrs. Deepa Rao', dept: 'Social Studies', rating: 4.4 },
+                ].map((p, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-border gradient-card-blue">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg gradient-birla text-white flex items-center justify-center text-xs font-bold">{idx + 1}</div>
+                      <div><p className="text-sm font-medium text-foreground">{p.name}</p><p className="text-[10px] text-muted-foreground">{p.dept}</p></div>
+                    </div>
+                    <div className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-birla-gold fill-birla-gold" /><span className="text-sm font-bold text-foreground">{p.rating}</span></div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          FORMS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'forms' && (
+        <motion.div variants={itemVariants} className="space-y-6">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {forms.map((f, idx) => {
+              const Icon = f.icon
+              return (
+                <button key={idx} onClick={() => setActiveForm(idx)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeForm === idx ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
+                  <Icon className="w-3.5 h-3.5" /> {f.name}
+                </button>
               )
             })}
           </div>
 
-          {/* Salary Breakdown Chart + Payslip Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-birla-cyan" />
-                Salary Distribution by Department
-              </h4>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={payrollByDepartment} barGap={2}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="department" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} angle={-30} textAnchor="end" height={60} />
-                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `₹${(v / 100000).toFixed(1)}L`} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`₹${(value / 100000).toFixed(1)}L`, '']} />
-                    <Bar dataKey="total" fill="#0A1628" radius={[4, 4, 0, 0]} name="Total Payroll" />
-                    <Bar dataKey="avg" fill="#22D3EE" radius={[4, 4, 0, 0]} name="Avg Salary" />
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* Form 1: Staff Onboarding */}
+          {activeForm === 0 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><UserPlus className="w-5 h-5 text-birla-gold" />Staff Onboarding Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Full Name"><InputField value={onboardingForm.name} onChange={(e) => setOnboardingForm({ ...onboardingForm, name: e.target.value })} placeholder="Full name" /></FormField>
+                <FormField label="Employee ID"><InputField value={onboardingForm.employeeId} onChange={(e) => setOnboardingForm({ ...onboardingForm, employeeId: e.target.value })} placeholder="EMP-001" /></FormField>
+                <FormField label="Department"><SelectField value={onboardingForm.department} onChange={(e) => setOnboardingForm({ ...onboardingForm, department: e.target.value })} options={['Teaching', 'Admin', 'Support', 'Transport', 'Maintenance']} /></FormField>
+                <FormField label="Designation"><InputField value={onboardingForm.designation} onChange={(e) => setOnboardingForm({ ...onboardingForm, designation: e.target.value })} placeholder="e.g. TGT Mathematics" /></FormField>
+                <FormField label="Campus"><SelectField value={onboardingForm.campus} onChange={(e) => setOnboardingForm({ ...onboardingForm, campus: e.target.value })} options={['Singur', 'Chandannagar', 'Srirampore']} /></FormField>
+                <FormField label="Phone"><InputField value={onboardingForm.phone} onChange={(e) => setOnboardingForm({ ...onboardingForm, phone: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+                <FormField label="Email"><InputField value={onboardingForm.email} onChange={(e) => setOnboardingForm({ ...onboardingForm, email: e.target.value })} placeholder="email@birlaopenminds.com" type="email" /></FormField>
+                <FormField label="Join Date"><InputField value={onboardingForm.joinDate} onChange={(e) => setOnboardingForm({ ...onboardingForm, joinDate: e.target.value })} type="date" /></FormField>
+                <FormField label="Salary (₹)"><InputField value={onboardingForm.salary} onChange={(e) => setOnboardingForm({ ...onboardingForm, salary: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Qualification"><InputField value={onboardingForm.qualification} onChange={(e) => setOnboardingForm({ ...onboardingForm, qualification: e.target.value })} placeholder="e.g. M.Sc, B.Ed" /></FormField>
+                <FormField label="Experience (Years)"><InputField value={onboardingForm.experience} onChange={(e) => setOnboardingForm({ ...onboardingForm, experience: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Bank Account"><InputField value={onboardingForm.bankAccount} onChange={(e) => setOnboardingForm({ ...onboardingForm, bankAccount: e.target.value })} placeholder="Account number" /></FormField>
+                <FormField label="PAN Number"><InputField value={onboardingForm.panNumber} onChange={(e) => setOnboardingForm({ ...onboardingForm, panNumber: e.target.value })} placeholder="ABCDE1234F" /></FormField>
+                <FormField label="Aadhaar Number"><InputField value={onboardingForm.aadhaarNumber} onChange={(e) => setOnboardingForm({ ...onboardingForm, aadhaarNumber: e.target.value })} placeholder="XXXX XXXX XXXX" /></FormField>
+                <FormField label="Emergency Contact"><InputField value={onboardingForm.emergencyContact} onChange={(e) => setOnboardingForm({ ...onboardingForm, emergencyContact: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+                <FormField label="Reporting Manager"><InputField value={onboardingForm.reportingManager} onChange={(e) => setOnboardingForm({ ...onboardingForm, reportingManager: e.target.value })} placeholder="Manager name" /></FormField>
               </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Onboard Staff</button></div>
             </motion.div>
+          )}
 
-            {/* Payslip Preview */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-birla-gold" />
-                  Payslip Preview
-                </h4>
-                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                    <Download className="w-3 h-3" /> PDF
-                  </button>
-                  <button className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                    <Printer className="w-3 h-3" /> Print
-                  </button>
-                  <button className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                    <Send className="w-3 h-3" /> Email
-                  </button>
-                </div>
+          {/* Form 2: Leave Application */}
+          {activeForm === 1 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Clock className="w-5 h-5 text-amber-500" />Leave Application Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Employee ID"><InputField value={leaveForm.employeeId} onChange={(e) => setLeaveForm({ ...leaveForm, employeeId: e.target.value })} placeholder="EMP-001" /></FormField>
+                <FormField label="Leave Type"><SelectField value={leaveForm.leaveType} onChange={(e) => setLeaveForm({ ...leaveForm, leaveType: e.target.value })} options={['CL', 'EL', 'ML', 'SL', 'Casual', 'Compensatory']} /></FormField>
+                <FormField label="From Date"><InputField value={leaveForm.fromDate} onChange={(e) => setLeaveForm({ ...leaveForm, fromDate: e.target.value })} type="date" /></FormField>
+                <FormField label="To Date"><InputField value={leaveForm.toDate} onChange={(e) => setLeaveForm({ ...leaveForm, toDate: e.target.value })} type="date" /></FormField>
+                <FormField label="Total Days"><InputField value={leaveForm.totalDays} onChange={(e) => setLeaveForm({ ...leaveForm, totalDays: e.target.value })} placeholder="0" type="number" /></FormField>
+                <FormField label="Reason"><InputField value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} placeholder="Reason for leave" /></FormField>
+                <FormField label="Contact During Leave"><InputField value={leaveForm.contactDuringLeave} onChange={(e) => setLeaveForm({ ...leaveForm, contactDuringLeave: e.target.value })} placeholder="+91 98765 43210" /></FormField>
+                <FormField label="Arrangement Made"><InputField value={leaveForm.arrangementMade} onChange={(e) => setLeaveForm({ ...leaveForm, arrangementMade: e.target.value })} placeholder="Substitute teacher/arrangement" /></FormField>
               </div>
-
-              <div className="border-2 border-dashed border-birla-gold/30 rounded-2xl p-4 gradient-card-blue">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground">Birla Open Minds International School</h4>
-                    <p className="text-[9px] text-muted-foreground">Pay Slip for the month of {payslipPreview.month}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-mono text-birla-cyan">{payslipPreview.empId}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-[10px]">
-                  <div><span className="text-muted-foreground">Name:</span> <span className="font-medium text-foreground">{payslipPreview.employee}</span></div>
-                  <div><span className="text-muted-foreground">Designation:</span> <span className="font-medium text-foreground">{payslipPreview.designation}</span></div>
-                  <div><span className="text-muted-foreground">Department:</span> <span className="font-medium text-foreground">{payslipPreview.department}</span></div>
-                  <div><span className="text-muted-foreground">Bank:</span> <span className="font-medium text-foreground">{payslipPreview.bank}</span></div>
-                  <div><span className="text-muted-foreground">PF No:</span> <span className="font-medium text-foreground">{payslipPreview.pfNo}</span></div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1.5">Earnings</p>
-                    {payslipPreview.earnings.map((e, idx) => (
-                      <div key={idx} className="flex justify-between text-[10px] py-0.5">
-                        <span className="text-muted-foreground">{e.component}</span>
-                        <span className="text-foreground">{e.amount}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-[10px] font-semibold pt-1 mt-1 border-t border-border">
-                      <span className="text-foreground">Gross Earnings</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">{payslipPreview.grossEarnings}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-semibold text-red-600 dark:text-red-400 mb-1.5">Deductions</p>
-                    {payslipPreview.deductions.map((d, idx) => (
-                      <div key={idx} className="flex justify-between text-[10px] py-0.5">
-                        <span className="text-muted-foreground">{d.component}</span>
-                        <span className="text-foreground">{d.amount}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-[10px] font-semibold pt-1 mt-1 border-t border-border">
-                      <span className="text-foreground">Total Deductions</span>
-                      <span className="text-red-600 dark:text-red-400">{payslipPreview.totalDeductions}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-2 border-t-2 border-birla-gold/50 flex justify-between items-center">
-                  <span className="text-xs font-bold text-foreground">Net Pay</span>
-                  <span className="text-lg font-bold text-birla-gold">{payslipPreview.netPay}</span>
-                </div>
-              </div>
-
-              {/* Bulk Payslip */}
-              <div className="mt-3 p-3 rounded-xl border border-border bg-muted/20">
-                <h4 className="text-xs font-semibold text-foreground mb-2">Bulk Payslip Generation</h4>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <select className="px-2.5 py-1.5 rounded-lg border border-input bg-background text-[10px] text-foreground focus:outline-none focus:ring-1 focus:ring-birla-gold/40">
-                    <option>All Staff</option>
-                    <option>Teaching Staff Only</option>
-                    <option>Non-Teaching Staff Only</option>
-                    <option>Admin Staff Only</option>
-                  </select>
-                  <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg gradient-birla text-white text-[10px] font-medium">
-                    <Download className="w-3 h-3" /> Generate All
-                  </button>
-                  <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                    <Send className="w-3 h-3" /> Email All
-                  </button>
-                </div>
-              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Leave</button></div>
             </motion.div>
-          </div>
+          )}
+
+          {/* Form 3: Payroll Processing */}
+          {activeForm === 2 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><DollarSign className="w-5 h-5 text-emerald-500" />Payroll Processing Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Month"><SelectField value={payrollForm.month} onChange={(e) => setPayrollForm({ ...payrollForm, month: e.target.value })} options={['January','February','March','April','May','June','July','August','September','October','November','December']} /></FormField>
+                <FormField label="Year"><SelectField value={payrollForm.year} onChange={(e) => setPayrollForm({ ...payrollForm, year: e.target.value })} options={['2026','2025','2024']} /></FormField>
+                <FormField label="Department"><SelectField value={payrollForm.department} onChange={(e) => setPayrollForm({ ...payrollForm, department: e.target.value })} options={['All','Teaching','Admin','Support','Transport','Maintenance']} /></FormField>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeBonus} onChange={(e) => setPayrollForm({ ...payrollForm, includeBonus: e.target.checked })} className="rounded border-input" /> Include Bonus</label>
+                </div>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={payrollForm.includeDeductions} onChange={(e) => setPayrollForm({ ...payrollForm, includeDeductions: e.target.checked })} className="rounded border-input" /> Include Deductions</label>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla text-white text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Banknote className="w-4 h-4" />Process Payroll</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 4: Performance Review */}
+          {activeForm === 3 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Star className="w-5 h-5 text-birla-gold" />Performance Review Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Employee ID"><InputField value={performanceForm.employeeId} onChange={(e) => setPerformanceForm({ ...performanceForm, employeeId: e.target.value })} placeholder="EMP-001" /></FormField>
+                <FormField label="Review Period"><SelectField value={performanceForm.reviewPeriod} onChange={(e) => setPerformanceForm({ ...performanceForm, reviewPeriod: e.target.value })} options={['2025-26', '2024-25', '2023-24']} /></FormField>
+                <FormField label="Overall Rating (1-5)"><SelectField value={performanceForm.rating} onChange={(e) => setPerformanceForm({ ...performanceForm, rating: e.target.value })} options={['1', '2', '3', '4', '5']} /></FormField>
+                <FormField label="KPI Score (%)"><InputField value={performanceForm.kpiScore} onChange={(e) => setPerformanceForm({ ...performanceForm, kpiScore: e.target.value })} placeholder="0-100" type="number" /></FormField>
+                <FormField label="Communication (1-5)"><InputField value={performanceForm.communication} onChange={(e) => setPerformanceForm({ ...performanceForm, communication: e.target.value })} placeholder="1-5" type="number" /></FormField>
+                <FormField label="Punctuality (1-5)"><InputField value={performanceForm.punctuality} onChange={(e) => setPerformanceForm({ ...performanceForm, punctuality: e.target.value })} placeholder="1-5" type="number" /></FormField>
+                <FormField label="Teamwork (1-5)"><InputField value={performanceForm.teamwork} onChange={(e) => setPerformanceForm({ ...performanceForm, teamwork: e.target.value })} placeholder="1-5" type="number" /></FormField>
+                <FormField label="Leadership (1-5)"><InputField value={performanceForm.leadership} onChange={(e) => setPerformanceForm({ ...performanceForm, leadership: e.target.value })} placeholder="1-5" type="number" /></FormField>
+                <FormField label="Initiative (1-5)"><InputField value={performanceForm.initiative} onChange={(e) => setPerformanceForm({ ...performanceForm, initiative: e.target.value })} placeholder="1-5" type="number" /></FormField>
+                <FormField label="Overall Comments"><InputField value={performanceForm.overallComments} onChange={(e) => setPerformanceForm({ ...performanceForm, overallComments: e.target.value })} placeholder="Comments" /></FormField>
+                <FormField label="Reviewer Name"><InputField value={performanceForm.reviewerName} onChange={(e) => setPerformanceForm({ ...performanceForm, reviewerName: e.target.value })} placeholder="Reviewer name" /></FormField>
+                <FormField label="Review Date"><InputField value={performanceForm.reviewDate} onChange={(e) => setPerformanceForm({ ...performanceForm, reviewDate: e.target.value })} type="date" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Submit Review</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 5: Job Posting */}
+          {activeForm === 4 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Megaphone className="w-5 h-5 text-purple-500" />Job Posting Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Position"><InputField value={jobForm.position} onChange={(e) => setJobForm({ ...jobForm, position: e.target.value })} placeholder="e.g. TGT Mathematics" /></FormField>
+                <FormField label="Department"><InputField value={jobForm.department} onChange={(e) => setJobForm({ ...jobForm, department: e.target.value })} placeholder="e.g. Mathematics" /></FormField>
+                <FormField label="Campus"><SelectField value={jobForm.campus} onChange={(e) => setJobForm({ ...jobForm, campus: e.target.value })} options={['Singur', 'Chandannagar', 'Srirampore']} /></FormField>
+                <FormField label="Qualification"><InputField value={jobForm.qualification} onChange={(e) => setJobForm({ ...jobForm, qualification: e.target.value })} placeholder="e.g. M.Sc, B.Ed" /></FormField>
+                <FormField label="Experience (Years)"><InputField value={jobForm.experience} onChange={(e) => setJobForm({ ...jobForm, experience: e.target.value })} placeholder="e.g. 2-5" /></FormField>
+                <FormField label="Salary Range (₹)"><InputField value={jobForm.salaryRange} onChange={(e) => setJobForm({ ...jobForm, salaryRange: e.target.value })} placeholder="e.g. 35000-50000" /></FormField>
+                <div className="md:col-span-2 lg:col-span-3">
+                  <FormField label="Job Description"><textarea value={jobForm.jobDescription} onChange={(e) => setJobForm({ ...jobForm, jobDescription: e.target.value })} placeholder="Enter detailed job description..." rows={3} className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-birla-gold/40" /></FormField>
+                </div>
+                <FormField label="Last Date to Apply"><InputField value={jobForm.lastDate} onChange={(e) => setJobForm({ ...jobForm, lastDate: e.target.value })} type="date" /></FormField>
+                <FormField label="Position Count"><InputField value={jobForm.positionCount} onChange={(e) => setJobForm({ ...jobForm, positionCount: e.target.value })} placeholder="1" type="number" /></FormField>
+                <FormField label="Employment Type"><SelectField value={jobForm.employmentType} onChange={(e) => setJobForm({ ...jobForm, employmentType: e.target.value })} options={['Full-Time', 'Part-Time', 'Contract']} /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Post Job</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 6: Interview Schedule */}
+          {activeForm === 5 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><Calendar className="w-5 h-5 text-blue-500" />Interview Schedule Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Candidate Name"><InputField value={interviewForm.candidateName} onChange={(e) => setInterviewForm({ ...interviewForm, candidateName: e.target.value })} placeholder="Candidate name" /></FormField>
+                <FormField label="Position"><InputField value={interviewForm.position} onChange={(e) => setInterviewForm({ ...interviewForm, position: e.target.value })} placeholder="e.g. TGT Mathematics" /></FormField>
+                <FormField label="Interview Date"><InputField value={interviewForm.interviewDate} onChange={(e) => setInterviewForm({ ...interviewForm, interviewDate: e.target.value })} type="date" /></FormField>
+                <FormField label="Interview Time"><InputField value={interviewForm.interviewTime} onChange={(e) => setInterviewForm({ ...interviewForm, interviewTime: e.target.value })} type="time" /></FormField>
+                <FormField label="Interviewer"><InputField value={interviewForm.interviewer} onChange={(e) => setInterviewForm({ ...interviewForm, interviewer: e.target.value })} placeholder="Interviewer name" /></FormField>
+                <FormField label="Mode"><SelectField value={interviewForm.mode} onChange={(e) => setInterviewForm({ ...interviewForm, mode: e.target.value })} options={['In-Person', 'Online']} /></FormField>
+                <FormField label="Location / Link"><InputField value={interviewForm.location} onChange={(e) => setInterviewForm({ ...interviewForm, location: e.target.value })} placeholder="Room no. or Meeting link" /></FormField>
+                <FormField label="Notes"><InputField value={interviewForm.notes} onChange={(e) => setInterviewForm({ ...interviewForm, notes: e.target.value })} placeholder="Any special notes" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Schedule Interview</button></div>
+            </motion.div>
+          )}
+
+          {/* Form 7: Staff Exit */}
+          {activeForm === 6 && (
+            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6"><UserX className="w-5 h-5 text-rose-500" />Staff Exit Form</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField label="Employee ID"><InputField value={exitForm.employeeId} onChange={(e) => setExitForm({ ...exitForm, employeeId: e.target.value })} placeholder="EMP-001" /></FormField>
+                <FormField label="Last Working Day"><InputField value={exitForm.lastWorkingDay} onChange={(e) => setExitForm({ ...exitForm, lastWorkingDay: e.target.value })} type="date" /></FormField>
+                <FormField label="Reason"><InputField value={exitForm.reason} onChange={(e) => setExitForm({ ...exitForm, reason: e.target.value })} placeholder="Reason for exit" /></FormField>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={exitForm.noticePeriodServed} onChange={(e) => setExitForm({ ...exitForm, noticePeriodServed: e.target.checked })} className="rounded border-input" /> Notice Period Served</label>
+                </div>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={exitForm.handoverComplete} onChange={(e) => setExitForm({ ...exitForm, handoverComplete: e.target.checked })} className="rounded border-input" /> Handover Complete</label>
+                </div>
+                <div className="flex items-center gap-3 mt-5">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={exitForm.duesCleared} onChange={(e) => setExitForm({ ...exitForm, duesCleared: e.target.checked })} className="rounded border-input" /> Dues Cleared</label>
+                </div>
+                <FormField label="Exit Interview Date"><InputField value={exitForm.exitInterviewDate} onChange={(e) => setExitForm({ ...exitForm, exitInterviewDate: e.target.value })} type="date" /></FormField>
+                <FormField label="Remarks"><InputField value={exitForm.remarks} onChange={(e) => setExitForm({ ...exitForm, remarks: e.target.value })} placeholder="Any remarks" /></FormField>
+              </div>
+              <div className="mt-6 flex justify-end"><button className="px-6 py-2.5 rounded-xl gradient-birla-gold text-birla-blue text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2"><Save className="w-4 h-4" />Process Exit</button></div>
+            </motion.div>
+          )}
         </motion.div>
       )}
 
-      {/* ─── Leave Tab ────────────────────────────────────── */}
-      {activeTab === 'leave' && (
+      {/* ═══════════════════════════════════════════════════════════════
+          REPORTS TAB
+      ═══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'reports' && (
         <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-amber-500" />
-              Leave Management
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Apply Leave
-            </button>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {reports.map((r, idx) => {
+              const Icon = r.icon
+              return (
+                <button key={idx} onClick={() => setActiveReport(idx)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeReport === idx ? 'gradient-birla text-white shadow-md' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
+                  <Icon className="w-3.5 h-3.5" /> {r.name}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Leave Balance */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {leaveBalances.map((lb) => (
-              <div key={lb.type} className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: `${lb.color}15`, color: lb.color }}>
-                    {lb.type}
-                  </span>
-                  <span className="text-xs font-medium text-foreground">{lb.balance}/{lb.total}</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground mb-2">{lb.label}</p>
-                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${(lb.used / lb.total) * 100}%`, backgroundColor: lb.color }} />
-                </div>
-                <div className="flex justify-between mt-1.5 text-[9px] text-muted-foreground">
-                  <span>Used: {lb.used}</span>
-                  <span>Balance: {lb.balance}</span>
+          {/* Report 1: Payroll Summary */}
+          {activeReport === 0 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><DollarSign className="w-4 h-4 text-birla-gold" />Payroll Summary Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={payrollSummaryData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="department" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`₹${(v / 100000).toFixed(1)}L`]} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Bar dataKey="gross" fill="#C8A45C" name="Gross" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="deductions" fill="#EF4444" name="Deductions" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="net" fill="#22D3EE" name="Net" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Leave Calendar + Pending Approvals */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Leave Calendar */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                Attendance & Leave Calendar - Week View
-              </h4>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={leaveCalendarData} barGap={2}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
-                    <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                    <Bar dataKey="present" stackId="a" fill="#10B981" name="Present" />
-                    <Bar dataKey="onLeave" stackId="a" fill="#F59E0B" name="On Leave" />
-                    <Bar dataKey="absent" stackId="a" fill="#EF4444" name="Absent" />
-                    <Bar dataKey="late" stackId="a" fill="#8B5CF6" name="Late" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Gross (₹)</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Deductions (₹)</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net (₹)</th></tr></thead>
+                  <tbody>{payrollSummaryData.map((d) => (<tr key={d.department} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.department}</td><td className="px-4 py-3 text-sm text-right">₹{(d.gross / 100000).toFixed(1)}L</td><td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">₹{(d.deductions / 100000).toFixed(1)}L</td><td className="px-4 py-3 text-sm text-right font-bold text-birla-gold">₹{(d.net / 100000).toFixed(1)}L</td></tr>))}</tbody>
+                </table>
               </div>
             </motion.div>
+          )}
 
-            {/* Pending Leave Approvals */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-amber-500" />
-                  Pending Approvals
-                </h4>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
-                  {leaveRequests.filter(l => l.status === 'pending').length} Pending
-                </span>
+          {/* Report 2: Leave Utilization */}
+          {activeReport === 1 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Clock className="w-4 h-4 text-amber-500" />Leave Utilization Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={leaveUtilData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Bar dataKey="CL" stackId="a" fill="#C8A45C" name="CL" />
+                      <Bar dataKey="EL" stackId="a" fill="#22D3EE" name="EL" />
+                      <Bar dataKey="SL" stackId="a" fill="#EF4444" name="SL" />
+                      <Bar dataKey="ML" stackId="a" fill="#8B5CF6" name="ML" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="space-y-3 max-h-72 overflow-y-auto">
-                {leaveRequests.filter(l => l.status === 'pending').map((leave) => (
-                  <div key={leave.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                        {leave.type} Leave
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{leave.days} day{leave.days > 1 ? 's' : ''}</span>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">{leave.staff}</p>
-                    <p className="text-[11px] text-muted-foreground">{leave.department} &bull; {leave.from} - {leave.to}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Reason: {leave.reason}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium hover:bg-emerald-500/20 transition-colors">
-                        <CheckCircle2 className="w-3 h-3 inline mr-1" />Approve
-                      </button>
-                      <button className="px-3 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-medium hover:bg-red-500/20 transition-colors">
-                        <XCircle className="w-3 h-3 inline mr-1" />Reject
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Month</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">CL</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">EL</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">SL</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">ML</th></tr></thead>
+                  <tbody>{leaveUtilData.map((d) => (<tr key={d.month} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.month}</td><td className="px-4 py-3 text-sm text-right">{d.CL}</td><td className="px-4 py-3 text-sm text-right">{d.EL}</td><td className="px-4 py-3 text-sm text-right">{d.SL}</td><td className="px-4 py-3 text-sm text-right">{d.ML}</td></tr>))}</tbody>
+                </table>
               </div>
             </motion.div>
-          </div>
+          )}
 
-          {/* Attendance Grid */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-emerald-500" />
-                Staff Attendance Grid - This Week
-              </h4>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                Week Mar 3-7
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Staff</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Dept</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Mon</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Tue</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Wed</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Thu</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Fri</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Summary</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceGrid.map((row, idx) => (
-                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-2.5 text-sm font-medium text-foreground">{row.name}</td>
-                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{row.dept}</td>
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day) => (
-                        <td key={day} className="px-4 py-2.5 text-center">
-                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold ${
-                            row.days[day] === 'P' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                            row.days[day] === 'L' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                            'bg-red-500/10 text-red-600 dark:text-red-400'
-                          }`}>
-                            {row.days[day]}
-                          </span>
-                        </td>
-                      ))}
-                      <td className="px-4 py-2.5 text-center">
-                        <span className={`text-xs font-semibold ${
-                          row.summary === '5/5' ? 'text-emerald-600 dark:text-emerald-400' :
-                          parseInt(row.summary) >= 4 ? 'text-amber-600 dark:text-amber-400' :
-                          'text-red-600 dark:text-red-400'
-                        }`}>
-                          {row.summary}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-500/10 border border-emerald-500/30" /> P = Present</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500/10 border border-amber-500/30" /> L = Leave</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500/10 border border-red-500/30" /> A = Absent</span>
-            </div>
-          </motion.div>
-
-          {/* All Leave Requests */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="p-4 border-b border-border bg-muted/30">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Clock className="w-4 h-4 text-purple-500" />
-                All Leave Requests
-              </h4>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/20">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Staff</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Dept</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Duration</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Days</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Approved By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaveRequests.map((leave) => (
-                    <tr key={leave.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{leave.staff}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{leave.department}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                          {leave.type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-foreground">{leave.from} - {leave.to}</td>
-                      <td className="px-4 py-3 text-center text-xs text-foreground">{leave.days}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          leave.status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          leave.status === 'pending' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                          'bg-red-500/10 text-red-600 dark:text-red-400'
-                        }`}>
-                          {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{leave.approvedBy}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ─── Recruitment Tab ───────────────────────────────── */}
-      {activeTab === 'recruitment' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-purple-500" />
-              Recruitment Workflow
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> New Job Posting
-            </button>
-          </div>
-
-          {/* Applicant Pipeline */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-birla-cyan" />
-              Applicant Pipeline
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {applicantPipeline.map((stage) => (
-                <div key={stage.stage} className="rounded-xl border border-border gradient-card-blue p-4 text-center">
-                  <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: stage.color }}>
-                    {stage.count}
-                  </div>
-                  <p className="text-xs font-semibold text-foreground">{stage.stage}</p>
+          {/* Report 3: Staff Attendance */}
+          {activeReport === 2 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><UserCheck className="w-4 h-4 text-emerald-500" />Staff Attendance Report (%)</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={attendanceData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} domain={[80, 100]} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Line type="monotone" dataKey="Teaching" stroke="#0A1628" strokeWidth={2} name="Teaching" />
+                      <Line type="monotone" dataKey="Admin" stroke="#22D3EE" strokeWidth={2} name="Admin" />
+                      <Line type="monotone" dataKey="Support" stroke="#C8A45C" strokeWidth={2} name="Support" />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Job Postings */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="p-4 border-b border-border bg-muted/30">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-birla-gold" />
-                Active Job Postings
-              </h4>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/20">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Job ID</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Position</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Apps</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Shortlisted</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Interviews</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Deadline</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobPostings.map((job) => (
-                    <tr key={job.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-birla-cyan">{job.id}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{job.title}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{job.department}</td>
-                      <td className="px-4 py-3 text-center text-xs text-foreground">{job.applications}</td>
-                      <td className="px-4 py-3 text-center text-xs text-foreground">{job.shortlisted}</td>
-                      <td className="px-4 py-3 text-center text-xs text-foreground">{job.interviews}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          job.status === 'Interviewing' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
-                          job.status === 'Shortlisting' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                          job.status === 'Offer Pending' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {job.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{job.deadline}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-
-          {/* Interview Schedule */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-rose-500" />
-                Upcoming Interviews
-              </h4>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-medium">
-                {interviewSchedule.length} Scheduled
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {interviewSchedule.map((interview) => (
-                <div key={interview.id} className="p-4 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                      interview.mode === 'In-Person' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                    }`}>
-                      {interview.mode}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">{interview.round}</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{interview.candidate}</p>
-                  <p className="text-[11px] text-muted-foreground">{interview.position}</p>
-                  <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                    <p className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> {interview.date} at {interview.time}</p>
-                    <p className="flex items-center gap-1.5"><Users className="w-3 h-3" /> {interview.panel}</p>
-                  </div>
-                  <div className="flex items-center gap-2 mt-3">
-                    <button className="px-2.5 py-1 rounded-lg gradient-birla text-white text-[10px] font-medium hover:opacity-90 transition-opacity">
-                      View Profile
-                    </button>
-                    <button className="px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium hover:bg-muted transition-colors">
-                      Reschedule
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ─── Performance Tab ───────────────────────────────── */}
-      {activeTab === 'performance' && (
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Target className="w-5 h-5 text-emerald-500" />
-              Performance Reviews
-            </h3>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium">
-              <Plus className="w-3.5 h-3.5" /> Initiate Review
-            </button>
-          </div>
-
-          {/* Review Cycles */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-birla-gold" />
-              Review Cycles
-            </h4>
-            <div className="space-y-3">
-              {reviewCycles.map((cycle) => (
-                <div key={cycle.id} className="p-4 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-foreground">{cycle.name}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          cycle.status === 'In Progress' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        }`}>
-                          {cycle.status}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{cycle.period} &bull; Due: {cycle.dueDate}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-foreground font-medium">{cycle.reviewsCompleted} reviews</span>
-                      {cycle.status === 'In Progress' && (
-                        <button className="px-2.5 py-1 rounded-lg gradient-birla text-white text-[10px] font-medium hover:opacity-90 transition-opacity">
-                          Send Reminders
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full gradient-birla-cyan"
-                      style={{ width: `${cycle.completion}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1.5">{cycle.completion}% complete</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Rating Distribution + Feedback Summary */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Rating Distribution */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Star className="w-4 h-4 text-birla-gold" />
-                Rating Distribution
-              </h4>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={performanceData} layout="vertical" barGap={4}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 9 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
-                    <YAxis type="category" dataKey="rating" tick={{ fontSize: 8 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={90} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="count" radius={[0, 6, 6, 0]} name="Staff Count">
-                      {performanceData.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
               </div>
-              <div className="flex items-center justify-center gap-4 mt-3 text-[10px] text-muted-foreground">
-                <span>186 staff rated &bull; Avg: 3.21/5.0</span>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Month</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Teaching %</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Admin %</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Support %</th></tr></thead>
+                  <tbody>{attendanceData.map((d) => (<tr key={d.month} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.month}</td><td className="px-4 py-3 text-sm text-right">{d.Teaching}%</td><td className="px-4 py-3 text-sm text-right">{d.Admin}%</td><td className="px-4 py-3 text-sm text-right">{d.Support}%</td></tr>))}</tbody>
+                </table>
               </div>
             </motion.div>
+          )}
 
-            {/* Feedback Summary */}
-            <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-purple-500" />
-                  Recent Feedback
-                </h4>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium">
-                  {feedbackData.length} Reviews
-                </span>
-              </div>
-              <div className="space-y-3 max-h-80 overflow-y-auto">
-                {feedbackData.map((fb) => (
-                  <div key={fb.id} className="p-3 rounded-xl border border-border gradient-card-blue hover:shadow-sm transition-all">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                          {fb.type}
-                        </span>
-                        <div className="flex items-center gap-0.5">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className={`w-3 h-3 ${star <= Math.round(fb.rating) ? 'text-birla-gold fill-birla-gold' : 'text-muted-foreground/30'}`} />
-                          ))}
-                          <span className="text-[10px] font-medium text-foreground ml-1">{fb.rating}</span>
-                        </div>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        fb.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                      }`}>
-                        {fb.status}
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium text-foreground">{fb.reviewee} <span className="text-muted-foreground font-normal">reviewed by</span> {fb.reviewer}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{fb.feedback}</p>
+          {/* Report 4: Performance Distribution */}
+          {activeReport === 3 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Star className="w-4 h-4 text-birla-gold" />Performance Distribution</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={performanceData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} dataKey="count" label={({ rating, count }) => `${count}`}>
+                          {performanceData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                        </Pie>
+                        <Tooltip contentStyle={tooltipStyle} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
+                </div>
+                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                  <table className="w-full">
+                    <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Rating</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Staff Count</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">% Share</th></tr></thead>
+                    <tbody>{performanceData.map((d) => { const total = performanceData.reduce((s, e) => s + e.count, 0); return (<tr key={d.rating} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />{d.rating}</td><td className="px-4 py-3 text-sm text-right">{d.count}</td><td className="px-4 py-3 text-sm text-right">{((d.count / total) * 100).toFixed(1)}%</td></tr>); })}</tbody>
+                  </table>
+                </div>
               </div>
             </motion.div>
-          </div>
+          )}
 
-          {/* Performance Rating Pie */}
-          <motion.div variants={itemVariants} className="rounded-2xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4 text-birla-cyan" />
-              Performance Overview
-            </h4>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={performanceData} cx="50%" cy="50%" outerRadius={90} innerRadius={50} dataKey="count" label={({ rating, percent }) => `${rating}: ${percent}%`} labelLine={true} paddingAngle={2}>
-                      {performanceData.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value, name, props) => [`${value} staff (${props.payload.percent}%)`, props.payload.rating]} />
-                  </PieChart>
-                </ResponsiveContainer>
+          {/* Report 5: Recruitment Pipeline */}
+          {activeReport === 4 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><UserPlus className="w-4 h-4 text-purple-500" />Recruitment Pipeline</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={recruitmentPipelineData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis dataKey="stage" type="category" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} width={80} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                        {recruitmentPipelineData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="space-y-3">
-                <h5 className="text-xs font-semibold text-foreground">Key Performance Indicators</h5>
-                {[
-                  { label: 'Staff with Outstanding Rating', value: '18 (10%)', color: '#0A1628' },
-                  { label: 'Staff meeting expectations', value: '144 (77%)', color: '#22D3EE' },
-                  { label: 'Staff needing improvement', value: '42 (23%)', color: '#EF4444' },
-                  { label: 'Average Training Hours', value: '24 hrs/year', color: '#C8A45C' },
-                  { label: 'Promotion Rate', value: '12%', color: '#10B981' },
-                  { label: 'Retention Rate', value: '94.6%', color: '#8B5CF6' },
-                ].map((kpi) => (
-                  <div key={kpi.label} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: kpi.color }} />
-                      <span className="text-muted-foreground">{kpi.label}</span>
-                    </div>
-                    <span className="font-semibold text-foreground">{kpi.value}</span>
-                  </div>
-                ))}
+            </motion.div>
+          )}
+
+          {/* Report 6: Staff Turnover */}
+          {activeReport === 5 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><TrendingDown className="w-4 h-4 text-rose-500" />Staff Turnover Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={turnoverData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                      <Area type="monotone" dataKey="joins" stroke="#10B981" fill="rgba(16,185,129,0.1)" strokeWidth={2} name="Joins" />
+                      <Area type="monotone" dataKey="exits" stroke="#EF4444" fill="rgba(239,68,68,0.1)" strokeWidth={2} name="Exits" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
-          </motion.div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Month</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Joins</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Exits</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Net</th></tr></thead>
+                  <tbody>{turnoverData.map((d) => (<tr key={d.month} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground">{d.month}</td><td className="px-4 py-3 text-sm text-right text-emerald-600 dark:text-emerald-400">{d.joins}</td><td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">{d.exits}</td><td className="px-4 py-3 text-sm text-right font-bold text-foreground">{d.joins - d.exits >= 0 ? '+' : ''}{d.joins - d.exits}</td></tr>))}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Report 7: Department Staffing */}
+          {activeReport === 6 && (
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4"><Building2 className="w-4 h-4 text-birla-cyan" />Department Staffing Report</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={departmentStaffData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} />
+                      <XAxis dataKey="department" tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <YAxis tick={{ fontSize: 10 }} stroke={darkMode ? '#64748b' : '#94a3b8'} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {departmentStaffData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="border-b border-border bg-muted/30"><th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Department</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Headcount</th><th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">% Share</th></tr></thead>
+                  <tbody>{departmentStaffData.map((d) => { const total = departmentStaffData.reduce((s, e) => s + e.count, 0); return (<tr key={d.department} className="border-b border-border/50 hover:bg-muted/20"><td className="px-4 py-3 text-sm font-medium text-foreground flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />{d.department}</td><td className="px-4 py-3 text-sm text-right font-bold">{d.count}</td><td className="px-4 py-3 text-sm text-right">{((d.count / total) * 100).toFixed(1)}%</td></tr>); })}</tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </motion.div>
