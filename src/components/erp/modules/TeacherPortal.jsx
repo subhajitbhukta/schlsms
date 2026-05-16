@@ -9,7 +9,7 @@ import {
   Save, Send, Eye, ChevronRight, Activity, Star, UserCheck, Bell,
   GraduationCap, Monitor, Settings, FileQuestion, Upload, Lightbulb,
   AlertTriangle, Mic, FlaskConical, MapPin, Tag, Edit, ChatBubbleLeft,
-  HandMetal, Presentation, ChalkboardTeacher
+  HandMetal, Presentation, ChalkboardTeacher, Download, Printer, IndianRupee
 } from 'lucide-react'
 import {
   BarChart, Bar, AreaChart, Area, RadarChart, Radar, PolarGrid,
@@ -194,10 +194,12 @@ export default function TeacherPortal() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: GraduationCap },
     { id: 'attendance', label: 'Attendance', icon: UserCheck },
-    { id: 'timetable', label: 'Timetable', icon: Calendar },
-    { id: 'planner', label: 'Lesson Planner', icon: BookOpen },
     { id: 'assignments', label: 'Assignments', icon: ClipboardList },
     { id: 'evaluation', label: 'Evaluation', icon: Award },
+    { id: 'leave', label: 'Leave', icon: Clock },
+    { id: 'payslip', label: 'Payslip', icon: IndianRupee },
+    { id: 'timetable', label: 'Timetable', icon: Calendar },
+    { id: 'planner', label: 'Lesson Planner', icon: BookOpen },
     { id: 'communication', label: 'Communication', icon: MessageSquare },
     { id: 'forms', label: 'Forms', icon: PenTool },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
@@ -208,6 +210,8 @@ export default function TeacherPortal() {
     { id: 'lessonPlan', label: 'Lesson Plan', icon: BookOpen },
     { id: 'assignment', label: 'Assignment Creation', icon: ClipboardList },
     { id: 'evaluation', label: 'Student Evaluation', icon: Award },
+    { id: 'leaveApp', label: 'Leave Application', icon: Clock },
+    { id: 'attendanceRegularisation', label: 'Attendance Regularisation', icon: UserCheck },
     { id: 'rubric', label: 'Rubric Assessment', icon: Target },
     { id: 'reportCard', label: 'Report Card Generation', icon: FileText },
     { id: 'communication', label: 'Parent Communication', icon: Phone },
@@ -538,6 +542,157 @@ export default function TeacherPortal() {
               </div>
             </div>
           </motion.div>
+        </div>
+      )}
+
+      {/* Leave Tab */}
+      {activeTab === 'leave' && (
+        <div className="space-y-4">
+          {/* Leave Balance Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+            {[
+              { type: 'CL', total: 12, used: 7.5, balance: 4.5, color: 'from-blue-800 to-blue-600' },
+              { type: 'EL', total: 15, used: 4, balance: 11, color: 'from-emerald-800 to-emerald-600' },
+              { type: 'SL', total: 10, used: 3, balance: 7, color: 'from-amber-800 to-amber-600' },
+              { type: 'ML', total: 180, used: 0, balance: 180, color: 'from-purple-800 to-purple-600' },
+              { type: 'Casual', total: 7, used: 5, balance: 2, color: 'from-red-800 to-red-600' },
+              { type: 'Comp-off', total: 5, used: 2, balance: 3, color: 'from-cyan-800 to-cyan-600' },
+            ].map(l => (
+              <div key={l.type} className={`rounded-2xl bg-gradient-to-br ${l.color} p-4 text-white`}>
+                <p className="text-[10px] uppercase tracking-wider text-white/60">{l.type}</p>
+                <p className="text-lg font-bold">{l.balance}</p>
+                <p className="text-[9px] text-white/50">Used: {l.used} / Total: {l.total}</p>
+                <div className="w-full bg-white/20 rounded-full h-1.5 mt-2"><div className="h-1.5 rounded-full bg-white/60" style={{ width: `${(l.used / l.total) * 100}%` }} /></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Apply for Leave Form */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4"><Clock className="w-4 h-4 text-birla-cyan" />Apply for Leave</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div><label className={labelClass}>Leave Type *</label><select className={inputCls}><option>CL</option><option>EL</option><option>SL</option><option>ML</option><option>Casual</option><option>Compensatory</option></select></div>
+              <div><label className={labelClass}>From Date *</label><input type="date" className={inputCls} /></div>
+              <div><label className={labelClass}>To Date *</label><input type="date" className={inputCls} /></div>
+              <div><label className={labelClass}>Total Days</label><input type="number" className={inputCls} placeholder="Auto-calculated" readOnly /></div>
+              <div className="md:col-span-2 lg:col-span-4"><label className={labelClass}>Reason *</label><textarea className={inputCls + ' min-h-[60px]'} placeholder="Enter reason for leave" /></div>
+              <div><label className={labelClass}>Contact During Leave</label><input type="text" className={inputCls} placeholder="+91 XXXXX XXXXX" /></div>
+              <div><label className={labelClass}>Arrangement Made</label><input type="text" className={inputCls} placeholder="Name of substitute teacher" /></div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => alert('Leave application submitted!')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-birla text-white text-sm font-medium"><Save className="w-4 h-4" />Submit Leave Application</button>
+            </div>
+          </div>
+
+          {/* Leave History */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><ClipboardList className="w-4 h-4 text-birla-gold" />Leave History</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-border"><th className="text-left p-2 text-muted-foreground font-medium">Type</th><th className="text-left p-2 text-muted-foreground font-medium">From</th><th className="text-left p-2 text-muted-foreground font-medium">To</th><th className="text-center p-2 text-muted-foreground font-medium">Days</th><th className="text-center p-2 text-muted-foreground font-medium">Status</th><th className="text-left p-2 text-muted-foreground font-medium">Reason</th></tr></thead>
+                <tbody>
+                  {[
+                    { type: 'CL', from: 'Mar 3', to: 'Mar 5', days: 3, status: 'Approved', reason: 'Personal work' },
+                    { type: 'SL', from: 'Feb 14', to: 'Feb 14', days: 1, status: 'Approved', reason: 'Medical appointment' },
+                    { type: 'EL', from: 'Apr 10', to: 'Apr 14', days: 5, status: 'Pending', reason: 'Family function' },
+                    { type: 'CL', from: 'Jan 20', to: 'Jan 21', days: 2, status: 'Approved', reason: 'Personal' },
+                  ].map((l, i) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="p-2 font-medium text-foreground">{l.type}</td>
+                      <td className="p-2 text-muted-foreground">{l.from}</td>
+                      <td className="p-2 text-muted-foreground">{l.to}</td>
+                      <td className="p-2 text-center text-foreground">{l.days}</td>
+                      <td className="p-2 text-center"><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${l.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600' : l.status === 'Pending' ? 'bg-amber-500/10 text-amber-600' : 'bg-red-500/10 text-red-600'}`}>{l.status}</span></td>
+                      <td className="p-2 text-muted-foreground">{l.reason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payslip Tab */}
+      {activeTab === 'payslip' && (
+        <div className="space-y-4">
+          {/* Current Month Summary */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: 'Gross Salary', value: '₹73,400', icon: TrendingUp, color: 'from-blue-800 to-blue-600' },
+              { label: 'Total Deductions', value: '₹9,888', icon: IndianRupee, color: 'from-red-800 to-red-600' },
+              { label: 'Net Salary', value: '₹63,512', icon: Award, color: 'from-emerald-800 to-emerald-600' },
+              { label: 'Month', value: 'March 2026', icon: Calendar, color: 'from-amber-800 to-amber-600' },
+            ].map(s => { const Icon = s.icon; return (
+              <div key={s.label} className={`rounded-2xl bg-gradient-to-br ${s.color} p-4 text-white`}>
+                <div className="flex items-center justify-between mb-2"><Icon className="w-4 h-4 text-white/60" /><span className="text-[9px] text-white/40">This Month</span></div>
+                <p className="text-lg font-bold">{s.value}</p>
+                <p className="text-[10px] text-white/60">{s.label}</p>
+              </div>
+            )})}
+          </div>
+
+          {/* Payslip Preview */}
+          <div className="rounded-2xl border border-birla-gold/30 bg-card overflow-hidden">
+            <div className="bg-gradient-to-r from-birla-blue to-birla-blue/90 p-4 text-center text-white">
+              <h3 className="text-sm font-bold">BIRLA OPEN MINDS INTERNATIONAL SCHOOL</h3>
+              <p className="text-[10px] text-white/60">Singur, Hooghly, West Bengal</p>
+              <p className="text-xs font-semibold text-birla-gold mt-1">PAY SLIP - March 2026</p>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-4">
+                <div><span className="text-muted-foreground">Name:</span> <span className="font-medium text-foreground">Dr. Priya Menon</span></div>
+                <div><span className="text-muted-foreground">Emp ID:</span> <span className="font-medium text-foreground">EMP-001</span></div>
+                <div><span className="text-muted-foreground">Designation:</span> <span className="font-medium text-foreground">PGT Physics</span></div>
+                <div><span className="text-muted-foreground">Department:</span> <span className="font-medium text-foreground">Science</span></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h5 className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-2">Earnings</h5>
+                  {[['Basic Salary', '45,000'], ['HRA', '18,000'], ['DA', '5,400'], ['Special Allowance', '5,000']].map(([l, v]) => (
+                    <div key={l} className="flex justify-between text-xs py-1 border-b border-border/30"><span className="text-muted-foreground">{l}</span><span className="font-medium text-foreground">₹{v}</span></div>
+                  ))}
+                  <div className="flex justify-between text-xs py-1.5 border-t-2 border-emerald-500/30 font-bold"><span className="text-emerald-600">Gross Earnings</span><span className="text-emerald-600">₹73,400</span></div>
+                </div>
+                <div>
+                  <h5 className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-2">Deductions</h5>
+                  {[['Provident Fund', '5,400'], ['ESI', '788'], ['Professional Tax', '200'], ['TDS', '3,500']].map(([l, v]) => (
+                    <div key={l} className="flex justify-between text-xs py-1 border-b border-border/30"><span className="text-muted-foreground">{l}</span><span className="font-medium text-foreground">₹{v}</span></div>
+                  ))}
+                  <div className="flex justify-between text-xs py-1.5 border-t-2 border-red-500/30 font-bold"><span className="text-red-600">Total Deductions</span><span className="text-red-600">₹9,888</span></div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t-2 border-birla-gold/30 text-center">
+                <p className="text-[10px] text-muted-foreground">Net Salary</p>
+                <p className="text-3xl font-bold text-birla-gold">₹63,512</p>
+              </div>
+            </div>
+            <div className="p-3 flex justify-end gap-2 border-t border-border">
+              <button onClick={() => alert('Payslip downloaded as PDF!')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-birla text-white text-xs font-medium"><Download className="w-3.5 h-3.5" />Download PDF</button>
+              <button onClick={() => alert('Payslip sent to printer!')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted"><Printer className="w-3.5 h-3.5" />Print</button>
+            </div>
+          </div>
+
+          {/* Payslip History */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><FileText className="w-4 h-4 text-birla-gold" />Payslip History</h3>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {[
+                { month: 'February 2026', net: '₹63,512', status: 'Paid', date: 'Mar 1, 2026' },
+                { month: 'January 2026', net: '₹63,512', status: 'Paid', date: 'Feb 1, 2026' },
+                { month: 'December 2025', net: '₹68,512', status: 'Paid', date: 'Jan 1, 2026' },
+                { month: 'November 2025', net: '₹63,512', status: 'Paid', date: 'Dec 1, 2025' },
+              ].map((p, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-muted/20">
+                  <div><p className="text-sm font-medium text-foreground">{p.month}</p><p className="text-[10px] text-muted-foreground">Paid on: {p.date}</p></div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">{p.net}</p>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-600">{p.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
